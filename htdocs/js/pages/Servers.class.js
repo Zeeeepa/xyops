@@ -1,6 +1,6 @@
 // Server List and Server Details
 
-Page.Servers = class Servers extends Page.Base {
+Page.Servers = class Servers extends Page.ServerUtils {
 	
 	onInit() {
 		// called once at page load
@@ -17,7 +17,6 @@ Page.Servers = class Servers extends Page.Base {
 		this.args = args;
 		
 		app.showSidebar(true);
-		// app.setHeaderTitle( '<i class="mdi mdi-calendar-clock">&nbsp;</i>Scheduled Events' );
 		
 		this.loading();
 		this['gosub_'+args.sub](args);
@@ -28,7 +27,7 @@ Page.Servers = class Servers extends Page.Base {
 	gosub_list(args) {
 		// show event list
 		app.setWindowTitle( "Servers" );
-		app.setHeaderTitle( '<i class="mdi mdi-desktop-classic">&nbsp;</i>Servers' );
+		app.setHeaderTitle( '<i class="mdi mdi-server">&nbsp;</i>Servers' );
 		
 		// this.loading();
 		// app.api.post( 'app/get_events', copy_object(args), this.receive_events.bind(this) );
@@ -84,7 +83,7 @@ Page.Servers = class Servers extends Page.Base {
 		} );
 		
 		var filter_opts = [
-			{ id: '', title: 'All Servers', icon: 'desktop-classic' },
+			{ id: '', title: 'All Servers', icon: 'server' },
 			{ id: 'z_online', title: 'Online Only', icon: 'checkbox-marked-outline' },
 		].concat(
 			this.buildOptGroup( app.groups, "Server Groups:", 'server-network', 'g_' ),
@@ -103,7 +102,7 @@ Page.Servers = class Servers extends Page.Base {
 		} );
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['Hostname', 'IP Address', 'Group', '# CPUs', 'RAM', 'OS', 'Uptime', '# Jobs', '# Alerts'];
+		var cols = ['Hostname', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'Uptime', '# Jobs', '# Alerts'];
 		
 		html += '<div class="box">';
 		html += '<div class="box_title">';
@@ -149,7 +148,7 @@ Page.Servers = class Servers extends Page.Base {
 			var tds = [
 				'<span style="font-weight:bold">' + self.getNiceServer(item, true) + '</span>',
 				item.ip,
-				self.getNiceGroup(item.group, true),
+				self.getNiceGroupList(item.groups, true),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
 				item.info.os.distro + ' ' + item.info.os.release,
@@ -183,7 +182,7 @@ Page.Servers = class Servers extends Page.Base {
 	}
 	
 	go_add_server() {
-		// TODO: this
+		// TODO: this (one-liner installation for orchestra-satellite)
 	}
 	
 	applyTableFilters() {
@@ -243,7 +242,7 @@ Page.Servers = class Servers extends Page.Base {
 				break;
 				
 				case 'g':
-					if (item.group != value) return false; // hide
+					if (!item.groups.includes(value)) return false; // hide
 				break;
 				
 				case 'osp_':
@@ -639,7 +638,7 @@ Page.Servers = class Servers extends Page.Base {
 		
 		var grid_args = {
 			resp: resp,
-			cols: ['Hostname', 'IP Address', 'Group', '# CPUs', 'RAM', 'OS', 'Created', 'Modified'],
+			cols: ['Hostname', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'Created', 'Modified'],
 			data_type: 'server',
 			offset: this.args.offset || 0,
 			limit: this.args.limit,
@@ -660,7 +659,7 @@ Page.Servers = class Servers extends Page.Base {
 			return [
 				'<b>' + self.getNiceServer(item, true) + '</b>',
 				item.ip,
-				self.getNiceGroup(item.group, true),
+				self.getNiceGroupList(item.groups, true),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
 				item.info.os.distro + ' ' + item.info.os.release,
@@ -690,11 +689,13 @@ Page.Servers = class Servers extends Page.Base {
 		
 		if (!args) args = {};
 		this.args = args;
+		this.args.limit = 25;
 		
 		app.showSidebar(true);
 		app.setHeaderTitle( '...' );
 		
 		this.snapshot = null;
+		this.charts = {};
 		
 		this.loading();
 		app.api.get( 'app/get_server', { id: args.id }, this.receive_snapshot.bind(this), this.fullPageError.bind(this) );
@@ -724,8 +725,9 @@ Page.Servers = class Servers extends Page.Base {
 		}
 		
 		var icon = '<i class="mdi mdi-' + (server ? 'router-network' : 'close-network-outline') + '">&nbsp;</i>';
+		var nav_spacer = '<i class="mdi mdi-chevron-right" style="padding-left:5px; padding-right:5px;"></i>';
 		
-		app.setHeaderTitle( icon + snapshot.hostname );
+		app.setHeaderTitle( '<a href="#Servers?sub=list" style="text-decoration:none;"><i class="mdi mdi-server">&nbsp;</i>Servers</a>' + nav_spacer + icon + snapshot.hostname );
 		app.setWindowTitle( "Viewing Server: " + snapshot.hostname + "" );
 		
 		html += '<div class="box" style="border:none;">';
@@ -739,20 +741,542 @@ Page.Servers = class Servers extends Page.Base {
 			html += '</div>';
 		html += '</div>';
 		
+		html += '<div class="box">';
+			html += '<div class="box_title">';
+				html += 'Server Summary';
+				
+				// html += '<div class="button right danger" onMouseUp="$P().showDeleteSnapshotDialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete...</div>';
+				// html += '<div class="button secondary right" onMouseUp="$P().do_edit_from_view()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Event...</div>';
+				// html += '<div class="button right" onMouseUp="$P().do_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
+				html += '<div class="clear"></div>';
+			html += '</div>'; // title
+			
+			html += '<div class="box_content table">';
+				html += '<div class="summary_grid">';
+				
+					// row 1
+					html += '<div>';
+						html += '<div class="info_label">Server ID</div>';
+						html += '<div class="info_value monospace">' + server.id + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Server Hostname</div>';
+						html += '<div class="info_value">' + server.hostname + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Server IP</div>';
+						html += '<div class="info_value">' + server.ip + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Server Label</div>';
+						html += '<div class="info_value">' + (server.title || 'n/a') + '</div>';
+					html += '</div>';
+					
+					// row 2
+					html += '<div>';
+						html += '<div class="info_label">Groups</div>';
+						html += '<div class="info_value">' + this.getNiceGroupList(server.groups) + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Architecture</div>';
+						html += '<div class="info_value">' + this.getNiceArch(snapshot.data.arch) + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Operating System</div>';
+						html += '<div class="info_value">' + this.getNiceOS(snapshot.data.os) + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Server Uptime</div>';
+						html += '<div class="info_value">' + this.getNiceUptime(snapshot.data.uptime_sec) + '</div>';
+					html += '</div>';
+					
+					// row 3
+					html += '<div>';
+						html += '<div class="info_label">Total RAM</div>';
+						html += '<div class="info_value">' + this.getNiceMemory(snapshot.data.memory.total || 0) + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">CPU Cores</div>';
+						html += '<div class="info_value">' + snapshot.data.cpu.physicalCores + ' physical, ' + snapshot.data.cpu.cores + ' virtual</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">CPU Type</div>';
+						html += '<div class="info_value">' + this.getNiceCPUType(snapshot.data.cpu) + '</div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Virtualization</div>';
+						html += '<div class="info_value">' + this.getNiceVirtualization(server.info.virt) + '</div>';
+					html += '</div>';
+					
+					// row 4
+					html += '<div>';
+						html += '<div class="info_label">Alerts Today</div>';
+						html += '<div class="info_value" id="d_vs_stat_at"></div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Jobs Today</div>';
+						html += '<div class="info_value" id="d_vs_stat_jct"></div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Jobs Failed Today</div>';
+						html += '<div class="info_value" id="d_vs_stat_jft"></div>';
+					html += '</div>';
+					
+					html += '<div>';
+						html += '<div class="info_label">Job Success Rate</div>';
+						html += '<div class="info_value" id="d_vs_stat_jsr"></div>';
+					html += '</div>';
+					
+				html += '</div>'; // summary grid
+			html += '</div>'; // box content
+		html += '</div>'; // box
 		
+		// alerts
+		html += '<div class="box" id="d_vs_alerts" style="display:none">';
+			html += '<div class="box_title">';
+				html += 'Server Alerts';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// jobs
+		html += '<div class="box" id="d_vs_jobs" style="">';
+			html += '<div class="box_title">';
+				html += 'Server Jobs';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// quickmon charts
+		html += '<div class="box" id="d_vs_quickmon">';
+			html += '<div class="box_title">';
+				html += 'Quick Monitors';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// monitor dash grid
+		html += '<div class="dash_grid" id="d_vs_dash_grid">';
+			// html += this.getMonitorGrid(snapshot);
+		html += '</div>';
+		
+		// mem details
+		html += '<div class="box" id="d_vs_mem">';
+			html += '<div class="box_title">';
+				html += 'Memory Details';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += this.getMemDetails(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// cpu details
+		html += '<div class="box" id="d_vs_cpus">';
+			html += '<div class="box_title">';
+				html += 'CPU Details';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += this.getCPUDetails(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// TODO: pixl-chart monitors here?
+		
+		// processes
+		html += '<div class="box" id="d_vs_procs">';
+			html += '<div class="box_title">';
+				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" data-id="t_snap_procs" onInput="$P().applyTableFilter(this)"></div>';
+				html += 'Active Processes';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += this.getProcessTable(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// connections
+		html += '<div class="box" id="d_vs_conns">';
+			html += '<div class="box_title">';
+				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" data-id="t_snap_conns" onInput="$P().applyTableFilter(this)"></div>';
+				html += 'Network Connections';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += this.getConnectionTable(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// network interfaces
+		html += '<div class="box" id="d_vs_ifaces">';
+			html += '<div class="box_title">';
+				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" data-id="t_snap_ifaces" onInput="$P().applyTableFilter(this)"></div>';
+				html += 'Network Interfaces';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += this.getInterfaceTable(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// mounts
+		html += '<div class="box" id="d_vs_fs">';
+			html += '<div class="box_title">';
+				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" data-id="t_snap_fs" onInput="$P().applyTableFilter(this)"></div>';
+				html += 'Filesystems';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += this.getMountTable(snapshot);
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// TODO: maybe show job history, just for this server?
 		
 		this.div.html(html);
 		
-		// SingleSelect.init( this.div.find('#fe_vs_mode, #fe_vs_year') );
+		this.updateServerStats();
+		this.getSnapshotAlerts();
+		this.renderActiveJobs();
+		this.renderMonitorGrid();
+		this.renderMemDetails();
+		this.renderCPUDetails();
+		this.setupQuickMonitors();
 		
-		// this.getSnapshotAlerts();
-		// this.getSnapshotJobs();
+		// SingleSelect.init( this.div.find('#fe_vs_mode, #fe_vs_year') );
+	}
+	
+	getSnapshotAlerts() {
+		// grab alerts associated with server
+		var self = this;
+		this.alerts = Object.values(app.activeAlerts).filter( function(item) { return item.server == self.server.id; } );
+		this.renderSnapshotAlerts(); // in ServerUtils.class.js
+	}
+	
+	renderActiveJobs() {
+		// show all active jobs
+		var self = this;
+		var html = '';
+		var rows = Object.values(app.activeJobs).filter( function(item) { return item.server == self.server.id; } ).sort( function(a, b) {
+			return (a.started < b.started) ? 1 : -1;
+		} );
+		
+		if (!this.activeOffset) this.activeOffset = 0;
+		
+		var resp = {
+			rows: rows.slice( this.activeOffset, this.activeOffset + this.args.limit ),
+			list: { length: rows.length }
+		};
+		
+		var grid_args = {
+			resp: resp,
+			cols: ['Job ID', 'Event', 'Category', 'Server', 'State', 'Progress', 'Remaining', 'Actions'],
+			data_type: 'job',
+			offset: this.activeOffset,
+			limit: this.args.limit,
+			class: 'data_grid dash_active_grid',
+			pagination_link: '$P().jobActiveNav',
+			empty_msg: 'No active jobs on this server.'
+		};
+		
+		html += this.getPaginatedGrid( grid_args, function(job, idx) {
+			return [
+				'<b>' + self.getNiceJob(job.id, true) + '</b>',
+				self.getNiceEvent(job.event, true),
+				self.getNiceCategory(job.category, true),
+				// self.getNiceJobSource(job),
+				// self.getShortDateTime( job.started ),
+				'<div id="d_vs_jt_server_' + job.id + '">' + self.getNiceServer(job.server, true) + '</div>',
+				'<div id="d_vs_jt_state_' + job.id + '">' + self.getNiceJobState(job) + '</div>',
+				// '<div id="d_vs_jt_elapsed_' + job.id + '">' + self.getNiceJobElapsedTime(job, false) + '</div>',
+				'<div id="d_vs_jt_progress_' + job.id + '">' + self.getNiceJobProgressBar(job) + '</div>',
+				'<div id="d_vs_jt_remaining_' + job.id + '">' + self.getNiceJobRemainingTime(job, false) + '</div>',
+				
+				'<span class="link" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
+			];
+		} );
+		
+		this.div.find('#d_vs_jobs > .box_content').html(html);
+	}
+	
+	doAbortJob(id) {
+		// abort job, clicked from active or queued tables
+		Dialog.confirmDanger( 'Abort Job', "Are you sure you want to abort the job &ldquo;<b>" + id + "</b>&rdquo;?", 'Abort', function(result) {
+			if (!result) return;
+			app.clearError();
+			Dialog.showProgress( 1.0, "Aborting Job..." );
+			
+			app.api.post( 'app/abort_job', { id: id }, function(resp) {
+				Dialog.hideProgress();
+				app.showMessage('success', "The job &ldquo;<b>" + id + "</b>&rdquo; was aborted successfully.");
+			} ); // api.post
+		} ); // confirm
+	}
+	
+	jobActiveNav(offset) {
+		// user clicked on active job pagination nav
+		this.activeOffset = offset;
+		this.renderActiveJobs();
+	}
+	
+	renderMonitorGrid() {
+		// show grid of monitors
+		this.div.find('#d_vs_dash_grid').html( this.getMonitorGrid(this.snapshot) );
+	}
+	
+	renderMemDetails() {
+		// show memory details
+		this.div.find('#d_vs_mem > .box_content').html( this.getMemDetails(this.snapshot) );
+	}
+	
+	renderCPUDetails() {
+		// show cpu details
+		this.div.find('#d_vs_cpus > .box_content').html( this.getCPUDetails(this.snapshot) );
+	}
+	
+	setupQuickMonitors() {
+		// render empty quickmon charts, then request full data
+		var self = this;
+		var html = '';
+		html += '<div class="chart_grid_horiz">';
+		
+		config.quick_monitors.forEach( function(def) {
+			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
+			html += '<div><canvas id="c_vs_' + def.id + '" class="chart"></canvas></div>';
+		} );
+		
+		html += '</div>';
+		this.div.find('#d_vs_quickmon > div.box_content').html( html );
+		
+		var render_chart_overlay = function(key) {
+			$('.pxc_tt_overlay').html(
+				'<div class="chart_toolbar ct_' + key + '">' + 
+					'<div class="chart_icon ci_di" title="Download Image" onClick="$P().chartDownload(\'' + key + '\')"><i class="mdi mdi-cloud-download-outline"></i></div>' + 
+					'<div class="chart_icon ci_cl" title="Copy Image Link" onClick="$P().chartCopyLink(\'' + key + '\',this)"><i class="mdi mdi-clipboard-pulse-outline"></i></div>' + 
+				'</div>' 
+			);
+		};
+		
+		config.quick_monitors.forEach( function(def, idx) {
+			var chart = new Chart({
+				"canvas": '#c_vs_' + def.id,
+				"title": def.title,
+				"dataType": def.type,
+				"dataSuffix": def.suffix,
+				"minVertScale": def.minVertScale || 0,
+				"legend": false // single layer, no legend needed
+			});
+			chart.on('mouseover', function(event) { render_chart_overlay(def.id); });
+			self.charts[ def.id ] = chart;
+		});
+		
+		// request all data from server
+		app.api.get( 'app/get_quickmon_data', { server: this.server.id }, function(resp) {
+			if (!self.active) return; // sanity
+			
+			// now iterate over all quick monitors
+			config.quick_monitors.forEach( function(def, idx) {
+				var chart = self.charts[def.id];
+				
+				// add layer for each server
+				for (var server_id in resp.servers) {
+					var rows = resp.servers[server_id];
+					var server = app.servers[server_id];
+					
+					if (server) chart.addLayer({
+						id: server_id,
+						title: app.formatHostname(server.hostname),
+						data: self.getQuickMonChartData(rows, def.id)
+					});
+				} // foreach server
+				
+				if (chart.layers.length == 1) {
+					// if only 1 layer, color each chart separately (so they look nicer)
+					chart.layers[0].color = app.colors[ idx % app.colors.length ];
+				}
+			}); // foreach mon
+		}); // api.get
+	}
+	
+	getQuickMonChartData(rows, id) {
+		// format data to be compat with pixl-chart
+		var data = [];
+		rows.forEach( function(row) {
+			data.push({ x: row.date, y: row[id] });
+		} );
+		return data;
+	}
+	
+	chartDownload(key) {
+		// download chart image with custom filename
+		// (this all happens client-side)
+		var chart = this.charts[key];
+		var filename = 'orchestra-server-' + this.server.id + '-' + get_unique_id(8) + '-' + key + '.png';
+		
+		chart.download({
+			filename: filename,
+			format: 'png', 
+			quality: 1.0, 
+			width: 1024, 
+			height: 512, 
+			density: 1
+		});
+	}
+	
+	chartCopyLink(key, elem) {
+		// upload image to server and copy link to it
+		var chart = this.charts[key];
+		var $elem = $(elem);
+		
+		// generate unique ID client-side and "predict" the URL
+		// so we can copy it to the clipboard in the click thread
+		var filename = 'server-' + this.server.id + '-' + get_unique_id(8) + '-' + key + '.png';
+		var clip_url = location.origin + '/files/' + app.username + '/' + filename;
+		copyToClipboard(clip_url);
+		
+		// show intermediate progress in icon
+		$elem.find('i').removeClass().addClass('mdi mdi-clipboard-arrow-up-outline');
+		
+		var opts = {
+			type: 'blob', 
+			format: 'png', 
+			quality: 1.0, 
+			width: 1024, 
+			height: 512, 
+			density: 1
+		};
+		chart.snapshot(opts, function(blob) {
+			// next, upload our blob
+			var form = new FormData();
+			form.append( 'file1', blob, filename );
+			
+			app.api.upload('app/upload_files', form, function(resp) {
+				// file uploaded successfully!  show check in icon
+				$elem.find('i').removeClass().addClass('mdi mdi-clipboard-check-outline success');
+			});
+		}); // snapshot
+	}
+	
+	appendSampleToChart(data) {
+		// append sample to chart (real-time from server)
+		// { id, row }
+		var self = this;
+		
+		config.quick_monitors.forEach( function(def) {
+			var chart = self.charts[def.id];
+			var layer = find_object( chart.layers, { id: data.id } );
+			
+			if (layer) {
+				layer.data.push({ x: data.row.date, y: data.row[def.id] || 0 });
+				if (layer.data.length > 60) layer.data.shift();
+			}
+			
+			chart.dirty = true;
+		}); // foreach monitor
+	}
+	
+	updateServerStats() {
+		// stats updated, redraw select grid elements
+		var server = this.server;
+		var stats = app.stats.currentDay.servers[server.id] || {};
+		
+		// jobs completed today
+		this.div.find('#d_vs_stat_jct').html( commify(stats.job_complete || 0) );
+		
+		// jobs failed today
+		this.div.find('#d_vs_stat_jft').html( commify(stats.job_error || 0) );
+		
+		// job success rate
+		this.div.find('#d_vs_stat_jsr').html( stats.job_complete ? pct( stats.job_success || 0, stats.job_complete || 1 ) : 'n/a' );
+		
+		// alerts today
+		this.div.find('#d_vs_stat_at').html( commify(stats.alert_new || 0) );
+	}
+	
+	updateSnapshotData(snapshot) {
+		// new snapshot from server (every minute), update graphs and tables
+		this.snapshot = snapshot;
+		
+		this.renderMonitorGrid();
+		this.renderMemDetails();
+		this.renderCPUDetails();
+		
+		this.div.find('#d_vs_procs > div.box_content').html( this.getProcessTable(snapshot) );
+		this.div.find('#d_vs_conns > div.box_content').html( this.getConnectionTable(snapshot) );
+		this.div.find('#d_vs_ifaces > div.box_content').html( this.getInterfaceTable(snapshot) );
+		this.div.find('#d_vs_fs > div.box_content').html( this.getMountTable(snapshot) );
+		
+		// TODO: update pixl-charts here
+	}
+	
+	handleStatusUpdateView(data) {
+		// update live job data
+		var self = this;
+		var div = this.div;
+		var bar_width = this.bar_width || 100;
+		
+		if (data.jobsChanged) {
+			this.renderActiveJobs();
+			// TODO: update job history table here, if expanded?
+		}
+		else {
+			// fast update without redrawing entire table
+			var jobs = Object.values(app.activeJobs).filter( function(item) { return item.server == self.server.id; } )
+			
+			jobs.forEach( function(job) {
+				div.find('#d_vs_jt_state_' + job.id).html( self.getNiceJobState(job) );
+				div.find('#d_vs_jt_server_' + job.id).html( self.getNiceServer(job.server, true) );
+				// div.find('#d_vs_jt_elapsed_' + job.id).html( self.getNiceJobElapsedTime(job, false) );
+				div.find('#d_vs_jt_remaining_' + job.id).html( self.getNiceJobRemainingTime(job, false) );
+				
+				// update progress bar without redrawing it (so animation doesn't jitter)
+				var counter = job.progress || 1;
+				var cx = Math.floor( counter * bar_width );
+				var $cont = div.find('#d_vs_jt_progress_' + job.id + ' > div.progress_bar_container');
+				
+				if ((counter == 1.0) && !$cont.hasClass('indeterminate')) {
+					$cont.addClass('indeterminate').attr('title', "");
+				}
+				else if ((counter < 1.0) && $cont.hasClass('indeterminate')) {
+					$cont.removeClass('indeterminate');
+				}
+				
+				if (counter < 1.0) $cont.attr('title', '' + Math.floor( (counter / 1.0) * 100 ) + '%');
+				
+				$cont.find('> div.progress_bar_inner').css( 'width', '' + cx + 'px' );
+			} ); // foreach job
+		}
+	}
+	
+	onPageUpdate(pcmd, pdata) {
+		// receive data packet for this page specifically (i.e. live graph append)
+		switch (this.args.sub) {
+			case 'view':
+				switch (pcmd) {
+					case 'quickmon': this.appendSampleToChart(pdata); break;
+					case 'snapshot': this.updateSnapshotData(pdata.snapshot); break;
+				}
+			break;
+		} // switch sub
 	}
 	
 	onStatusUpdate(data) {
 		// called every 1s from websocket
 		switch (this.args.sub) {
 			case 'list': this.handleStatusUpdateList(data); break;
+			case 'view': this.handleStatusUpdateView(data); break;
 		}
 	}
 	
@@ -761,6 +1285,11 @@ Page.Servers = class Servers extends Page.Base {
 		switch (this.args.sub) {
 			case 'list':
 				if ((key == 'servers') || (key == 'activeAlerts')) this.gosub_list(this.args);
+			break;
+			
+			case 'view':
+				if (key == 'activeAlerts') this.getSnapshotAlerts();
+				else if (key == 'stats') this.updateServerStats();
 			break;
 		}
 	}
