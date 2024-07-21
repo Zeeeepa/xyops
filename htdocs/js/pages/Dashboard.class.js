@@ -60,10 +60,10 @@ Page.Dashboard = class Dashboard extends Page.Base {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
-		// server summary charts
+		// quickmon charts
 		html += '<div class="box" id="d_dash_monitors">';
 			html += '<div class="box_title">';
-				html += 'Server Monitors';
+				html += 'Quick Monitors';
 			html += '</div>';
 			html += '<div class="box_content table">';
 				html += '<div class="loading_container"><div class="loading"></div></div>';
@@ -592,7 +592,8 @@ Page.Dashboard = class Dashboard extends Page.Base {
 				"canvas": '#c_dash_' + def.id,
 				"title": def.title,
 				"dataType": def.type,
-				"dataSuffix": def.suffix
+				"dataSuffix": def.suffix,
+				"minVertScale": def.minVertScale || 0
 			});
 			chart.on('mouseover', function(event) { render_chart_overlay(def.id); });
 			self.charts[ def.id ] = chart;
