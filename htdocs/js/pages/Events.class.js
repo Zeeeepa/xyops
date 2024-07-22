@@ -1096,56 +1096,6 @@ Page.Events = class Events extends Page.Base {
 		ChartManager.check();
 	}
 	
-	chartDownload(key) {
-		// download chart image with custom filename
-		// (this all happens client-side)
-		var chart = this.charts[key];
-		var filename = 'orchestra-event-history-' + this.event.id + '-' + get_unique_id(8) + '-' + key + '.png';
-		
-		chart.download({
-			filename: filename,
-			format: 'png', 
-			quality: 1.0, 
-			width: 1024, 
-			height: 512, 
-			density: 1
-		});
-	}
-	
-	chartCopyLink(key, elem) {
-		// upload image to server and copy link to it
-		var chart = this.charts[key];
-		var $elem = $(elem);
-		
-		// generate unique ID client-side and "predict" the URL
-		// so we can copy it to the clipboard in the click thread
-		var filename = 'event-history-' + this.event.id + '-' + get_unique_id(8) + '-' + key + '.png';
-		var clip_url = location.origin + '/files/' + app.username + '/' + filename;
-		copyToClipboard(clip_url);
-		
-		// show intermediate progress in icon
-		$elem.find('i').removeClass().addClass('mdi mdi-clipboard-arrow-up-outline');
-		
-		var opts = {
-			type: 'blob', 
-			format: 'png', 
-			quality: 1.0, 
-			width: 1024, 
-			height: 512, 
-			density: 1
-		};
-		chart.snapshot(opts, function(blob) {
-			// next, upload our blob
-			var form = new FormData();
-			form.append( 'file1', blob, filename );
-			
-			app.api.upload('app/upload_files', form, function(resp) {
-				// file uploaded successfully!  show check in icon
-				$elem.find('i').removeClass().addClass('mdi mdi-clipboard-check-outline success');
-			});
-		}); // snapshot
-	}
-	
 	jobHistoryNav(offset) {
 		// intercept click on job history table pagination nav
 		this.args.offset = offset;
