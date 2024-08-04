@@ -199,7 +199,7 @@ app.extend({
 		html += '<div class="header_widget icon"><i class="mdi mdi-tune-vertical-variant" onMouseUp="app.doMySettings()" title="Edit Settings"></i></div>';
 		html += '<div class="header_widget icon"><i class="mdi mdi-bell-ring-outline" onMouseUp=""></i></div>'; // TODO: this
 		html += '<div id="d_theme_ctrl" class="header_widget icon" onMouseUp="app.openThemeSelector()" title="Select Theme"></div>';
-		html += '<div id="d_header_clock" class="header_clock"></div>';
+		html += '<div id="d_header_clock" class="header_widget header_clock"></div>';
 		
 		// html += '<div class="header_search_widget"><i class="mdi mdi-magnify">&nbsp;</i><input type="text" size="15" id="fe_header_search" placeholder="Quick Search" onKeyDown="app.qsKeyDown(this,event)"/></div>';
 		$('#d_header_user_container').html( html );
