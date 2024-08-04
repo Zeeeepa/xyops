@@ -350,8 +350,8 @@ Page.Base = class Base extends Page {
 	getNiceTagList(tags, link, glue) {
 		// get formatted tag group
 		var self = this;
+		if (!tags) return '(None)';
 		if (!glue) glue = ', ';
-		if (!tags) tags = '';
 		if (typeof(tags) == 'string') tags = tags.split(/\,\s*/);
 		return tags.filter( function(tag) { return !tag.match(/^_/); } ).map( function(tag) { return self.getNiceTag(tag, link); } ).join(glue);
 	}
@@ -706,6 +706,8 @@ Page.Base = class Base extends Page {
 	
 	getDateArgsTZ(epoch, tz) {
 		// get date args in custom timezone
+		// returns: { year, month, day, weekday, hour, minute, second, epoch, tz }
+		// (everything is a number except tz, and month is 1-based)
 		if (!tz) tz = this.getUserTimezone();
 		var days = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
 		var opts = this.getDateOptions({ 
@@ -740,7 +742,7 @@ Page.Base = class Base extends Page {
 		
 		switch (value) {
 			case 'now':
-				query += '' + key + ':' + time_now;
+				query += '' + key + ':' + time_now();
 			break;
 			
 			case 'lasthour':
@@ -1866,6 +1868,20 @@ Page.Base = class Base extends Page {
 		return opts;
 	}
 	
+	buildJobFilterOpts() {
+		// get list of common job filter options for quick-search menus
+		return [
+			{ id: '', title: 'All Jobs', icon: 'calendar-search' },
+			{ id: 'z_success', title: 'Successes', icon: 'check-circle-outline' },
+			{ id: 'z_error', title: 'Errors', icon: 'alert-decagram-outline' },
+			{ id: 'z_warning', title: 'Warnings', icon: 'alert-circle-outline' },
+			{ id: 'z_critical', title: 'Criticals', icon: 'fire-alert' },
+			{ id: 'z_abort', title: 'Aborts', icon: 'cancel' }
+		].concat(
+			this.buildOptGroup( app.tags, "Tags:", 'tag-outline', 't_' )
+		);
+	}
+	
 	// Page State/Draft System
 	
 	savePageSnapshot(data) {
@@ -2162,7 +2178,11 @@ Page.Base = class Base extends Page {
 		// format monitor timeline data to be compat with pixl-chart
 		var data = [];
 		rows.forEach( function(row) {
-			if (row.date && row.totals) data.push({ x: row.date, y: (row.totals[id] || 0) / (row.count || 1) });
+			if (row.date && row.totals) {
+				var item = { x: row.date, y: (row.totals[id] || 0) / (row.count || 1) };
+				if (row.alerts) item.label = { "text": "Alert", "color": "red", "tooltip": true };
+				data.push(item);
+			}
 		} );
 		return data;
 	}
