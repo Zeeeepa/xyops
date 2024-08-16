@@ -529,7 +529,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 			case 'schedule': msg += '  Since this is a scheduled timing rule, a new "Blackout" range will be added to disable it.'; break;
 		}
 		
-		Dialog.confirm( 'Skip Upcoming Job', msg, 'Skip Job', function(result) {
+		Dialog.confirmDanger( 'Skip Upcoming Job', msg, 'Skip Job', function(result) {
 			if (!result) return;
 			app.clearError();
 			Dialog.showProgress( 1.0, "Skipping Job..." );
