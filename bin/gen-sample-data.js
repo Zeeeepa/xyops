@@ -51,9 +51,11 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			"created": now,
 			"category": 'cat' + Math.floor( (Math.random() * 10) + 1 ),
 			"targets": ["main"],
+			"algo": "random",
 			"notes": "",
 			"limits": [],
-			"actions": []
+			"actions": [],
+			"tags": []
 		};
 		
 		// plugin & params
@@ -82,13 +84,13 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 				event.plugin = 'urlplug';
 				event.params = {
 					method: 'GET',
-					url: 'http://localhost:3012/api/app/echo',
+					url: 'https://github.com/jhuckaby/performa-satellite/releases/latest/download/performa-satellite-linux-x64',
 					headers: '',
 					data: '',
 					timeout: 30,
 					success_match: '',
 					error_match: '',
-					follow: false,
+					follow: true,
 					ssl_cert_bypass: false
 				};
 			break;
