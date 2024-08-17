@@ -193,6 +193,14 @@ app.extend({
 		} );
 	},
 	
+	onThemeChange: function() {
+		// called when theme changes
+		if (app.page_manager && app.page_manager.current_page_id) {
+			var page = app.page_manager.find(app.page_manager.current_page_id);
+			if (page && page.onThemeChange) page.onThemeChange( app.getPref('theme') );
+		}
+	},
+	
 	updateHeaderInfo: function(bust) {
 		// update top-right display
 		var html = '';
@@ -579,6 +587,7 @@ app.extend({
 		if (opts.timeZone === false) delete opts.timeZone;
 		if (opts.numberingSystem === false) delete opts.numberingSystem;
 		if (opts.hourCycle === false) delete opts.hourCycle;
+		if (!opts.second) delete opts.second;
 		
 		return opts;
 	},
