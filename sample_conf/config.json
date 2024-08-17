@@ -46,6 +46,12 @@
 		"job_complete": { "shell_exec": "date" }
 	},
 	
+	"hook_text_templates": {
+		"start": "Job started on [server/hostname]: [event/title] [links/job_details]",
+		"success": "Job completed successfully on [server/hostname]: [event/title] [links/job_details]",
+		"error": "Job failed on [server/hostname]: [event/title]: Error [job/code]: [job/description] [links/job_details]"
+	},
+	
 	"multi": {
 		"protocol": "ws:",
 		"connect_timeout_sec": 3,
