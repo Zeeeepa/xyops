@@ -217,7 +217,7 @@ Page.Job = class Job extends Page.Base {
 					
 					html += '<div>';
 						html += '<div class="info_label">Server</div>';
-						html += '<div class="info_value">' + this.getNiceServer(job.server, true) + '</div>';
+						html += '<div class="info_value" id="d_live_server">' + this.getNiceServer(job.server, true) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -233,7 +233,7 @@ Page.Job = class Job extends Page.Base {
 					
 					html += '<div>';
 						html += '<div class="info_label">Tags</div>';
-						html += '<div class="info_value">' + this.getNiceTagList(job.tags, true, ', ') + '</div>';
+						html += '<div class="info_value" id="d_live_tags">' + this.getNiceTagList(job.tags, true, ', ') + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -859,7 +859,7 @@ Page.Job = class Job extends Page.Base {
 		this.metaRowCount = activity.length;
 	}
 	
-	updateLiveJobStats() {
+	updateLiveJobStats(state_changed) {
 		// update progress and other indicators while job is live
 		var job = this.job;
 		var bwidth = this.header_bar_width;
@@ -885,9 +885,15 @@ Page.Job = class Job extends Page.Base {
 		this.div.find('#s_live_elapsed').html( this.getNiceJobElapsedTime(job) );
 		this.div.find('#s_live_remain').html( this.getNiceJobRemainingTime(job) );
 		
-		this.div.find('#d_live_state').html( this.getNiceJobState(job) );
 		this.div.find('#d_live_cpu').html( '<i class="mdi mdi-chip">&nbsp;</i>' + this.getNiceJobAvgCPU(job) );
 		this.div.find('#d_live_mem').html( '<i class="mdi mdi-memory">&nbsp;</i>' + this.getNiceJobAvgMem(job) );
+		
+		if (state_changed) {
+			// job state has changed, so update some more items
+			this.div.find('#d_live_state').html( this.getNiceJobState(job) );
+			this.div.find('#d_live_server').html( this.getNiceServer(job.server, true) );
+			this.div.find('#d_live_tags').html( this.getNiceTagList(job.tags, true, ', ') );
+		}
 	}
 	
 	getChartLayers(timeline, pkey, chart) {
@@ -1568,7 +1574,7 @@ Page.Job = class Job extends Page.Base {
 		
 		if (!notify_me) {
 			// add notification
-			job.actions.push({ trigger: 'complete', type: 'email', email: app.user.email });
+			job.actions.push({ trigger: 'complete', type: 'email', email: app.user.email, enabled: true });
 			notify_me = true;
 		}
 		else {
@@ -1676,7 +1682,8 @@ Page.Job = class Job extends Page.Base {
 		var updates = app.activeJobs[ this.job.id ];
 		if (updates) {
 			for (var key in updates) this.job[key] = updates[key];
-			this.updateLiveJobStats();
+			var state_changed = !!(this.job.state != old_state);
+			this.updateLiveJobStats( state_changed );
 			this.updateSecondTimeline();
 			this.refreshLiveCharts();
 			this.updateLiveProcessTable();
