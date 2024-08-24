@@ -1274,7 +1274,6 @@ Page.Events = class Events extends Page.Base {
 		if (this.getPageDraft()) {
 			this.event = this.checkRestorePageDraft();
 			do_snap = false;
-			// TODO: draft was restored... show message here?
 		}
 		else {
 			this.event = deep_copy_object( app.config.new_event_template );
@@ -1368,7 +1367,7 @@ Page.Events = class Events extends Page.Base {
 		if (this.getPageDraft()) {
 			this.event = this.checkRestorePageDraft();
 			do_snap = false;
-			// TODO: draft was restored... show message here?
+			app.showMessage('info', "Your previous unsaved edits were restored.  Click the 'Cancel' button to discard them.");
 		}
 		else {
 			this.event = resp.event;
@@ -1401,7 +1400,8 @@ Page.Events = class Events extends Page.Base {
 		html += '<div class="box_buttons">';
 			html += '<div class="button" onMouseUp="$P().cancel_event_edit()">Cancel</div>';
 			html += '<div class="button danger" onMouseUp="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Event...</div>';
-			html += '<div class="button" onMouseUp="$P().do_run_event()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Event Now</div>';
+			// html += '<div class="button" onMouseUp="$P().do_run_event()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Event Now</div>';
+			html += '<div class="button secondary" onMouseUp="$P().do_test_event()"><i class="mdi mdi-test-tube">&nbsp;</i>Test Event...</div>';
 			html += '<div class="button primary" onMouseUp="$P().do_save_event()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
@@ -1418,6 +1418,92 @@ Page.Events = class Events extends Page.Base {
 		this.setupBoxButtonFloater();
 		
 		if (do_snap) this.savePageSnapshot( this.get_event_form_json(true) );
+	}
+	
+	do_test_event() {
+		// test event with temporary changes
+		// Note: This may include unsaved changes, which are included in the on-demand run now job, by design
+		app.clearError();
+		var self = this;
+		var event = this.get_event_form_json();
+		if (!event) return; // error
+		
+		var html = '<div class="dialog_box_content">';
+		
+		html += this.getFormRow({
+			label: 'Actions:',
+			content: this.getFormCheckbox({
+				id: 'fe_ete_actions',
+				label: 'Disable All Actions',
+				checked: true
+			}),
+			caption: 'Disable all event actions for the test run.'
+		});
+		
+		html += this.getFormRow({
+			label: 'Limits:',
+			content: this.getFormCheckbox({
+				id: 'fe_ete_limits',
+				label: 'Disable All Limits',
+				checked: false
+			}),
+			caption: 'Disable all resource limits for the test run.'
+		});
+		
+		html += this.getFormRow({
+			id: 'd_eja_email',
+			label: 'Notify:',
+			content: this.getFormText({
+				id: 'fe_ete_email',
+				spellcheck: 'false',
+				maxlength: 8192,
+				placeholder: 'email@sample.com',
+				value: '',
+				onChange: '$P().updateAddRemoveMe(this)'
+			}),
+			suffix: '<div class="form_suffix_icon mdi" title="" onMouseUp="$P().addRemoveMe(this)"></div>',
+			caption: 'Optionally send the test results to one or more email addresses.'
+		});
+		
+		html += '</div>';
+		Dialog.confirm( "Test Event", html, "Run Event", function(result) {
+			if (!result) return;
+			
+			var job = deep_copy_object(event);
+			job.enabled = true; // override event disabled, so test actually runs
+			
+			if ($('#fe_ete_actions').is(':checked')) {
+				job.actions = [];
+			}
+			if ($('#fe_ete_limits').is(':checked')) {
+				job.limits = [];
+			}
+			
+			var emails = $('#fe_ete_email').val().trim();
+			if (emails.length) {
+				if (!job.actions) job.actions = [];
+				job.actions.push({
+					enabled: true,
+					trigger: 'complete',
+					type: 'email',
+					email: emails
+				});
+			}
+			
+			app.api.post( 'app/run_event', job, function(resp) {
+				Dialog.hideProgress();
+				app.showMessage('success', "The job was started successfully.");
+				
+				if (!self.active) return; // sanity
+				
+				// jump immediately to live details page
+				Nav.go('Job?id=' + resp.id);
+			} );
+			
+			Dialog.hide();
+		}); // Dialog.confirm
+		
+		this.updateAddRemoveMe('#fe_ete_email');
 	}
 	
 	do_run_event() {
