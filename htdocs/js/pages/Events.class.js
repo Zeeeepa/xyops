@@ -431,7 +431,7 @@ Page.Events = class Events extends Page.Base {
 				
 				// html += '<div class="button right danger" onMouseUp="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete...</div>';
 				html += '<div class="button secondary right" onMouseUp="$P().do_edit_from_view()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Event...</div>';
-				if (event.enabled) html += '<div class="button right" onMouseUp="$P().do_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
+				if (event.enabled) html += '<div class="button right" onMouseUp="$P().do_confirm_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
 				html += '<div class="clear"></div>';
 			html += '</div>'; // title
 			
@@ -526,6 +526,16 @@ Page.Events = class Events extends Page.Base {
 			html += '</div>'; // box content
 		html += '</div>'; // box
 		
+		// plugin parameters
+		html += '<div class="box" id="d_ve_params" style="display:none">';
+			html += '<div class="box_title">';
+				html += '';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		// active jobs
 		html += '<div class="box" id="d_ve_active">';
 			html += '<div class="box_title">';
@@ -560,7 +570,7 @@ Page.Events = class Events extends Page.Base {
 					'data-shrinkwrap': 1
 				}) + '</div>';
 				
-				html += 'Job History';
+				html += 'Completed Jobs';
 			html += '</div>';
 			html += '<div class="box_content table">';
 				html += '<div class="loading_container"><div class="loading"></div></div>';
@@ -599,11 +609,22 @@ Page.Events = class Events extends Page.Base {
 		this.getUpcomingJobs();
 		this.renderActiveJobs();
 		this.getQueuedJobs();
+		this.renderPluginParams('#d_ve_params');
 	}
 	
 	do_edit_from_view() {
 		// jump to edit from view page
 		Nav.go('#Events?sub=edit&id=' + this.event.id);
+	}
+	
+	do_confirm_run_from_view() {
+		// confirm user wants to run job
+		var self = this;
+		
+		Dialog.confirm( 'Run Event', "Are you sure you want to manually run the current event?", 'Run Now', function(result) {
+			if (!result) return;
+			self.do_run_from_view();
+		} ); // confirm
 	}
 	
 	do_run_from_view() {
