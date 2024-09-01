@@ -552,6 +552,7 @@ function export_data(file) {
 					'global/groups',
 					'global/events',
 					'global/channels',
+					'global/web_hooks',
 					'global/commands',
 					'global/monitors',
 					'global/alerts',
