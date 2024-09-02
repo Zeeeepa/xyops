@@ -243,6 +243,25 @@ Page.Base = class Base extends Page {
 		return html;
 	}
 	
+	getNiceWebHook(item, link) {
+		// get formatted web hook with icon, plus optional link
+		if (typeof(item) == 'string') item = find_object(app.web_hooks, { id: item });
+		if (!item) return '(None)';
+		
+		var html = '<span class="nowrap">';
+		var icon = '<i class="mdi mdi-' + (item.icon || 'webhook') + '"></i>';
+		if (link) {
+			html += '<a href="#WebHooks?sub=edit&id=' + item.id + '">';
+			html += icon + '<span>' + item.title + '</span></a>';
+		}
+		else {
+			html += icon + item.title;
+		}
+		
+		html += '</span>';
+		return html;
+	}
+	
 	getNicePlugin(item, link) {
 		// get formatted plugin with icon, plus optional link
 		if (typeof(item) == 'string') item = find_object(app.plugins, { id: item });
@@ -360,7 +379,7 @@ Page.Base = class Base extends Page {
 		if (!tags) return '(None)';
 		if (!glue) glue = ', ';
 		if (typeof(tags) == 'string') tags = tags.split(/\,\s*/);
-		tags = tags.filter( function(tag) { return !tag.match(/^_/); } );
+		tags = tags.filter( function(tag) { return !tag.match(/^_/); } ); // filter out system tags
 		if (!tags.length) return '(None)';
 		return tags.map( function(tag) { return self.getNiceTag(tag, link); } ).join(glue);
 	}
@@ -969,6 +988,9 @@ Page.Base = class Base extends Page {
 			case 'complete': icon = 'check-circle-outline'; break;
 		}
 		
+		// special case: If job is complete but not final, it's actually still finishing
+		if ((job.state == 'complete') && !job.final) { icon = 'progress-check'; nice_state = 'Finishing'; }
+		
 		return '<i class="mdi mdi-' + icon + '">&nbsp;</i>' + nice_state;
 	}
 	
@@ -1490,14 +1512,9 @@ Page.Base = class Base extends Page {
 		this.div.find('#d_' + dom_prefix + '_jobact_table').html( html );
 	}
 	
-	getJobActionTable() {
-		// get html for job action table
-		var self = this;
-		var html = '';
-		var rows = this.actions;
-		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Trigger', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onMouseUp="$P().editJobAction(-1)">New Action...</div>';
-		
+	getJobActionDisplayArgs(action, link) {
+		// get display args for job action
+		// returns: { trigger, type, text, desc, icon }
 		var trigger_titles = {
 			'start': "On Job Start",
 			'complete': "On Job Completion",
@@ -1507,6 +1524,72 @@ Page.Base = class Base extends Page {
 			'critical': "On Critical",
 			'abort': "On Abort"
 		};
+		
+		var disp = {
+			trigger: trigger_titles[ action.trigger ]
+		};
+		
+		if (!disp.trigger && action.trigger.match(/^tag:(\w+)$/)) {
+			var tag_id = RegExp.$1;
+			disp.trigger = "On Tag: " + this.getNiceTag(tag_id, link);
+		}
+		
+		switch (action.type) {
+			case 'email':
+				disp.type = "Send Email";
+				disp.text = action.email;
+				disp.desc = '<div style="word-break:break-word;">' + disp.text + '</div>';
+				disp.icon = 'email-send-outline';
+			break;
+			
+			case 'web_hook':
+				disp.type = "Web Hook";
+				var web_hook = find_object( app.web_hooks, { id: action.web_hook } );
+				disp.text = web_hook ? web_hook.title : "(Web Hook not found)";
+				disp.desc = this.getNiceWebHook(web_hook, link);
+				disp.icon = 'web';
+			break;
+			
+			case 'run_event':
+				disp.type = "Run Event";
+				var event = find_object( app.events, { id: action.event_id } );
+				disp.text = event ? event.title : "(Event not found)";
+				disp.desc = this.getNiceEvent(event, link);
+				disp.icon = 'calendar-clock';
+			break;
+			
+			case 'channel':
+				disp.type = "Notify Channel";
+				var channel = find_object( app.channels, { id: action.channel_id } );
+				disp.text = channel ? channel.title : "(Channel not found)";
+				disp.desc = this.getNiceChannel(channel, link);
+				disp.icon = 'bullhorn-outline';
+			break;
+			
+			case 'snapshot':
+				disp.type = "Take Snapshot";
+				disp.text = disp.desc = "(Current Server)";
+				disp.icon = 'monitor-screenshot';
+			break;
+			
+			case 'disable':
+				disp.type = "Disable Event";
+				disp.text = disp.desc = "(Current Event)";
+				disp.icon = 'cancel';
+			break;
+			
+		} // switch item.type
+		
+		return disp;
+	}
+	
+	getJobActionTable() {
+		// get html for job action table
+		var self = this;
+		var html = '';
+		var rows = this.actions;
+		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Trigger', 'Type', 'Description', 'Actions'];
+		var add_link = '<div class="button small secondary" onMouseUp="$P().editJobAction(-1)">New Action...</div>';
 		
 		var targs = {
 			rows: rows,
@@ -1521,65 +1604,16 @@ Page.Base = class Base extends Page {
 			links.push( '<span class="link" onMouseUp="$P().editJobAction('+idx+')"><b>Edit</b></span>' );
 			links.push( '<span class="link danger" onMouseUp="$P().deleteJobAction('+idx+')"><b>Delete</b></span>' );
 			
-			var nice_trigger = trigger_titles[ item.trigger ];
-			var nice_type = '';
-			var nice_desc = '';
-			var nice_icon = '';
-			
-			if (!nice_trigger && item.trigger.match(/^tag:(\w+)$/)) {
-				var tag_id = RegExp.$1;
-				nice_trigger = "On Tag: " + self.getNiceTag(tag_id, false);
-			}
-			
-			switch (item.type) {
-				case 'email':
-					nice_type = "Send Email";
-					nice_desc = item.email;
-					nice_icon = 'email-send-outline';
-				break;
-				
-				case 'web_hook':
-					nice_type = "Web Hook";
-					nice_desc = item.url;
-					nice_icon = 'web';
-				break;
-				
-				case 'run_event':
-					nice_type = "Run Event";
-					var event = find_object( app.events, { id: item.event_id } );
-					nice_desc = event ? event.title : "(Event not found)";
-					nice_icon = 'calendar-clock';
-				break;
-				
-				case 'channel':
-					nice_type = "Notify Channel";
-					var channel = find_object( app.channels, { id: item.channel_id } );
-					nice_desc = channel ? channel.title : "(Channel not found)";
-					nice_icon = 'bullhorn-outline';
-				break;
-				
-				case 'snapshot':
-					nice_type = "Take Snapshot";
-					nice_desc = "(Current Server)";
-					nice_icon = 'monitor-screenshot';
-				break;
-				
-				case 'disable':
-					nice_type = "Disable Event";
-					nice_desc = "(Current Event)";
-					nice_icon = 'cancel';
-				break;
-				
-			} // switch item.type
+			var disp = self.getJobActionDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
 					checked: item.enabled,
 					onChange: '$P().toggleJobActionEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big wrap_mobile"><i class="mdi mdi-eye-outline">&nbsp;</i><span class="link" onClick="$P().editJobAction('+idx+')">' + nice_trigger + '</span></div>',
-				'<div class="td_big wrap_mobile"><i class="mdi mdi-' + nice_icon + '">&nbsp;</i>' + nice_type + '</div>',
-				'<div style="word-break:break-word;">' + nice_desc + '</div>',
+				'<div class="td_big wrap_mobile"><i class="mdi mdi-eye-outline">&nbsp;</i><span class="link" onClick="$P().editJobAction('+idx+')">' + disp.trigger + '</span></div>',
+				'<div class="td_big wrap_mobile"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
+				'<div style="">' + disp.desc + '</div>',
 				'<div class="wrap_mobile">' + links.join(' | ') + '</div>'
 			];
 			
@@ -1678,16 +1712,15 @@ Page.Base = class Base extends Page {
 		
 		html += this.getFormRow({
 			id: 'd_eja_web_hook',
-			label: 'Web Hook URL:',
-			content: this.getFormText({
+			label: 'Web Hook:',
+			content: this.getFormMenuSingle({
 				id: 'fe_eja_web_hook',
-				type: 'url',
-				spellcheck: 'false',
-				autocomplete: 'off',
-				placeholder: 'https://',
-				value: action.url
+				title: 'Select Web Hook',
+				options: app.web_hooks,
+				value: action.web_hook,
+				default_icon: 'webhook'
 			}),
-			caption: 'Enter a custom Web Hook URL for the action.'
+			caption: 'Select a Web Hook to fire for the action.'
 		});
 		
 		html += this.getFormRow({
@@ -1732,7 +1765,7 @@ Page.Base = class Base extends Page {
 				break;
 				
 				case 'web_hook':
-					action.url = $('#fe_eja_web_hook').val();
+					action.web_hook = $('#fe_eja_web_hook').val();
 				break;
 				
 				case 'run_event':
@@ -1749,6 +1782,9 @@ Page.Base = class Base extends Page {
 				self.actions.push(action);
 			}
 			else self.actions[idx] = action;
+			
+			// keep list sorted
+			sort_by(self.actions, 'trigger');
 			
 			// self.dirty = true;
 			self.renderJobActionEditor();
@@ -1807,7 +1843,7 @@ Page.Base = class Base extends Page {
 			change_action_type( $(this).val() );
 		}); // type change
 		
-		SingleSelect.init( $('#fe_eja_trigger, #fe_eja_type, #fe_eja_event, #fe_eja_channel') );
+		SingleSelect.init( $('#fe_eja_trigger, #fe_eja_type, #fe_eja_event, #fe_eja_channel, #fe_eja_web_hook') );
 		this.updateAddRemoveMe('#fe_eja_email');
 		
 		Dialog.autoResize();
@@ -1908,6 +1944,9 @@ Page.Base = class Base extends Page {
 			{ id: 'z_abort', title: 'Aborts', icon: 'cancel' }
 		].concat(
 			this.buildOptGroup( app.tags, "Tags:", 'tag-outline', 't_' )
+		).concat(
+			{ id: 'z_retried', title: "Retried", icon: 'refresh', group: "System Tags:" },
+			{ id: 'z_last', title: "Last in Set", icon: 'page-last' } 
 		);
 	}
 	
@@ -2321,14 +2360,14 @@ Page.Base = class Base extends Page {
 		this.viewCodeAuto( param.title, elem_value );
 	}
 	
-	viewCodeAuto(title, data) {
+	viewCodeAuto(title, data, formats) {
 		// popup dialog to show pretty-printed code (auto-detect)
 		var self = this;
 		var value = this._temp_code = ((typeof(data) == 'string') ? data : JSON.stringify(data, null, "\t"));
 		var html = '';
 		
 		html += '<div class="code_viewer">';
-		html += '<pre><code class="hljs">' + app.highlightAuto(value) + '</code></pre>';
+		html += '<pre><code class="hljs">' + app.highlightAuto(value, formats) + '</code></pre>';
 		html += '</div>';
 		
 		var buttons_html = "";
@@ -2347,12 +2386,67 @@ Page.Base = class Base extends Page {
 		};
 	}
 	
+	viewMarkdownAuto(title, text) {
+		// popup dialog to show pretty-printed markdown
+		var self = this;
+		this._temp_code = text;
+		var html = '';
+		
+		html += '<div class="code_viewer">';
+		html += '<div class="markdown-body">';
+		
+		html += marked(text, {
+			gfm: true,
+			tables: true,
+			breaks: false,
+			pedantic: false,
+			sanitize: false,
+			smartLists: true,
+			smartypants: false,
+			silent: true,
+			headerIds: false,
+			mangle: false
+		});
+		
+		html += '</div>'; // markdown-body
+		html += '</div>'; // code_viewer
+		
+		var buttons_html = "";
+		buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()">Copy to Clipboard</div>';
+		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)">Close</div>';
+		
+		Dialog.showSimpleDialog(title, html, buttons_html);
+		
+		// special mode for key capture
+		Dialog.active = 'confirmation';
+		Dialog.confirm_callback = function(result) { 
+			if (result) Dialog.hide(); 
+		};
+		Dialog.onHide = function() {
+			delete self._temp_code;
+		};
+		
+		this.highlightCodeBlocks('#dialog .markdown-body');
+	}
+	
 	copyCodeToClipboard() {
 		// copy code currently being displayed in dialog to clipboard
 		if (this._temp_code) {
 			copyToClipboard(this._temp_code);
 			app.showMessage('info', "The data was copied to your clipboard.");
 		}
+	}
+	
+	highlightCodeBlocks(elem) {
+		// highlight code blocks inside markdown doc
+		var self = this;
+		if (!elem) elem = this.div;
+		else if (typeof(elem) == 'string') elem = $(elem);
+		
+		elem.find('pre code').each( function() {
+			if (this.innerText.match(/^\s*\{[\S\s]+\}\s*$/)) this.classList.add('language-json');
+			hljs.highlightElement(this);
+		});
 	}
 	
 	// 
