@@ -109,6 +109,8 @@
 			{ "id": "run_jobs", "title": "Run Jobs", "icon": "timer-outline" },
 			{ "id": "abort_jobs", "title": "Abort Jobs", "icon": "timer-outline" },
 			{ "id": "delete_jobs", "title": "Delete Jobs", "icon": "timer-outline" },
+			{ "id": "tag_jobs", "title": "Add Job Tags", "icon": "timer-outline" },
+			{ "id": "comment_jobs", "title": "Add Job Comments", "icon": "timer-outline" },
 			
 			{ "id": "create_groups", "title": "Create Groups", "icon": "server-network" },
 			{ "id": "edit_groups", "title": "Edit Groups", "icon": "server-network" },
@@ -281,7 +283,9 @@
 		"default_privileges": {
 			"create_events": 1,
 			"edit_events": 1,
-			"run_jobs": 1
+			"run_jobs": 1,
+			"tag_jobs": 1,
+			"comment_jobs": 1
 		}
 	},
 	
