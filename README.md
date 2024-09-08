@@ -19,7 +19,7 @@
 		+ [email_from](#email_from)
 		+ [smtp_hostname](#smtp_hostname)
 		+ [smtp_port](#smtp_port)
-		+ [mail_options](#mail_options)
+		+ [mail_settings](#mail_settings)
 		+ [log_dir](#log_dir)
 		+ [log_filename](#log_filename)
 		+ [log_columns](#log_columns)
@@ -141,24 +141,48 @@ If you are running Orchestra behind a load balancer, this should be set to the l
 
 ### email_from
 
-The e-mail address to use as the "From" address when sending out notifications.  Most SMTP servers require this to be a valid address to accept mail.
+The e-mail address to use as the "From" address when sending out notifications.  Most SMTP servers require this to be a valid address to deliver mail.
 
-### smtp_hostname
+### mail_settings
 
-The hostname of your SMTP server, for sending mail.  This can be set to `127.0.0.1` or `localhost` if you have [sendmail](https://en.wikipedia.org/wiki/Sendmail) running locally.
+For Orchestra to be able to send emails, you'll need to configure the `mail_settings` object.  This generally points at a SMTP server, but you can have it launch a local [sendmail](https://en.wikipedia.org/wiki/Sendmail) binary as well.  These options are passed directly to [nodemailer](https://nodemailer.com/smtp/), so please see their docs for full details.  Here is an example of using SMTP running on localhost:
 
-### smtp_port
+```json
+"mail_settings": {
+	"host": "localhost",
+	"port": 25
+},
+```
 
-The port number to use when communicating with the SMTP server.  The default is `25`.
+Here is how to use local sendmail via the command-line:
 
-### mail_options
+```json
+"mail_settings": {
+	"sendmail": true,
+	"newline": "unix",
+	"path": "/usr/sbin/sendmail"
+},
+```
 
-Set specific mailer options, such as SMTP SSL and authentication, passed directly to [pixl-mail](https://www.github.com/jhuckaby/pixl-mail#options) (and then to [nodemailer](https://nodemailer.com/)).  Example:
+Note that many SMTP servers require authentication.  This is done by specifying an `auth` object.  Here is an example using my local ISP's mail server.  They listen on a different port (587), and require user authentication for mail relay:
+
+```json
+"mail_settings": {
+	"host": "mail.mcn.org",
+	"port": 587,
+	"secure": false,
+	"auth": {
+		"user": "jsmith",
+		"pass": "********"
+	},
+	"from": "jsmith@mcn.org"
+},
+```
+
+You can also set various timeout values using the `mail_settings` object, which are passed directly to [pixl-mail](https://www.github.com/jhuckaby/pixl-mail#options) (and then to [nodemailer](https://nodemailer.com/)).  Example:
 
 ```js
-"mail_options": {
-	"secure", true,
-	"auth", { user: "fsmith", pass: "12345" },
+"mail_settings": {
 	"connectionTimeout": 10000,
 	"greetingTimeout": 10000,
 	"socketTimeout": 10000
@@ -166,18 +190,6 @@ Set specific mailer options, such as SMTP SSL and authentication, passed directl
 ```
 
 The `connectionTimeout`, `greetingTimeout` and `socketTimeout` properties are all expressed in milliseconds.
-
-You can also use `mail_options` to use local [sendmail](https://nodemailer.com/transports/sendmail/), if you have that configured on your server.  To do this, set the following properties, and tune as needed:
-
-```js
-"mail_options": {
-	"sendmail": true,
-	"newline": "unix",
-	"path": "/usr/sbin/sendmail"
-}
-```
-
-You can omit `smtp_hostname` and `smtp_port` if you are using sendmail.
 
 ### log_dir
 
