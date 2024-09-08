@@ -1,0 +1,224 @@
+{
+	"indexes": {
+		
+		"jobs": {
+			"default_search_field": "code",
+			"fields": [
+				{
+					"id": "code",
+					"source": "/code",
+					"master_list": true
+				},
+				{
+					"id": "date",
+					"source": "/completed",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "source",
+					"source": "/source"
+				},
+				{
+					"id": "tags",
+					"source": "/tags"
+				},
+				{
+					"id": "event",
+					"source": "/event"
+				},
+				{
+					"id": "category",
+					"source": "/category"
+				},
+				{
+					"id": "plugin",
+					"source": "/plugin"
+				},
+				{
+					"id": "server",
+					"source": "/server"
+				},
+				{
+					"id": "workflow",
+					"source": "/workflow"
+				}
+			],
+			"sorters": [
+				{
+					"id": "completed",
+					"source": "/completed",
+					"type": "number"
+				}
+			]
+		},
+		
+		"alerts": {
+			"default_search_field": "",
+			"fields": [
+				{
+					"id": "active",
+					"source": "/active"
+				},
+				{
+					"id": "alert",
+					"source": "/alert"
+				},
+				{
+					"id": "groups",
+					"source": "/groups"
+				},
+				{
+					"id": "server",
+					"source": "/server"
+				},
+				{
+					"id": "start",
+					"source": "/date",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "end",
+					"source": "/modified",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "jobs",
+					"source": "/jobs"
+				}
+			]
+		},
+		
+		"snapshots": {
+			"default_search_field": "",
+			"fields": [
+				{
+					"id": "source",
+					"source": "/source"
+				},
+				{
+					"id": "server",
+					"source": "/server"
+				},
+				{
+					"id": "groups",
+					"source": "/groups"
+				},
+				{
+					"id": "date",
+					"source": "/date",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "alerts",
+					"source": "/alerts"
+				},
+				{
+					"id": "jobs",
+					"source": "/jobs"
+				}
+			]
+		},
+		
+		"servers": {
+			"default_search_field": "keywords",
+			"fields": [
+				{
+					"id": "groups",
+					"source": "/groups",
+					"master_list": true
+				},
+				{
+					"id": "created",
+					"source": "/created",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "modified",
+					"source": "/modified",
+					"type": "number",
+					"divide": 3600
+				},
+				{
+					"id": "keywords",
+					"source": "/keywords",
+					"min_word_length": 1,
+					"max_word_length": 64,
+					"use_remove_words": false,
+					"use_stemmer": false
+				},
+				{
+					"id": "os_platform",
+					"source": "/info/os/platform",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "os_distro",
+					"source": "/info/os/distro",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "os_release",
+					"source": "/info/os/release",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "os_arch",
+					"source": "/info/os/arch",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "cpu_virt",
+					"source": "/info/virt/vendor",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "cpu_brand",
+					"source": "/info/cpu/combo",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				},
+				{
+					"id": "cpu_cores",
+					"source": "/info/cpu/cores",
+					"filter": "alphanum",
+					"master_list": true,
+					"master_labels": true
+				}
+			],
+			"sorters": [
+				{
+					"id": "hostname",
+					"source": "/hostname",
+					"type": "string"
+				},
+				{
+					"id": "ip",
+					"source": "/ip",
+					"type": "string"
+				},
+				{
+					"id": "date",
+					"source": "/date",
+					"type": "number"
+				}
+			]
+		}
+		
+	}
+}

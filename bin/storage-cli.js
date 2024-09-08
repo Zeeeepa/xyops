@@ -120,7 +120,7 @@ var storage = new StandaloneStorage(config.Storage, function(err) {
 		case 'setup':
 		case 'install':
 			// setup new master server
-			var setup = require('../conf/setup.json');
+			var setup = require('../internal/setup.json');
 			
 			// make sure this is only run once
 			storage.get( 'global/users', function(err) {

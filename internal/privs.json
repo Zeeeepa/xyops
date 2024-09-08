@@ -1,0 +1,53 @@
+{
+	"privilege_list": [
+		{ "id": "admin", "title": "Administrator", "icon": "lock-outline" },
+		
+		{ "id": "create_events", "title": "Create Events", "icon": "calendar-clock" },
+		{ "id": "edit_events", "title": "Edit Events", "icon": "calendar-clock" },
+		{ "id": "delete_events", "title": "Delete Events", "icon": "calendar-clock" },
+		
+		{ "id": "run_jobs", "title": "Run Jobs", "icon": "timer-outline" },
+		{ "id": "abort_jobs", "title": "Abort Jobs", "icon": "timer-outline" },
+		{ "id": "delete_jobs", "title": "Delete Jobs", "icon": "timer-outline" },
+		{ "id": "tag_jobs", "title": "Add Job Tags", "icon": "timer-outline" },
+		{ "id": "comment_jobs", "title": "Add Job Comments", "icon": "timer-outline" },
+		
+		{ "id": "create_groups", "title": "Create Groups", "icon": "server-network" },
+		{ "id": "edit_groups", "title": "Edit Groups", "icon": "server-network" },
+		{ "id": "delete_groups", "title": "Delete Groups", "icon": "server-network" },
+		
+		{ "id": "create_categories", "title": "Create Categories", "icon": "folder-open-outline" },
+		{ "id": "edit_categories", "title": "Edit Categories", "icon": "folder-open-outline" },
+		{ "id": "delete_categories", "title": "Delete Categories", "icon": "folder-open-outline" },
+		
+		{ "id": "create_alerts", "title": "Create Alerts", "icon": "bell-outline" },
+		{ "id": "edit_alerts", "title": "Edit Alerts", "icon": "bell-outline" },
+		{ "id": "delete_alerts", "title": "Delete Alerts", "icon": "bell-outline" },
+		
+		{ "id": "create_channels", "title": "Create Channels", "icon": "bullhorn-outline" },
+		{ "id": "edit_channels", "title": "Edit Channels", "icon": "bullhorn-outline" },
+		{ "id": "delete_channels", "title": "Delete Channels", "icon": "bullhorn-outline" },
+		
+		{ "id": "create_commands", "title": "Create Commands", "icon": "console" },
+		{ "id": "edit_commands", "title": "Edit Commands", "icon": "console" },
+		{ "id": "delete_commands", "title": "Delete Commands", "icon": "console" },
+		
+		{ "id": "create_monitors", "title": "Create Monitors", "icon": "chart-areaspline" },
+		{ "id": "edit_monitors", "title": "Edit Monitors", "icon": "chart-areaspline" },
+		{ "id": "delete_monitors", "title": "Delete Monitors", "icon": "chart-areaspline" },
+		
+		{ "id": "create_plugins", "title": "Create Plugins", "icon": "power-plug-outline" },
+		{ "id": "edit_plugins", "title": "Edit Plugins", "icon": "power-plug-outline" },
+		{ "id": "delete_plugins", "title": "Delete Plugins", "icon": "power-plug-outline" },
+		
+		{ "id": "create_tags", "title": "Create Tags", "icon": "tag-outline" },
+		{ "id": "edit_tags", "title": "Edit Tags", "icon": "tag-outline" },
+		{ "id": "delete_tags", "title": "Delete Tags", "icon": "tag-outline" },
+		
+		{ "id": "create_web_hooks", "title": "Create Web Hooks", "icon": "webhook" },
+		{ "id": "edit_web_hooks", "title": "Edit Web Hooks", "icon": "webhook" },
+		{ "id": "delete_web_hooks", "title": "Delete Web Hooks", "icon": "webhook" },
+		
+		{ "id": "create_snapshots", "title": "Create Snapshots", "icon": "camera-outline" }
+	]
+}
