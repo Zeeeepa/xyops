@@ -342,7 +342,7 @@ Page.System = class System extends Page.Base {
 	prompt_import_data() {
 		// prompt user with instructions and warnings
 		var self = this;
-		var html = "Use this feature to import bulk data into Orchestra by providing a file from your local machine.  The file should have been generated from a previous export.  <br><br> <b>Note:</b> It is highly recommended that you stop all running jobs when importing data.  Also note that the scheduler will automatically be paused if it is active.";
+		var html = "Use this feature to import bulk data into Orchestra by providing a file from your local machine.  The file should have been generated from a previous export.  <br><br> <b>Note:</b> It is highly recommended that you stop all running jobs before importing data.  Also note that the scheduler will automatically be paused if it is active.";
 		
 		Dialog.confirm( 'Import Data', html, 'Choose File...', function(result) {
 			if (!result) return;
@@ -384,6 +384,11 @@ Page.System = class System extends Page.Base {
 		// select which data to export
 		var self = this;
 		var html = '<div class="dialog_box_content maximize" style="max-height:75vh; overflow-x:hidden; overflow-y:auto;">';
+		
+		html += this.getFormRow({
+			label: 'Description:',
+			content: `This allows you to bulk export Orchestra data to your local machine.  A gzip-compressed text file will be downloaded when the process is complete.  Please select which categories of data you wish you export.`
+		});
 		
 		html += this.getFormRow({
 			id: 'd_sys_ex_lists',
@@ -489,6 +494,11 @@ Page.System = class System extends Page.Base {
 		var html = '<div class="dialog_box_content maximize" style="max-height:75vh; overflow-x:hidden; overflow-y:auto;">';
 		
 		html += this.getFormRow({
+			label: 'Description:',
+			content: `This allows you to <b>permanently delete</b> Orchestra data in bulk.  Please select which categories of data you wish you delete.  It is highly recommended that you stop all running jobs before deleting data.  Also note that the scheduler will automatically be paused if it is active.`
+		});
+		
+		html += this.getFormRow({
 			id: 'd_sys_ex_lists',
 			label: 'Storage Lists:',
 			content: this.getFormMenuMulti({
@@ -578,7 +588,7 @@ Page.System = class System extends Page.Base {
 	do_run_maint() {
 		// run daily maintenance manually
 		var self = this;
-		var html = "This runs the nightly database maintenance process manually.  The maintenance job deletes old data that has expired, and optionally backs up the database if configured.  This will run multiple internal jobs in sequence.";
+		var html = "This runs the nightly database maintenance process manually.  The maintenance job deletes old data that has expired, and optionally backs up the database if configured.  Note that this will run multiple internal jobs in sequence.";
 		
 		Dialog.confirm( 'Run Maintenance', html, 'Run Now', function(result) {
 			if (!result) return;
@@ -593,7 +603,7 @@ Page.System = class System extends Page.Base {
 	do_optimize_db() {
 		// optimize database manually (sqlite)
 		var self = this;
-		var html = "This optimizes the local database (SQLite engine only), by running a 'VACUUM' command.  You should only need this if you delete a large amount of data and need to reclaim unused space.<br><br>Please note that the database will be locked while the vacuum is running, so it is highly recommended that you stop all jobs and pause the scheduler before optimizing.";
+		var html = "This optimizes the local database by compacting it.  You should only need this if you delete a large amount of data and need to reclaim unused space.  It also runs an integrity check, and you will be sent an email report with all results.  <br><br>Please note that the database will be locked while the compaction and integrity check processes running, so it is highly recommended that you stop all jobs and pause the scheduler before running this job.";
 		
 		Dialog.confirm( 'Optimize Database', html, 'Optimize Now', function(result) {
 			if (!result) return;
