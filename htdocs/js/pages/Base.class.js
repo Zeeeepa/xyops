@@ -11,7 +11,7 @@ Page.Base = class Base extends Page {
 		// overriding method in orchestra-theme page.js
 		if (!item) return 'n/a';
 		var key = item.api_key || item.key;
-		var title = item.api_title || item.title;
+		var title = item.title;
 		
 		// this is the override here:
 		if ((link === true) && !item.id) link = false;
@@ -873,7 +873,7 @@ Page.Base = class Base extends Page {
 		if (typeof(user) == 'string') {
 			user = find_object( app.users, { username: user } ) || find_object( app.keys, { id: user } ) || user;
 		}
-		if ((typeof(user) == 'object') && (user.key || user.api_title)) {
+		if ((typeof(user) == 'object') && user.key) {
 			return this.getNiceAPIKey(user, link);
 		}
 		var username = user.username ? user.username : user;
@@ -1092,7 +1092,7 @@ Page.Base = class Base extends Page {
 			return '' + this.getNiceUser(job.username, true) + '';
 		}
 		else if (job.source.match(/key/i)) {
-			return '' + this.getNiceAPIKey(job.api_key, true) + '';
+			return '' + this.getNiceAPIKey(job.username, true) + '';
 		}
 		else if (job.source.match(/action/i)) {
 			return '<i class="mdi mdi-eye-outline">&nbsp;</i>Action';
