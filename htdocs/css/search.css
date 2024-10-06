@@ -88,6 +88,10 @@ div.search_help a:hover i {
 	margin-bottom: 0px;
 }
 
+.form_grid.four {
+	grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
 .form_grid .form_row {
 	grid-template-columns: 1fr;
 	
@@ -117,6 +121,9 @@ div.search_help a:hover i {
 		grid-template-columns: 1fr 1fr;
 		grid-row-gap: 20px;
 	}
+	.form_grid.four {
+		grid-template-columns: 1fr 1fr;
+	}
 	
 	#btn_s_download {
 		display: none;
@@ -129,6 +136,9 @@ div.search_help a:hover i {
 	.form_grid {
 		grid-template-columns: 1fr;
 		grid-row-gap: 20px;
+	}
+	.form_grid.four {
+		grid-template-columns: 1fr;
 	}
 	
 	#btn_s_download {
