@@ -162,7 +162,7 @@ app.comm = {
 			break;
 			
 			case 'activity':
-				// item added to activity log
+				// item added to activity log (admin only)
 				this.handleActivity(data);
 			break;
 			
@@ -171,7 +171,12 @@ app.comm = {
 				app.showMessage( data.type, data.message, data.lifetime || 0, data.loc || '' );
 			break;
 			
-			// TODO: more commands here
+			case 'cachebust':
+				// bust cache (something on the server has changed)
+				app.cacheBust = hires_time_now();
+			break;
+			
+			// more commands here
 			
 		} // switch cmd
 	},
@@ -247,6 +252,7 @@ app.comm = {
 	
 	handleActivity: function(item) {
 		// something was logged to the activity log, show notification
+		if (!app.isAdmin()) return; // sanity check
 		Debug.trace('debug', "Activity log update: " + item.action + ": " + JSON.stringify(item));
 		
 		// bust cache for this
@@ -275,13 +281,16 @@ app.comm = {
 		// override toast icon if we have a better one
 		if (item.icon) type += '/' + item.icon;
 		
-		// non-admins only see certain types
-		if (app.isAdmin() || item.action.match(/^(error|warning|notice|server|alert_new|alert_cleared)/)) {
-			
-			// also don't show actions from ourselves
-			if (!item.username || (item.username != app.username)) {
-				app.showMessage(type, item.description, 8);
-			}
+		// compose proper description
+		var desc = item.description;
+		var template = config.activity_descriptions[item.action];
+		if (template) desc = substitute(template, item, false);
+		else if (!desc) desc = '(No description provided)';
+		
+		// don't show actions from ourselves
+		// TODO: unless we're on the APITool page?  then show all?  (UGH: But a non-admin can use the APITool page, yes?)
+		if (!item.username || (item.username != app.username)) {
+			app.showMessage(type, desc, 8);
 		}
 	},
 	
