@@ -701,6 +701,11 @@ div.td_big {
 	width: 500px;
 	/* padding-bottom: 15px; */
 }
+.dialog_box_content.scroll {
+	max-height: 50vh;
+	overflow-x: hidden; 
+	overflow-y: auto;
+}
 
 .dialog_box_content.maximize .form_row {
 	margin-bottom: 18px;
@@ -818,7 +823,21 @@ div.td_big {
 }
 
 body.dark .plugin_param_editor_cont textarea, body.dark .plugin_param_editor_cont input, body.dark .plugin_param_editor_cont select {
-	background: var(--border-color);
+	background: var(--border-color) !important;
+}
+
+#dialog .plugin_param_editor_cont {
+	background: rgba(233, 236, 240, 0.3);
+}
+body.dark #dialog .plugin_param_editor_cont {
+	background: rgba(255, 255, 255, 0.02);
+}
+#dialog .plugin_param_editor_cont textarea, #dialog .plugin_param_editor_cont input, #dialog .plugin_param_editor_cont select {
+	background: var(--shadow-color);
+}
+
+#dialog .plugin_param_editor_cont textarea {
+	resize: none;
 }
 
 /* Job Details Page */
@@ -997,6 +1016,11 @@ body.dark .pxc_tt_content {
 
 .proc_pagination i.mdi:before {
 	transform: scale(1.6);
+}
+
+#d_job_user_html .box_content pre {
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 .user_caption {
