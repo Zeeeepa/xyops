@@ -53,6 +53,7 @@ function summarize_event_timings(event) {
 	if (find_object(timings, { type: 'range' })) opts.push("Date Range");
 	if (find_object(timings, { type: 'blackout' })) opts.push("Blackout");
 	if (find_object(timings, { type: 'delay' })) opts.push("Delay");
+	if (find_object(timings, { type: 'plugin' })) opts.push("Plugin");
 	if (opts.length) summary += ' (' + opts.join(', ') + ')';
 	
 	return summary;
