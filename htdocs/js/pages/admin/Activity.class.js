@@ -62,7 +62,7 @@ Page.ActivityLog = class ActivityLog extends Page.Base {
 			html += '</div>';
 			
 			// options
-			html += '<div id="d_ss_adv" class="form_grid four" style="margin-bottom:25px">';
+			html += '<div class="form_grid four" style="margin-bottom:25px">';
 				
 				// action
 				html += '<div class="form_cell">';
@@ -117,8 +117,8 @@ Page.ActivityLog = class ActivityLog extends Page.Base {
 				// sort
 				html += '<div class="form_cell">';
 					var sort_items = [
-						{ id: 'date_desc', title: 'Newest to Oldest', icon: 'sort-descending' },
-						{ id: 'date_asc', title: 'Oldest to Newest', icon: 'sort-ascending' }
+						{ id: 'date_desc', title: 'Newest on Top', icon: 'sort-descending' },
+						{ id: 'date_asc', title: 'Oldest on Top', icon: 'sort-ascending' }
 					];
 					html += this.getFormRow({
 						label: '<i class="icon mdi mdi-sort">&nbsp;</i>Sort Results:',
