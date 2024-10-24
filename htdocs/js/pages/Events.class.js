@@ -18,7 +18,6 @@ Page.Events = class Events extends Page.Base {
 		this.args = args;
 		
 		app.showSidebar(true);
-		// app.setHeaderTitle( '<i class="mdi mdi-calendar-clock">&nbsp;</i>Scheduled Events' );
 		
 		this.loading();
 		this['gosub_'+args.sub](args);
@@ -28,11 +27,212 @@ Page.Events = class Events extends Page.Base {
 	
 	gosub_list(args) {
 		// show event list
+		var self = this;
 		app.setWindowTitle( "Events" );
 		app.setHeaderTitle( '<i class="mdi mdi-calendar-multiple">&nbsp;</i>Events' );
 		
-		// this.loading();
-		// app.api.post( 'app/get_events', copy_object(args), this.receive_events.bind(this) );
+		var event_plugins = app.plugins.filter( function(plugin) { return plugin.type == 'event'; } );
+		var scheduler_plugins = app.plugins.filter( function(plugin) { return plugin.type == 'scheduler'; } );
+		var action_plugins = app.plugins.filter( function(plugin) { return plugin.type == 'action'; } );
+		
+		var target_items = [].concat(
+			this.buildOptGroup(app.groups, "Groups:", 'server-network'),
+			this.buildServerOptGroup("Servers:", 'router-network')
+		);
+		
+		var html = '';
+		html += '<div class="box" style="border:none;">';
+		html += '<div class="box_content" style="padding:20px;">';
+			
+			// search box
+			html += '<div class="search_box">';
+				html += '<i class="mdi mdi-magnify" onMouseUp="$(\'#fe_el_search\').focus()">&nbsp;</i>'; // TODO: fix search help url below:
+				html += '<div class="search_help"><a href="https://github.com/jhuckaby/orchestra#search" target="_blank">Search Help<i class="mdi mdi-open-in-new"></i></a></div>';
+				html += '<input type="text" id="fe_el_search" maxlength="128" placeholder="Search Keywords..." value="' + escape_text_field_value(args.search || '') + '">';
+			html += '</div>';
+			
+			// options
+			html += '<div class="form_grid four" style="margin-bottom:25px">';
+				
+				// status
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-check-circle-outline">&nbsp;</i>Status:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_status',
+							title: 'Select Status',
+							options: [
+								['', 'Any Status'], 
+								{ id: 'enabled', title: 'Only Enabled', icon: 'checkbox-marked-outline' },
+								{ id: 'disabled', title: 'Only Disabled', icon: 'checkbox-blank-outline' }
+							],
+							value: args.status || '',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// category
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-folder-open-outline">&nbsp;</i>Category:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_category',
+							title: 'Select Category',
+							options: [['', 'Any Category']].concat( app.categories ),
+							value: args.category || '',
+							default_icon: 'folder-open-outline',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// target
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-lan">&nbsp;</i>Target:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_target',
+							title: 'Select Target',
+							options: [['', 'Any Target']].concat( target_items ),
+							value: args.target || '',
+							default_icon: 'server-network',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// plugin
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-power-plug">&nbsp;</i>Plugin:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_plugin',
+							title: 'Select Plugin',
+							options: [['', 'Any Plugin']].concat( event_plugins ),
+							value: args.group || '',
+							default_icon: 'power-plug-outline',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// tag
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-tag-multiple-outline">&nbsp;</i>Tag:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_tag',
+							title: 'Select Tag',
+							options: [['', 'Any Tag']].concat( app.tags ),
+							value: args.tag || '',
+							default_icon: 'tag-outline',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// timing
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-calendar-clock">&nbsp;</i>Timing:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_timing',
+							title: 'Select Timing',
+							options: [
+								['', 'Any Timing'], 
+								{ id: 'demand', title: 'On Demand', icon: 'button-cursor' },
+								{ id: 'schedule', title: 'Scheduled', icon: 'update' },
+								{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
+								{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
+								{ id: 'catchup', title: "Catch-Up", icon: 'run-fast' },
+								{ id: 'range', title: "Range", icon: 'calendar-range-outline' },
+								{ id: 'blackout', title: "Blackout", icon: 'circle' },
+								{ id: 'delay', title: "Delay", icon: 'chat-sleep-outline' },
+								// TODO: add precision here, once that feature is impl
+								{ id: 'plugin', title: "Plugin", icon: 'power-plug' }
+							].concat(
+								this.buildOptGroup( scheduler_plugins, "Scheduler Plugins:", 'power-plug-outline', 'p_' )
+							),
+							value: args.timing || '',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// action
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-eye-outline">&nbsp;</i>Action:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_action',
+							title: 'Select Action',
+							options: [
+								['', 'Any Action'], 
+								{ id: 'email', title: "Send Email", icon: 'email-send-outline' },
+								{ id: 'web_hook', title: "Web Hook", icon: 'web' },
+								{ id: 'run_event', title: "Run Event", icon: 'calendar-clock' },
+								{ id: 'channel', title: "Notify Channel", icon: 'bullhorn-outline' },
+								{ id: 'snapshot', title: "Take Snapshot", icon: 'monitor-screenshot' },
+								{ id: 'disable', title: "Disable Event", icon: 'cancel' },
+								{ id: 'delete', title: "Delete Event", icon: 'trash-can-outline' },
+								{ id: 'plugin', title: "Action Plugin", icon: 'power-plug' }
+							].concat(
+								this.buildOptGroup( action_plugins, "Action Plugins:", 'power-plug-outline', 'p_' )
+							),
+							value: args.action || '',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// user
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-account">&nbsp;</i>User:',
+						content: this.getFormMenuSingle({
+							id: 'fe_el_username',
+							title: 'Select User',
+							options: [['', 'Any User']].concat( app.users.map( function(user) {
+								return { id: user.username, title: user.full_name, icon: user.icon || '' };
+							} ) ),
+							value: args.username || '',
+							default_icon: 'account',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+			html += '</div>'; // form_grid
+		
+		// buttons at bottom
+		html += '<div class="box_buttons" style="padding:0">';
+			html += '<div id="btn_el_reset" class="button danger" style="display:none" onClick="$P().resetFilters()"><i class="mdi mdi-undo-variant">&nbsp;</i>Reset Filters</div>';
+			html += '<div class="button primary" onClick="$P().applyTableFilters(true)"><i class="mdi mdi-magnify">&nbsp;</i>Search</div>';
+		html += '</div>'; // box_buttons
+		
+		html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		html += '<div id="d_search_results"></div>';
+		
+		this.div.html( html );
+		
+		// MultiSelect.init( this.div.find('#fe_el_tags') );
+		SingleSelect.init( this.div.find('#fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_tag, #fe_el_timing, #fe_el_username, #fe_el_action') );
+		// $('.header_search_widget').hide();
+		
+		this.div.find('#fe_el_tag, #fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_timing, #fe_el_username, #fe_el_action').on('change', function() {
+			self.applyTableFilters(true);
+		});
+		
+		$('#fe_el_search').focus().on('keydown', function(event) {
+			// capture enter key
+			if (event.keyCode == 13) {
+				event.preventDefault();
+				self.applyTableFilters(true);
+			}
+		});
 		
 		// reset max events (dynamic pagination)
 		this.eventsPerPage = config.events_per_page;
@@ -54,17 +254,6 @@ Page.Events = class Events extends Page.Base {
 		var html = '';
 		var hidden_cats = app.prefs.hidden_cats || {};
 		
-		var filter_opts = [
-			{ id: '', title: 'All Events', icon: 'calendar-search' },
-			{ id: 'z_enabled', title: 'Only Enabled', icon: 'checkbox-marked-outline' },
-			{ id: 'z_disabled', title: 'Only Disabled', icon: 'checkbox-blank-outline' }
-		].concat(
-			this.buildOptGroup( app.categories, "Categories:", 'folder-open-outline', 'c_' ),
-			this.buildOptGroup( app.groups, "Server Groups:", 'server-network', 'g_' ),
-			this.buildOptGroup( app.plugins, "Plugins:", 'power-plug-outline', 'p_' ),
-			this.buildOptGroup( app.tags, "Tags:", 'tag-outline', 't_' )
-		);
-		
 		// sort events based on category sort order, then alphabetically
 		var cat_map = obj_array_to_hash( app.categories, 'id' );
 		var last_cat_id = '';
@@ -84,21 +273,8 @@ Page.Events = class Events extends Page.Base {
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
 		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Event Title', 'Category', 'Plugin', 'Target', 'Timing', 'Status', 'Actions'];
 		
-		html += '<div class="box">';
+		html += '<div class="box" id="d_el_results">';
 		html += '<div class="box_title">';
-			// html += '<div class="header_search_widget"><i class="mdi mdi-magnify">&nbsp;</i><input type="text" size="15" placeholder="Search"/></div>';
-			
-			html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(\'#fe_ee_search\').focus()">&nbsp;</i><input type="text" id="fe_ee_search" placeholder="Filter" value="' + encode_attrib_entities(args.search ?? '') + '" onInput="$P().applyTableFilters(true)"/></div>';
-			
-			html += '<div class="box_title_widget" style="overflow:visible; min-width:120px; max-width:200px; font-size:13px;">' + this.getFormMenuSingle({
-				id: 'fe_ee_filter',
-				title: 'Filter event list',
-				options: filter_opts,
-				value: args.filter || '',
-				onChange: '$P().applyTableFilters(true)',
-				'data-shrinkwrap': 1
-			}) + '</div>';
-			
 			html += 'Event List';
 		html += '</div>';
 		html += '<div class="box_content table">';
@@ -176,10 +352,12 @@ Page.Events = class Events extends Page.Base {
 		
 		var is_floater_vis = !!this.div.find('.box_buttons.floater').length;
 		
-		this.div.html( html );
+		this.div.find('#d_search_results').html( html );
 		this.applyTableFilters();
 		this.setupBoxButtonFloater(is_floater_vis);
-		SingleSelect.init( this.div.find('#fe_ee_filter') );
+		
+		// SingleSelect.init( this.div.find('#fe_ee_filter') );
+		// MultiSelect.init( this.div.find('#fe_ee_filter') );
 	}
 	
 	handleStatusUpdateList(data) {
@@ -227,18 +405,21 @@ Page.Events = class Events extends Page.Base {
 		// filters and/or search query changed -- re-filter table
 		var self = this;
 		var args = this.args;
-		var num_visible = 0, num_hidden = 0, num_paged = 0;
+		var num_visible = 0, num_hidden = 0, num_paged = 0, num_filters = 0;
 		
 		// optionally reset the event max (dynamic paging)
 		if (reset_max) this.eventsPerPage = config.events_per_page;
 		
-		args.search = $('#fe_ee_search').val();
-		args.filter = $('#fe_ee_filter').val();
-		if (!args.search.length) delete args.search;
-		if (!args.filter.length) delete args.filter;
-		var is_filtered = (('search' in args) || ('filter' in args));
+		// single-selects
+		['search', 'status', 'category', 'target', 'plugin', 'tag', 'timing', 'username', 'action'].forEach( function(key) {
+			var value = $('#fe_el_' + key).val();
+			if (value.length) { args[key] = value; num_filters++; }
+			else delete args[key];
+		} );
 		
-		this.div.find('.box_content.table ul.grid_row').each( function(idx) {
+		var is_filtered = (num_filters > 0);
+		
+		this.div.find('#d_search_results .box_content.table ul.grid_row').each( function(idx) {
 			var $this = $(this);
 			var row = self.events[idx];
 			if (self.isRowVisible(row)) {
@@ -261,6 +442,18 @@ Page.Events = class Events extends Page.Base {
 		
 		this.updateBoxButtonFloaterState();
 		
+		// update pagination row count
+		var total_non_hidden = num_visible + num_paged;
+		var total_items = total_non_hidden + num_hidden;
+		var nice_total = "";
+		if (is_filtered && num_hidden) nice_total = "" + commify(total_non_hidden) + " of " + commify(total_items) + " events";
+		else nice_total = "" + commify(total_items) + " " + pluralize("event", total_items);
+		this.div.find('#d_search_results .box_content.table .data_grid_pagination > div').first().html( nice_total );
+		
+		// show or hide reset button
+		if (is_filtered) this.div.find('#btn_el_reset').show();
+		else this.div.find('#btn_el_reset').hide();
+		
 		// do history.replaceState jazz here
 		// don't mess up initial visit href
 		var query = deep_copy_object(args);
@@ -272,6 +465,11 @@ Page.Events = class Events extends Page.Base {
 		
 		// magic trick: replace link in sidebar for Events
 		$('#tab_Events').attr( 'href', url );
+	}
+	
+	resetFilters() {
+		// reset all filters to default and re-search
+		Nav.go( this.selfNav({}) );
 	}
 	
 	handleScrollList() {
@@ -292,7 +490,13 @@ Page.Events = class Events extends Page.Base {
 	isRowVisible(item) {
 		// check if row should be filtered using args
 		var args = this.args;
-		var is_filtered = (('search' in args) || ('filter' in args));
+		var num_filters = 0;
+		
+		['search', 'status', 'category', 'target', 'plugin', 'timing', 'username', 'action', 'tag'].forEach( function(key) {
+			if (key in args) num_filters++;
+		} );
+		
+		var is_filtered = (num_filters > 0);
 		
 		if (!is_filtered) {
 			// no filters, so we can apply user collapse/expand logic here
@@ -301,36 +505,63 @@ Page.Events = class Events extends Page.Base {
 			return true; // show
 		}
 		
+		// allow keywords to search titles, usernames, notes, targets, and timing plugins
 		if (('search' in args) && args.search.length) {
-			var words = [item.title, item.username, item.notes].concat(item.targets).join(' ').toLowerCase();
-			if (words.indexOf(args.search.toLowerCase()) == -1) return false; // hide
+			var words = [item.title, item.username, item.notes].concat(item.targets);
+			if (words.join(' ').toLowerCase().indexOf(args.search.toLowerCase()) == -1) return false; // hide
 		}
 		
-		if (('filter' in args) && args.filter.match && args.filter.match(/^(\w)_(.+)$/)) {
-			var mode = RegExp.$1;
-			var value = RegExp.$2;
-			switch (mode) {
-				case 'z':
-					if ((value == 'enabled') && !item.enabled) return false; // hide
-					if ((value == 'disabled') && item.enabled) return false; // hide
-				break;
-				
-				case 'c':
-					if (item.category != value) return false; // hide
-				break;
-				
-				case 'g':
-					if (!item.targets.includes(value)) return false; // hide
-				break;
-				
-				case 'p':
-					if (item.plugin != value) return false; // hide
-				break;
-				
-				case 't':
-					if (!item.tags || !item.tags.includes(value)) return false; // hide
-				break;
-			} // switch mode
+		// status
+		if ('status' in args) {
+			if ((args.status == 'enabled') && !item.enabled) return false; // hide
+			if ((args.status == 'disabled') && item.enabled) return false; // hide
+		}
+		
+		// category
+		if ('category' in args) {
+			if (item.category != args.category) return false; // hide
+		}
+		
+		// target
+		if ('target' in args) {
+			if (!item.targets.includes(args.target)) return false; // hide
+		}
+		
+		// plugin
+		if ('plugin' in args) {
+			if (item.plugin != args.plugin) return false; // hide
+		}
+		
+		// tags
+		if ('tag' in args) {
+			if (!item.tags || !item.tags.includes(args.tag)) return false; // hide
+		}
+		
+		// username
+		if ('username' in args) {
+			if (item.username != args.username) return false; // hide
+		}
+		
+		// timing
+		if ('timing' in args) {
+			// types: demand, schedule, continuous, single, plugin, catchup, range, blackout, delay
+			var types = {};
+			(item.timings || []).forEach( function(timing) { 
+				types[timing.type || 'N/A'] = 1; 
+				if (timing.type == 'plugin') types[ 'p_' + timing.plugin_id ] = 1;
+			} );
+			types.demand = !types.schedule && !types.continuous && !types.single;
+			if (!types[args.timing]) return false; // hide
+		}
+		
+		// action
+		if ('action' in args) {
+			var types = {};
+			(item.actions || []).forEach( function(action) { 
+				types[action.type || 'N/A'] = 1; 
+				if (action.type == 'plugin') types[ 'p_' + action.plugin_id ] = 1;
+			} );
+			if (!types[args.action]) return false; // hide
 		}
 		
 		return true; // show
@@ -1873,12 +2104,9 @@ Page.Events = class Events extends Page.Base {
 		});
 		
 		// target(s)
-		var target_items = this.buildOptGroup(app.groups, "Groups:", 'server-network');
-		
-		target_items = target_items.concat(
-			this.buildOptGroup( sort_by(Object.values(app.servers), 'hostname').map( function(server) {
-				return merge_objects( { title: server.hostname }, server );
-			} ), "Servers:", 'router-network' )
+		var target_items = [].concat(
+			this.buildOptGroup(app.groups, "Groups:", 'server-network'),
+			this.buildServerOptGroup("Servers:", 'router-network')
 		);
 		
 		html += this.getFormRow({
