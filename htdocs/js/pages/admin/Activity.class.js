@@ -527,6 +527,8 @@ Page.ActivityLog = class ActivityLog extends Page.Base {
 		else {
 			var temp = deep_copy_object(item);
 			delete temp.headers;
+			delete temp._type;
+			delete temp._desc;
 			
 			md += "\n### Raw JSON\n\n";
 			md += '```json' + "\n";
