@@ -2398,11 +2398,13 @@ Page.Events = class Events extends Page.Base {
 			rows: rows,
 			cols: cols,
 			data_type: 'item',
+			class: 'data_grid',
 			empty_msg: add_link,
-			append: '<tr><td class="td_big" colspan="' + cols.length + '" style="text-align:center">' + add_link + '</td></tr>'
+			always_append_empty_msg: true,
+			grid_template_columns: 'min-content auto auto auto'
 		};
 		
-		html += this.getCompactTable(targs, function(item, idx) {
+		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editTiming('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onMouseUp="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
@@ -2414,14 +2416,14 @@ Page.Events = class Events extends Page.Base {
 					checked: item.enabled,
 					onChange: '$P().toggleTimingEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big wrap_mobile">' + nice_icon + '<span class="link" onMouseUp="$P().editTiming('+idx+')">' + nice_type + '</span></div>',
-				'<div>' + nice_desc + '</div>',
+				'<div class="td_big ellip">' + nice_icon + '<span class="link" onMouseUp="$P().editTiming('+idx+')">' + nice_type + '</span></div>',
+				'<div class="ellip">' + nice_desc + '</div>',
 				'<span class="nowrap">' + actions.join(' | ') + '</span>'
 			];
 			
 			if (!item.enabled) tds.className = 'disabled';
 			return tds;
-		} ); // getCompactTable
+		} ); // getCompactGrid
 		
 		return html;
 	}

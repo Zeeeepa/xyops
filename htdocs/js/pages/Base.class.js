@@ -1240,14 +1240,16 @@ Page.Base = class Base extends Page {
 			rows: rows,
 			cols: cols,
 			data_type: 'limit',
-			empty_msg: add_link
+			class: 'data_grid',
+			empty_msg: add_link,
+			grid_template_columns: 'min-content auto auto auto'
 		};
 		
 		if (rows.length && (rows.length < 7)) {
-			targs.append = '<tr><td class="td_big" colspan="' + cols.length + '" style="text-align:center">' + add_link + '</td></tr>';
+			targs.always_append_empty_msg = true;
 		}
 		
-		html += this.getCompactTable(targs, function(item, idx) {
+		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editResLimit('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onMouseUp="$P().deleteResLimit('+idx+')"><b>Delete</b></span>' );
@@ -1302,14 +1304,14 @@ Page.Base = class Base extends Page {
 					checked: item.enabled,
 					onChange: '$P().toggleResLimitEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big"><i class="mdi mdi-gauge">&nbsp;</i><span class="link" onClick="$P().editResLimit('+idx+')">' + nice_title + '</span></div>',
-				'<div style="">' + nice_desc + '</div>',
+				'<div class="td_big ellip"><i class="mdi mdi-gauge">&nbsp;</i><span class="link" onClick="$P().editResLimit('+idx+')">' + nice_title + '</span></div>',
+				'<div class="ellip">' + nice_desc + '</div>',
 				actions.join(' | ')
 			];
 			
 			if (!item.enabled) tds.className = 'disabled';
 			return tds;
-		} ); // getCompactTable
+		} ); // getCompactGrid
 		
 		return html;
 	}
@@ -1640,11 +1642,13 @@ Page.Base = class Base extends Page {
 			rows: rows,
 			cols: cols,
 			data_type: 'action',
+			class: 'data_grid',
 			empty_msg: add_link,
-			append: '<tr><td class="td_big" colspan="' + cols.length + '" style="text-align:center">' + add_link + '</td></tr>'
+			always_append_empty_msg: true,
+			grid_template_columns: 'min-content auto auto auto auto'
 		};
 		
-		html += this.getCompactTable(targs, function(item, idx) {
+		html += this.getCompactGrid(targs, function(item, idx) {
 			var links = [];
 			links.push( '<span class="link" onMouseUp="$P().editJobAction('+idx+')"><b>Edit</b></span>' );
 			links.push( '<span class="link danger" onMouseUp="$P().deleteJobAction('+idx+')"><b>Delete</b></span>' );
@@ -1656,15 +1660,15 @@ Page.Base = class Base extends Page {
 					checked: item.enabled,
 					onChange: '$P().toggleJobActionEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big wrap_mobile"><i class="mdi mdi-eye-outline">&nbsp;</i><span class="link" onClick="$P().editJobAction('+idx+')">' + disp.trigger + '</span></div>',
-				'<div class="td_big wrap_mobile"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
-				'<div style="">' + disp.desc + '</div>',
-				'<div class="wrap_mobile">' + links.join(' | ') + '</div>'
+				'<div class="td_big ellip"><i class="mdi mdi-eye-outline">&nbsp;</i><span class="link" onClick="$P().editJobAction('+idx+')">' + disp.trigger + '</span></div>',
+				'<div class="td_big ellip"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
+				'<div class="ellip">' + disp.desc + '</div>',
+				'<div class="">' + links.join(' | ') + '</div>'
 			];
 			
 			if (!item.enabled) tds.className = 'disabled';
 			return tds;
-		} ); // getCompactTable
+		} ); // getCompactGrid
 		
 		return html;
 	}

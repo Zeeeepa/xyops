@@ -195,10 +195,10 @@ Page.Plugins = class Plugins extends Page.Base {
 		this.setPluginType();
 		this.setupBoxButtonFloater();
 		
-		this.setupDraggableTable({
-			table_sel: this.div.find('table.data_table'), 
-			handle_sel: 'td div.td_drag_handle', 
-			drag_ghost_sel: 'td div.td_big', 
+		this.setupDraggableGrid({
+			table_sel: this.div.find('div.data_grid'), 
+			handle_sel: 'div.td_drag_handle', 
+			drag_ghost_sel: 'div:nth-child(2)', 
 			drag_ghost_x: 5, 
 			drag_ghost_y: 10, 
 			callback: this.moveParam.bind(this)
@@ -283,10 +283,10 @@ Page.Plugins = class Plugins extends Page.Base {
 		this.setPluginType();
 		this.setupBoxButtonFloater();
 		
-		this.setupDraggableTable({
-			table_sel: this.div.find('table.data_table'), 
-			handle_sel: 'td div.td_drag_handle', 
-			drag_ghost_sel: 'td div.td_big', 
+		this.setupDraggableGrid({
+			table_sel: this.div.find('div.data_grid'), 
+			handle_sel: 'div.td_drag_handle', 
+			drag_ghost_sel: 'div:nth-child(2)', 
 			drag_ghost_x: 5, 
 			drag_ghost_y: 10, 
 			callback: this.moveParam.bind(this)
@@ -556,10 +556,10 @@ Page.Plugins = class Plugins extends Page.Base {
 		var html = this.getParamsTable();
 		this.div.find('#d_ep_params_table').html( html );
 		
-		this.setupDraggableTable({
-			table_sel: this.div.find('table.data_table'), 
-			handle_sel: 'td div.td_drag_handle', 
-			drag_ghost_sel: 'td div.td_big', 
+		this.setupDraggableGrid({
+			table_sel: this.div.find('div.data_grid'), 
+			handle_sel: 'div.td_drag_handle', 
+			drag_ghost_sel: 'div:nth-child(2)', 
 			drag_ghost_x: 5, 
 			drag_ghost_y: 10, 
 			callback: this.moveParam.bind(this)
@@ -578,12 +578,13 @@ Page.Plugins = class Plugins extends Page.Base {
 			rows: rows,
 			cols: cols,
 			data_type: 'param',
+			class: 'data_grid',
 			empty_msg: add_link,
-			// append: '<tr><td class="td_big" colspan="' + cols.length + '" style="text-align:center">' + add_link + '</td></tr>'
+			always_append_empty_msg: true,
+			grid_template_columns: 'min-content auto auto auto auto'
 		};
-		if (rows.length) targs.below = '<div class="td_big" style="margin-top:5px; margin-bottom:8px; text-align:center">' + add_link + '</div>';
 		
-		html += this.getCompactTable(targs, function(item, idx) {
+		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editParam('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onMouseUp="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
@@ -622,12 +623,12 @@ Page.Plugins = class Plugins extends Page.Base {
 			return [
 				// '<div class="td_big mono">' + item.id + '</div>',
 				'<div class="td_drag_handle" draggable="true" title="Drag to reorder"><i class="mdi mdi-menu"></i></div>',
-				'<div class="td_big wrap_mobile" title="ID: ' + item.id + '"><i class="mdi mdi-' + nice_label_icon + '">&nbsp;</i><span class="link" onClick="$P().editParam('+idx+')">' + item.title + '</span></div>',
-				'<div class="wrap_mobile"><i class="mdi mdi-' + nice_icon + '">&nbsp;</i>' + nice_type + '</div>',
-				'<div style="word-break:break-word;">' + pairs.join(', ') + '</div>',
-				'<div class="wrap_mobile">' + actions.join(' | ') + '</div>'
+				'<div class="td_big ellip" title="ID: ' + item.id + '"><i class="mdi mdi-' + nice_label_icon + '">&nbsp;</i><span class="link" onClick="$P().editParam('+idx+')">' + item.title + '</span></div>',
+				'<div class="ellip"><i class="mdi mdi-' + nice_icon + '">&nbsp;</i>' + nice_type + '</div>',
+				'<div class="ellip">' + pairs.join(', ') + '</div>',
+				'<div class="">' + actions.join(' | ') + '</div>'
 			];
-		} ); // getCompactTable
+		} ); // getCompactGrid
 		
 		return html;
 	}
