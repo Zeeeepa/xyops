@@ -1,6 +1,6 @@
 // Admin Page -- Plugins Config
 
-Page.Plugins = class Plugins extends Page.Base {
+Page.Plugins = class Plugins extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -75,8 +75,8 @@ Page.Plugins = class Plugins extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.plugins, cols, 'plugin', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
 			
 			var plugin_events = find_objects( app.events, { plugin: item.id } );
 			var num_events = plugin_events.length;
@@ -102,7 +102,8 @@ Page.Plugins = class Plugins extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_plugin(-1)">Add Plugin...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_plugin(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Plugin...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -145,6 +146,31 @@ Page.Plugins = class Plugins extends Page.Base {
 		this.show_delete_plugin_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#Plugins?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'power-plug', loc: '#Plugins?sub=list', title: 'Plugins' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Plugin Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'plugins',
+			itemKey: 'plugin',
+			editPageID: 'Plugins',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-power-plug">&nbsp;</i>Plugin:',
+				title: 'Select Plugin',
+				options: [['', 'Any Plugin']].concat( app.plugins ),
+				default_icon: 'power-plug-outline'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new plugin
 		var html = '';
@@ -182,8 +208,9 @@ Page.Plugins = class Plugins extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_plugin_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_plugin()"><i class="mdi mdi-floppy">&nbsp;</i>Create Plugin</div>';
+			html += '<div class="button" onClick="$P().cancel_plugin_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_plugin()"><i class="mdi mdi-floppy">&nbsp;</i>Create Plugin</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -245,6 +272,12 @@ Page.Plugins = class Plugins extends Page.Base {
 		var html = '';
 		if (!this.active) return; // sanity
 		
+		if (this.args.rollback && this.rollbackData) {
+			resp.plugin = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.plugin.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.plugin = resp.plugin;
 		if (!this.plugin.params) this.plugin.params = [];
 		this.params = this.plugin.params;
@@ -269,9 +302,11 @@ Page.Plugins = class Plugins extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_plugin_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_plugin_dialog()">Delete Plugin...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_plugin()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_plugin_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_plugin_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_plugin()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -296,6 +331,24 @@ Page.Plugins = class Plugins extends Page.Base {
 			drag_ghost_y: 10, 
 			callback: this.moveParam.bind(this)
 		});
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var plugin = this.get_plugin_form_json();
+		if (!plugin) return; // error
+		
+		this.showExportOptions({
+			name: 'plugin',
+			dataType: 'plugin',
+			api: this.args.id ? 'update_plugin' : 'create_plugin',
+			data: plugin
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Plugins?sub=history&id=' + this.plugin.id );
 	}
 	
 	do_save_plugin() {
@@ -579,7 +632,7 @@ Page.Plugins = class Plugins extends Page.Base {
 		var html = '';
 		var rows = this.params;
 		var cols = ['<i class="mdi mdi-menu"></i>', 'Label', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onMouseUp="$P().editParam(-1)">New Param...</div>';
+		var add_link = '<div class="button small secondary" onClick="$P().editParam(-1)">New Param...</div>';
 		
 		var targs = {
 			rows: rows,
@@ -593,8 +646,8 @@ Page.Plugins = class Plugins extends Page.Base {
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().editParam('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().editParam('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_type = self.ctype_labels[item.type];
 			var nice_icon = self.ctype_icons[item.type];
@@ -961,6 +1014,7 @@ Page.Plugins = class Plugins extends Page.Base {
 		delete this.plugin;
 		delete this.params;
 		delete this.defaultEditorMode;
+		this.cleanupRevHistory();
 		this.killEditor();
 		this.div.html( '' );
 		return true;

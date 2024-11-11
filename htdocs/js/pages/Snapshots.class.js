@@ -212,8 +212,7 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		var query = this.getSearchQuery(args);
 		
 		// compose search query
-		this.records = [];
-		this.opts = {
+		var sopts = {
 			query: query.trim(),
 			offset: args.offset || 0,
 			limit: args.limit || config.items_per_page,
@@ -221,17 +220,17 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		};
 		switch (args.sort) {
 			case 'date_asc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = 1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = 1;
 			break;
 			
 			case 'date_desc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = -1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = -1;
 			break;
 		} // sort
 		
-		app.api.get( 'app/search_snapshots', this.opts, this.receiveResults.bind(this) );
+		app.api.get( 'app/search_snapshots', sopts, this.receiveResults.bind(this) );
 	}
 	
 	receiveResults(resp) {

@@ -618,13 +618,12 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		else this.div.find('#btn_ss_reset').hide();
 		
 		// compose search query
-		this.records = [];
-		this.opts = {
+		var sopts = {
 			query: query,
 			offset: args.offset || 0,
 			limit: args.limit || config.items_per_page,
 		};
-		app.api.get( 'app/search_servers', this.opts, this.receiveResults.bind(this) );
+		app.api.get( 'app/search_servers', sopts, this.receiveResults.bind(this) );
 	}
 	
 	receiveResults(resp) {

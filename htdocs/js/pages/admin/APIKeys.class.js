@@ -1,6 +1,6 @@
 // Admin Page -- API Keys
 
-Page.APIKeys = class APIKeys extends Page.Base {
+Page.APIKeys = class APIKeys extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -57,8 +57,8 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.api_keys, cols, 'key', function(item, idx) {
 			var actions = [
-				'<span class="link" onMouseUp="$P().edit_api_key('+idx+')"><b>Edit</b></span>',
-				'<span class="link danger" onMouseUp="$P().delete_api_key('+idx+')"><b>Delete</b></span>'
+				'<span class="link" onClick="$P().edit_api_key('+idx+')"><b>Edit</b></span>',
+				'<span class="link danger" onClick="$P().delete_api_key('+idx+')"><b>Delete</b></span>'
 			];
 			return [
 				'<b>' + self.getNiceAPIKey(item, true) + '</b>',
@@ -73,7 +73,8 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_api_key(-1)">Add API Key...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_api_key(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New API Key...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -92,6 +93,10 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		// delete key from search results
 		this.api_key = this.api_keys[idx];
 		this.show_delete_api_key_dialog();
+	}
+	
+	go_history() {
+		Nav.go( '#ActivityLog?action=api_keys' );
 	}
 	
 	gosub_new(args) {
@@ -123,8 +128,9 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_api_key_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_api_key()"><i class="mdi mdi-floppy">&nbsp;</i>Create Key</div>';
+			html += '<div class="button" onClick="$P().cancel_api_key_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_api_key()"><i class="mdi mdi-floppy">&nbsp;</i>Create Key</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -200,9 +206,11 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_api_key_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_api_key_dialog()">Delete Key...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_api_key()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_api_key_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_api_key_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_api_key()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -211,6 +219,24 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		
 		MultiSelect.init( this.div.find('select[multiple]') );
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var api_key = this.get_api_key_form_json();
+		if (!api_key) return; // error
+		
+		this.showExportOptions({
+			name: 'API key',
+			dataType: 'api_key',
+			api: this.args.id ? 'update_api_key' : 'create_api_key',
+			data: api_key
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#ActivityLog?action=api_keys&query=' + this.api_key.id );
 	}
 	
 	do_save_api_key() {
@@ -271,7 +297,7 @@ Page.APIKeys = class APIKeys extends Page.Base {
 				spellcheck: 'false',
 				value: api_key.key
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-dice-5" title="Generate Random Key" onMouseUp="$P().generate_key()" onMouseDown="event.preventDefault();"></div>',
+			suffix: '<div class="form_suffix_icon mdi mdi-dice-5" title="Generate Random Key" onClick="$P().generate_key()" onMouseDown="event.preventDefault();"></div>',
 			caption: 'The API Key string is used to authenticate API calls.'
 		});
 		

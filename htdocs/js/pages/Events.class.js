@@ -1,6 +1,6 @@
 // Scheduler -- Events Config
 
-Page.Events = class Events extends Page.Base {
+Page.Events = class Events extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -46,7 +46,7 @@ Page.Events = class Events extends Page.Base {
 			
 			// search box
 			html += '<div class="search_box">';
-				html += '<i class="mdi mdi-magnify" onMouseUp="$(\'#fe_el_search\').focus()">&nbsp;</i>'; // TODO: fix search help url below:
+				html += '<i class="mdi mdi-magnify" onClick="$(\'#fe_el_search\').focus()">&nbsp;</i>'; // TODO: fix search help url below:
 				html += '<div class="search_help"><a href="https://github.com/jhuckaby/orchestra#search" target="_blank">Search Help<i class="mdi mdi-open-in-new"></i></a></div>';
 				html += '<input type="text" id="fe_el_search" maxlength="128" placeholder="Search Keywords..." value="' + escape_text_field_value(args.search || '') + '">';
 			html += '</div>';
@@ -304,11 +304,11 @@ Page.Events = class Events extends Page.Base {
 			// action_html += '</div>';
 			
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().do_confirm_run_event('+idx+')"><b>Run Now</b></span>' );
-			// actions.push( '<span class="link" onMouseUp="$P().edit_event('+idx+')"><b>Edit</b></span>' );
-			// actions.push( '<span class="link" onMouseUp="$P().go_event_stats('+idx+')"><b>Stats</b></span>' );
-			// actions.push( '<span class="link" onMouseUp="$P().go_event_history('+idx+')"><b>History</b></span>' );
-			// // actions.push( '<span class="link" onMouseUp="$P().delete_event('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().do_confirm_run_event('+idx+')"><b>Run Now</b></span>' );
+			// actions.push( '<span class="link" onClick="$P().edit_event('+idx+')"><b>Edit</b></span>' );
+			// actions.push( '<span class="link" onClick="$P().go_event_stats('+idx+')"><b>Stats</b></span>' );
+			// actions.push( '<span class="link" onClick="$P().go_event_history('+idx+')"><b>History</b></span>' );
+			// // actions.push( '<span class="link" onClick="$P().delete_event('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
@@ -345,7 +345,8 @@ Page.Events = class Events extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_event(-1)">Add Event...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_event(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Event...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -678,9 +679,9 @@ Page.Events = class Events extends Page.Base {
 				if (!event.enabled) html += '<span style="color:var(--red);">Event Disabled</span>';
 				else html += 'Event Summary';
 				
-				// html += '<div class="button right danger" onMouseUp="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete...</div>';
-				html += '<div class="button secondary right" onMouseUp="$P().do_edit_from_view()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Event...</div>';
-				if (event.enabled) html += '<div class="button right" onMouseUp="$P().do_confirm_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
+				// html += '<div class="button right danger" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete...</div>';
+				html += '<div class="button secondary right" onClick="$P().do_edit_from_view()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Event...</div>';
+				if (event.enabled) html += '<div class="button right" onClick="$P().do_confirm_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
 				html += '<div class="clear"></div>';
 			html += '</div>'; // title
 			
@@ -806,7 +807,7 @@ Page.Events = class Events extends Page.Base {
 		html += '<div class="box" id="d_ve_queued" style="display:none">';
 			html += '<div class="box_title">';
 				html += '<span>Queued Jobs</span>';
-				html += '<div class="button right danger" onMouseUp="$P().do_flush_queue()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Flush Queue</div>';
+				html += '<div class="button right danger" onClick="$P().do_flush_queue()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Flush Queue</div>';
 			html += '</div>';
 			html += '<div class="box_content table">';
 				// html += '<div class="loading_container"><div class="loading"></div></div>';
@@ -1646,7 +1647,7 @@ Page.Events = class Events extends Page.Base {
 		
 		// massage a title out of description template (ugh)
 		var title = template.replace(/\:\s+.+$/, '').replace(/\s+\(.+$/, '');
-		var btn = '<div class="button danger" onClick="$P().prepRollback(' + idx + ')">Rollback...</div>';
+		var btn = '<div class="button danger" onClick="$P().prepRollback(' + idx + ')"><i class="mdi mdi-undo-variant">&nbsp;</i>Rollback...</div>';
 		if (is_cur_rev) btn = '&nbsp;';
 		var md = '';
 		
@@ -1686,8 +1687,33 @@ Page.Events = class Events extends Page.Base {
 		var item = this.revisions[idx];
 		Dialog.hide();
 		
-		this.rollbackEvent = item.event;
+		this.rollbackData = item.event;
 		Nav.go('Events?sub=edit&id=' + this.event.id + '&rollback=1');
+	}
+	
+	go_history() {
+		Nav.go( '#Events?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'calendar-multiple', loc: '#Events?sub=list', title: 'Events' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Event Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'events',
+			itemKey: 'event',
+			editPageID: 'Events',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-calendar-multiple">&nbsp;</i>Event:',
+				title: 'Select Event',
+				options: [['', 'Any Event']].concat( app.events ),
+				default_icon: 'file-clock-outline'
+			}
+		});
 	}
 	
 	gosub_new(args) {
@@ -1736,8 +1762,9 @@ Page.Events = class Events extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_event_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_event()"><i class="mdi mdi-floppy">&nbsp;</i>Create Event</div>';
+			html += '<div class="button" onClick="$P().cancel_event_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_event()"><i class="mdi mdi-floppy">&nbsp;</i>Create Event</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -1796,9 +1823,9 @@ Page.Events = class Events extends Page.Base {
 		var event = find_object( app.events, { id: args.id } );
 		if (!event) return this.doFullPageError("Event not found: " + args.id);
 		
-		if (args.rollback && this.rollbackEvent) {
-			event = this.rollbackEvent;
-			delete this.rollbackEvent;
+		if (args.rollback && this.rollbackData) {
+			event = this.rollbackData;
+			delete this.rollbackData;
 			app.showMessage('info', `Revision ${event.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
 		}
 		
@@ -1844,11 +1871,12 @@ Page.Events = class Events extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_event_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Event...</div>';
-			// html += '<div class="button" onMouseUp="$P().do_run_event()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Event Now</div>';
-			html += '<div class="button secondary" onMouseUp="$P().do_test_event()"><i class="mdi mdi-test-tube">&nbsp;</i>Test Event...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_event()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_event_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_test_event()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_event()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -1864,6 +1892,24 @@ Page.Events = class Events extends Page.Base {
 		this.setupBoxButtonFloater();
 		
 		if (do_snap) this.savePageSnapshot( this.get_event_form_json(true) );
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var event = this.get_event_form_json();
+		if (!event) return; // error
+		
+		this.showExportOptions({
+			name: 'event',
+			dataType: 'event',
+			api: this.args.id ? 'update_event' : 'create_event',
+			data: event
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Events?sub=history&id=' + this.event.id );
 	}
 	
 	do_test_event() {
@@ -1907,7 +1953,7 @@ Page.Events = class Events extends Page.Base {
 				value: '',
 				onChange: '$P().updateAddRemoveMe(this)'
 			}),
-			suffix: '<div class="form_suffix_icon mdi" title="" onMouseUp="$P().addRemoveMe(this)"></div>',
+			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally send the test results to one or more email addresses.'
 		});
 		
@@ -2083,7 +2129,7 @@ Page.Events = class Events extends Page.Base {
 				default_icon: 'folder-open-outline',
 				// 'data-shrinkwrap': 1
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-folder-plus-outline" title="Quick Add Category..." onMouseUp="$P().quickAddCategory()" onMouseDown="event.preventDefault();"></div>',
+			suffix: '<div class="form_suffix_icon mdi mdi-folder-plus-outline" title="Quick Add Category..." onClick="$P().quickAddCategory()" onMouseDown="event.preventDefault();"></div>',
 			caption: 'Select a category for the event (this may limit the max concurrent jobs, etc.)'
 		});
 		
@@ -2099,7 +2145,7 @@ Page.Events = class Events extends Page.Base {
 				default_icon: 'tag-outline',
 				// 'data-shrinkwrap': 1
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-tag-plus-outline" title="Quick Add Tag..." onMouseUp="$P().quickAddTag()" onMouseDown="event.preventDefault();"></div>',
+			suffix: '<div class="form_suffix_icon mdi mdi-tag-plus-outline" title="Quick Add Tag..." onClick="$P().quickAddTag()" onMouseDown="event.preventDefault();"></div>',
 			caption: 'Optionally select one or more tags for the event.  Each job can add its own tags at run time.'
 		});
 		
@@ -2388,7 +2434,7 @@ Page.Events = class Events extends Page.Base {
 		var self = this;
 		var html = '';
 		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onMouseUp="$P().editTiming(-1)">New Rule...</div>';
+		var add_link = '<div class="button small secondary" onClick="$P().editTiming(-1)">New Rule...</div>';
 		
 		// custom sort
 		var rows = this.getSortedTimings();
@@ -2406,8 +2452,8 @@ Page.Events = class Events extends Page.Base {
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().editTiming('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().editTiming('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
 			
 			var { nice_icon, nice_type, nice_desc } = self.prepTimingDisplay(item);
 			
@@ -2416,7 +2462,7 @@ Page.Events = class Events extends Page.Base {
 					checked: item.enabled,
 					onChange: '$P().toggleTimingEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big ellip">' + nice_icon + '<span class="link" onMouseUp="$P().editTiming('+idx+')">' + nice_type + '</span></div>',
+				'<div class="td_big ellip">' + nice_icon + '<span class="link" onClick="$P().editTiming('+idx+')">' + nice_type + '</span></div>',
 				'<div class="ellip">' + nice_desc + '</div>',
 				'<span class="nowrap">' + actions.join(' | ') + '</span>'
 			];
@@ -3335,6 +3381,7 @@ Page.Events = class Events extends Page.Base {
 			delete this.charts;
 		}
 		
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

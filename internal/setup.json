@@ -111,12 +111,14 @@
 		[ "listPush", "global/categories", {
 			"id": "general",
 			"title": "General",
-			"enabled": 1,
+			"enabled": true,
 			"sort_order": 0,
 			"username": "admin",
 			"modified": 1434125333,
 			"created": 1434125333,
 			"notes": "For events that don't fit anywhere else.",
+			"color": "plain",
+			"icon": "",
 			"limits": [],
 			"actions": []
 		} ],

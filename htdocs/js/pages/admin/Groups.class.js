@@ -1,6 +1,6 @@
 // Admin Page -- Group Config
 
-Page.Groups = class Groups extends Page.Base {
+Page.Groups = class Groups extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -66,8 +66,8 @@ Page.Groups = class Groups extends Page.Base {
 		
 		html += this.getBasicGrid( this.groups, cols, 'group', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_group('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_group('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_group('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_group('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_match = '';
 			if (item.hostname_match == '(?!)') nice_match = '(None)';
@@ -90,7 +90,8 @@ Page.Groups = class Groups extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_group(-1)">Add Group...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_group(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Group...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -140,6 +141,31 @@ Page.Groups = class Groups extends Page.Base {
 		this.show_delete_group_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#Groups?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'lan', loc: '#Groups?sub=list', title: 'Server Groups' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Group Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'groups',
+			itemKey: 'group',
+			editPageID: 'Groups',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-lan">&nbsp;</i>Group:',
+				title: 'Select Group',
+				options: [['', 'Any Group']].concat( app.groups ),
+				default_icon: 'server-network'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new group
 		var html = '';
@@ -170,8 +196,9 @@ Page.Groups = class Groups extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_group_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_group()"><i class="mdi mdi-floppy">&nbsp;</i>Create Group</div>';
+			html += '<div class="button" onClick="$P().cancel_group_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_group()"><i class="mdi mdi-floppy">&nbsp;</i>Create Group</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -218,6 +245,13 @@ Page.Groups = class Groups extends Page.Base {
 	receive_group(resp) {
 		// edit existing group
 		var html = '';
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.group = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.group.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.group = resp.group;
 		if (!this.active) return; // sanity
 		
@@ -241,9 +275,11 @@ Page.Groups = class Groups extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_group_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_group_dialog()">Delete Group...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_group()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_group_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_group_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_group()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -254,6 +290,24 @@ Page.Groups = class Groups extends Page.Base {
 		$('#fe_eg_id').attr('disabled', true);
 		SingleSelect.init( this.div.find('#fe_eg_icon, #fe_eg_web_hook') );
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var group = this.get_group_form_json();
+		if (!group) return; // error
+		
+		this.showExportOptions({
+			name: 'group',
+			dataType: 'group',
+			api: this.args.id ? 'update_group' : 'create_group',
+			data: group
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Groups?sub=history&id=' + this.group.id );
 	}
 	
 	do_save_group() {
@@ -368,7 +422,7 @@ Page.Groups = class Groups extends Page.Base {
 				value: group.alert_email || '',
 				onChange: '$P().updateAddRemoveMe(this)'
 			}),
-			suffix: '<div class="form_suffix_icon mdi" title="" onMouseUp="$P().addRemoveMe(this)"></div>',
+			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally set the default e-mail recipients to be notified for alerts in this group. Note that individual alerts can override this setting.'
 		});
 		
@@ -482,6 +536,7 @@ Page.Groups = class Groups extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

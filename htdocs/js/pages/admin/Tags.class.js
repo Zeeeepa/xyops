@@ -1,6 +1,6 @@
 // Admin Page -- Tag Config
 
-Page.Tags = class Tags extends Page.Base {
+Page.Tags = class Tags extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -54,8 +54,8 @@ Page.Tags = class Tags extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.tags, cols, 'tag', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_tag('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_tag('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
 			
 			return [
 				'<b>' + self.getNiceTag(item, '#Tags?sub=edit&id=' + item.id) + '</b>',
@@ -72,7 +72,8 @@ Page.Tags = class Tags extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_tag(-1)"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>Add Tag...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_tag(-1)"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>New Tag...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -91,6 +92,31 @@ Page.Tags = class Tags extends Page.Base {
 		// delete tag from search results
 		this.tag = this.tags[idx];
 		this.show_delete_tag_dialog();
+	}
+	
+	go_history() {
+		Nav.go( '#Tags?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'tag-multiple-outline', loc: '#Tags?sub=list', title: 'Tags' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Tag Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'tags',
+			itemKey: 'tag',
+			editPageID: 'Tags',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-tag-multiple-outline">&nbsp;</i>Tag:',
+				title: 'Select Tag',
+				options: [['', 'Any Tag']].concat( app.tags ),
+				default_icon: 'tag-outline'
+			}
+		});
 	}
 	
 	gosub_new(args) {
@@ -122,8 +148,9 @@ Page.Tags = class Tags extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_tag_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_tag()"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>Create Tag</div>';
+			html += '<div class="button" onClick="$P().cancel_tag_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_tag()"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>Create Tag</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -170,6 +197,13 @@ Page.Tags = class Tags extends Page.Base {
 	receive_tag(resp) {
 		// edit existing tag
 		var html = '';
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.tag = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.tag.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.tag = resp.tag;
 		if (!this.active) return; // sanity
 		
@@ -193,9 +227,11 @@ Page.Tags = class Tags extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_tag_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_tag_dialog()">Delete Tag...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_tag()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_tag_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_tag_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_tag()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -206,6 +242,24 @@ Page.Tags = class Tags extends Page.Base {
 		$('#fe_et_id').attr('disabled', true);
 		SingleSelect.init( this.div.find('#fe_et_icon') );
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var tag = this.get_tag_form_json();
+		if (!tag) return; // error
+		
+		this.showExportOptions({
+			name: 'tag',
+			dataType: 'tag',
+			api: this.args.id ? 'update_tag' : 'create_tag',
+			data: tag
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Tags?sub=history&id=' + this.tag.id );
 	}
 	
 	do_save_tag() {
@@ -379,6 +433,7 @@ Page.Tags = class Tags extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

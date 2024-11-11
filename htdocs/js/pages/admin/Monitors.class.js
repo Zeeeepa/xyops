@@ -1,6 +1,6 @@
 // Admin Page -- Monitors Config
 
-Page.Monitors = class Monitors extends Page.Base {
+Page.Monitors = class Monitors extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -62,8 +62,8 @@ Page.Monitors = class Monitors extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.monitors, cols, 'monitor', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_monitor('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_monitor('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" draggable="true" title="Drag to reorder"><i class="mdi mdi-menu"></i></div>',
@@ -82,7 +82,8 @@ Page.Monitors = class Monitors extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_monitor(-1)">Add Monitor...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_monitor(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Monitor...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -132,6 +133,31 @@ Page.Monitors = class Monitors extends Page.Base {
 		this.show_delete_monitor_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#Monitors?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'chart-areaspline', loc: '#Monitors?sub=list', title: 'Monitors' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Monitor Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'monitors',
+			itemKey: 'monitor',
+			editPageID: 'Monitors',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-chart-areaspline">&nbsp;</i>Monitor:',
+				title: 'Select Monitor',
+				options: [['', 'Any Monitor']].concat( app.monitors ),
+				default_icon: 'chart-line'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new monitor
 		var html = '';
@@ -165,8 +191,9 @@ Page.Monitors = class Monitors extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_monitor_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_monitor()"><i class="mdi mdi-floppy">&nbsp;</i>Create Monitor</div>';
+			html += '<div class="button" onClick="$P().cancel_monitor_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_monitor()"><i class="mdi mdi-floppy">&nbsp;</i>Create Monitor</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -214,6 +241,13 @@ Page.Monitors = class Monitors extends Page.Base {
 	receive_monitor(resp) {
 		// edit existing monitor
 		var html = '';
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.monitor = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.monitor.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.monitor = resp.monitor;
 		if (!this.active) return; // sanity
 		
@@ -237,9 +271,11 @@ Page.Monitors = class Monitors extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_monitor_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_monitor_dialog()">Delete Monitor...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_monitor()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_monitor_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_monitor_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_monitor()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -251,6 +287,24 @@ Page.Monitors = class Monitors extends Page.Base {
 		SingleSelect.init( this.div.find('#fe_em_icon') );
 		MultiSelect.init( this.div.find('select[multiple]') );
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var monitor = this.get_monitor_form_json();
+		if (!monitor) return; // error
+		
+		this.showExportOptions({
+			name: 'monitor',
+			dataType: 'monitor',
+			api: this.args.id ? 'update_monitor' : 'create_monitor',
+			data: monitor
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Monitors?sub=history&id=' + this.monitor.id );
 	}
 	
 	do_save_monitor() {
@@ -377,8 +431,8 @@ Page.Monitors = class Monitors extends Page.Base {
 				spellcheck: 'false',
 				value: monitor.source
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-magnify" title="Open Server Data Explorer" onMouseUp="$P().showHostDataExplorer(\'#fe_em_source\')"></div>',
-			caption: 'Enter an expression for evaluating the data source, e.g. <code>[stats/network/conns]</code>.  If you need help, you can use the <span class="link" onMouseUp="$P().showHostDataExplorer(\'#fe_em_source\')">Server Data Explorer</span>, or view the <a href="https://github.com/jhuckaby/orchestra/blob/main/docs/Monitoring.md#data-sources" target="_blank">documentation</a>.'
+			suffix: '<div class="form_suffix_icon mdi mdi-magnify" title="Open Server Data Explorer" onClick="$P().showHostDataExplorer(\'#fe_em_source\')"></div>',
+			caption: 'Enter an expression for evaluating the data source, e.g. <code>[stats/network/conns]</code>.  If you need help, you can use the <span class="link" onClick="$P().showHostDataExplorer(\'#fe_em_source\')">Server Data Explorer</span>, or view the <a href="https://github.com/jhuckaby/orchestra/blob/main/docs/Monitoring.md#data-sources" target="_blank">documentation</a>.'
 		});
 		
 		// data match
@@ -540,6 +594,7 @@ Page.Monitors = class Monitors extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

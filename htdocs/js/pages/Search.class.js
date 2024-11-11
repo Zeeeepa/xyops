@@ -394,8 +394,7 @@ Page.Search = class Search extends Page.Base {
 		else this.div.find('#btn_s_reset').hide();
 		
 		// compose search query
-		this.records = [];
-		this.opts = {
+		var sopts = {
 			query: query,
 			offset: args.offset || 0,
 			limit: args.limit || config.items_per_page,
@@ -403,17 +402,17 @@ Page.Search = class Search extends Page.Base {
 		};
 		switch (args.sort) {
 			case 'date_asc':
-				this.opts.sort_by = 'completed'; 
-				this.opts.sort_dir = 1;
+				sopts.sort_by = 'completed'; 
+				sopts.sort_dir = 1;
 			break;
 			
 			case 'date_desc':
-				this.opts.sort_by = 'completed'; 
-				this.opts.sort_dir = -1;
+				sopts.sort_by = 'completed'; 
+				sopts.sort_dir = -1;
 			break;
 		} // sort
 		
-		app.api.get( 'app/search_jobs', this.opts, this.receiveResults.bind(this) );
+		app.api.get( 'app/search_jobs', sopts, this.receiveResults.bind(this) );
 	}
 	
 	receiveResults(resp) {

@@ -232,8 +232,7 @@ Page.ActivityLog = class ActivityLog extends Page.Base {
 		else this.div.find('#btn_sa_reset').hide();
 		
 		// compose search query
-		this.records = [];
-		this.opts = {
+		var sopts = {
 			query: query,
 			offset: args.offset || 0,
 			limit: args.limit || config.items_per_page,
@@ -241,17 +240,17 @@ Page.ActivityLog = class ActivityLog extends Page.Base {
 		
 		switch (args.sort) {
 			case 'date_asc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = 1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = 1;
 			break;
 			
 			case 'date_desc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = -1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = -1;
 			break;
 		} // sort
 		
-		app.api.get( 'app/search_activity', this.opts, this.receiveResults.bind(this) );
+		app.api.get( 'app/search_activity', sopts, this.receiveResults.bind(this) );
 	}
 	
 	receiveResults(resp) {

@@ -1,6 +1,6 @@
 // Admin Page -- Notification Channels Config
 
-Page.Channels = class Channels extends Page.Base {
+Page.Channels = class Channels extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -59,8 +59,8 @@ Page.Channels = class Channels extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.channels, cols, 'channel', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_channel('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_channel('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_channel('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_channel('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
@@ -81,7 +81,8 @@ Page.Channels = class Channels extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_channel(-1)">Add Channel...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_channel(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Channel...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -124,6 +125,31 @@ Page.Channels = class Channels extends Page.Base {
 		this.show_delete_channel_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#Channels?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'bullhorn-outline', loc: '#Channels?sub=list', title: 'Channels' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Channel Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'channels',
+			itemKey: 'channel',
+			editPageID: 'Channels',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-bullhorn-outline">&nbsp;</i>Channel:',
+				title: 'Select Channel',
+				options: [['', 'Any Channel']].concat( app.channels ),
+				default_icon: 'bullhorn-outline'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new channel
 		var html = '';
@@ -158,8 +184,9 @@ Page.Channels = class Channels extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_channel_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_channel()"><i class="mdi mdi-floppy">&nbsp;</i>Create Channel</div>';
+			html += '<div class="button" onClick="$P().cancel_channel_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_channel()"><i class="mdi mdi-floppy">&nbsp;</i>Create Channel</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -208,6 +235,13 @@ Page.Channels = class Channels extends Page.Base {
 	receive_channel(resp) {
 		// edit existing channel
 		var html = '';
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.channel = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.channel.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.channel = resp.channel;
 		if (!this.active) return; // sanity
 		
@@ -231,9 +265,11 @@ Page.Channels = class Channels extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_channel_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_channel_dialog()">Delete Channel...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_channel()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_channel_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_channel_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_channel()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -245,6 +281,24 @@ Page.Channels = class Channels extends Page.Base {
 		SingleSelect.init( this.div.find('#fe_ech_run_event, #fe_ech_icon, #fe_ech_web_hook') );
 		this.updateAddRemoveMe('#fe_ech_email');
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var channel = this.get_channel_form_json();
+		if (!channel) return; // error
+		
+		this.showExportOptions({
+			name: 'channel',
+			dataType: 'channel',
+			api: this.args.id ? 'update_channel' : 'create_channel',
+			data: channel
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Channels?sub=history&id=' + this.channel.id );
 	}
 	
 	do_save_channel() {
@@ -357,7 +411,7 @@ Page.Channels = class Channels extends Page.Base {
 				value: channel.email,
 				onChange: '$P().updateAddRemoveMe(this)'
 			}),
-			suffix: '<div class="form_suffix_icon mdi" title="" onMouseUp="$P().addRemoveMe(this)"></div>',
+			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally add e-mail recipients to be notified for this channel.'
 		});
 		
@@ -476,6 +530,7 @@ Page.Channels = class Channels extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

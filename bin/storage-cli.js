@@ -123,6 +123,7 @@ var storage = new StandaloneStorage(config.Storage, function(err) {
 			// setup new master server
 			var setup = require('../internal/setup.json');
 			var unbase_config = require('../internal/unbase.json');
+			var now = Tools.timeNow(true);
 			
 			// make sure this is only run once
 			storage.get( 'global/users', function(err) {
@@ -135,7 +136,11 @@ var storage = new StandaloneStorage(config.Storage, function(err) {
 				setup.storage.forEach( function(params) {
 					if ((params[0] != 'listPush') || !setup.activity_map[params[1]] || (typeof(params[2]) != 'object')) return;
 					var info = setup.activity_map[params[1]];
+					
 					var item = params[2];
+					item.created = item.modified = now;
+					item.revision = 1;
+					
 					var activity = {
 						id: Tools.generateShortID('a'),
 						epoch: Tools.timeNow(true),
@@ -145,13 +150,12 @@ var storage = new StandaloneStorage(config.Storage, function(err) {
 						keywords: [ item.id, 'admin' ],
 						username: 'admin'
 					};
-					item.revision = 1;
 					activity[ info.key ] = Tools.copyHash( item, true );
-					setup.storage.push([ 'insertActivity', activity ]);
+					setup.storage.push([ 'insertActivity', '', activity ]);
 				} );
 				
 				// utility function for inserting activity
-				var insertActivity = function(activity, callback) {
+				var insertActivity = function(dummy, activity, callback) {
 					// bootstrap activity into unbase manually
 					var record_id = activity.id;
 					var record_data = activity;
@@ -180,18 +184,18 @@ var storage = new StandaloneStorage(config.Storage, function(err) {
 						var func = params.shift();
 						params.push( callback );
 						
-						// special functions
-						if (func == 'insertActivity') return insertActivity.apply( null, params );
-						
 						// massage a few params
 						if (typeof(params[1]) == 'object') {
 							var obj = params[1];
-							if (obj.created) obj.created = Tools.timeNow(true);
-							if (obj.modified) obj.modified = Tools.timeNow(true);
+							if (obj.created) obj.created = now;
+							if (obj.modified) obj.modified = now;
 							if (obj.regexp && (obj.regexp == '_HOSTNAME_')) obj.regexp = '^(' + Tools.escapeRegExp( hostname ) + ')$';
 							if (obj.hostname && (obj.hostname == '_HOSTNAME_')) obj.hostname = hostname;
 							if (obj.ip && (obj.ip == '_IP_')) obj.ip = ip;
 						}
+						
+						// special functions
+						if (func == 'insertActivity') return insertActivity.apply( null, params );
 						
 						// call storage directly
 						storage[func].apply( storage, params );

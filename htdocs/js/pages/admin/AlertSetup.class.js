@@ -1,6 +1,6 @@
 // Admin Page -- Alerts Config
 
-Page.AlertSetup = class AlertSetup extends Page.Base {
+Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -59,8 +59,8 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( this.alerts, cols, 'alert', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_alert('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_alert('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_alert('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_alert('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
@@ -82,7 +82,8 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_alert(-1)">Add Alert...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_alert(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Alert...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -125,6 +126,31 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		this.show_delete_alert_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#AlertSetup?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'bell-ring-outline', loc: '#AlertSetup?sub=list', title: 'Alert Setup' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Alert Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'alerts',
+			itemKey: 'alert',
+			editPageID: 'AlertSetup',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-bell-ring-outline">&nbsp;</i>Alert:',
+				title: 'Select Alert',
+				options: [['', 'Any Alert']].concat( app.alerts ),
+				default_icon: 'bell-ring-outline'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new alert
 		var html = '';
@@ -160,8 +186,9 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_alert_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_alert()"><i class="mdi mdi-floppy">&nbsp;</i>Create Alert</div>';
+			html += '<div class="button" onClick="$P().cancel_alert_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_alert()"><i class="mdi mdi-floppy">&nbsp;</i>Create Alert</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -210,9 +237,15 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 	receive_alert(resp) {
 		// edit existing alert
 		var html = '';
-		this.alert = resp.alert;
-		
 		if (!this.active) return; // sanity
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.alert = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.alert.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
+		this.alert = resp.alert;
 		
 		app.setWindowTitle( "Editing Alert \"" + (this.alert.title) + "\"" );
 		
@@ -235,9 +268,11 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_alert_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_alert_dialog()">Delete Alert...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_alert()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_alert_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_alert_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_alert()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -250,6 +285,24 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		SingleSelect.init( this.div.find('#fe_ea_monitor, #fe_ea_channel, #fe_ea_run_event, #fe_ea_icon, #fe_ea_web_hook') );
 		this.updateAddRemoveMe('#fe_ea_email');
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var alert = this.get_alert_form_json();
+		if (!alert) return; // error
+		
+		this.showExportOptions({
+			name: 'alert',
+			dataType: 'alert',
+			api: this.args.id ? 'update_alert' : 'create_alert',
+			data: alert
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#AlertSetup?sub=history&id=' + this.alert.id );
 	}
 	
 	do_save_alert() {
@@ -376,7 +429,7 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 				class: 'monospace',
 				value: alert.expression
 			}),
-			caption: 'Enter the expression to evaluate the alert condition, e.g. <code>[monitors/load_avg] >= 5.0</code>.  If you need help, you can use the <span class="link" onMouseUp="$P().showHostDataExplorer(\'#fe_ea_expression\')">Server Data Explorer</span>, or view the <a href="https://github.com/jhuckaby/orchestra/blob/main/docs/Monitoring.md#alert-expressions" target="_blank">documentation</a>.' // TODO: doc link AND ALSO showHostDataExplorer!!!
+			caption: 'Enter the expression to evaluate the alert condition, e.g. <code>[monitors/load_avg] >= 5.0</code>.  If you need help, you can use the <span class="link" onClick="$P().showHostDataExplorer(\'#fe_ea_expression\')">Server Data Explorer</span>, or view the <a href="https://github.com/jhuckaby/orchestra/blob/main/docs/Monitoring.md#alert-expressions" target="_blank">documentation</a>.' // TODO: doc link AND ALSO showHostDataExplorer!!!
 		});
 		
 		// samples
@@ -442,7 +495,7 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 				value: alert.email,
 				onChange: '$P().updateAddRemoveMe(this)'
 			}),
-			suffix: '<div class="form_suffix_icon mdi" title="" onMouseUp="$P().addRemoveMe(this)"></div>',
+			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally add e-mail recipients to be notified for this alert.'
 		});
 		
@@ -581,6 +634,7 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

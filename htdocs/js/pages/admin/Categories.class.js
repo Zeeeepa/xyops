@@ -1,6 +1,6 @@
 // Admin Page -- Category Config
 
-Page.Categories = class Categories extends Page.Base {
+Page.Categories = class Categories extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -66,8 +66,8 @@ Page.Categories = class Categories extends Page.Base {
 		
 		html += this.getBasicGrid( this.categories, cols, 'category', function(item, idx) {
 			var classes = [], actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_category('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_category('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_category('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_category('+idx+')"><b>Delete</b></span>' );
 			
 			var cat_events = find_objects( app.events, { category: item.id } );
 			var num_events = cat_events.length;
@@ -93,7 +93,8 @@ Page.Categories = class Categories extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_category(-1)">Add Category...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_category(-1)"><i class="mdi mdi-folder-plus-outline">&nbsp;</i>New Category...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -143,6 +144,31 @@ Page.Categories = class Categories extends Page.Base {
 		this.show_delete_category_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#Categories?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'folder-multiple-outline', loc: '#Categories?sub=list', title: 'Categories' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Category Revision History" );
+		
+		this.goRevisionHistory({
+			activityType: 'categories',
+			itemKey: 'category',
+			editPageID: 'Categories',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-folder-open-outline">&nbsp;</i>Category:',
+				title: 'Select Category',
+				options: [['', 'Any Category']].concat( app.categories ),
+				default_icon: 'folder-open-outline'
+			}
+		});
+	}
+	
 	gosub_new(args) {
 		// create new category
 		var html = '';
@@ -179,8 +205,9 @@ Page.Categories = class Categories extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_category_edit()">Cancel</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_category()"><i class="mdi mdi-floppy">&nbsp;</i>Create Category</div>';
+			html += '<div class="button" onClick="$P().cancel_category_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			html += '<div class="button secondary" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_category()"><i class="mdi mdi-floppy">&nbsp;</i>Create Category</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -230,6 +257,12 @@ Page.Categories = class Categories extends Page.Base {
 		var html = '';
 		if (!this.active) return; // sanity
 		
+		if (this.args.rollback && this.rollbackData) {
+			resp.category = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.category.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.category = resp.category;
 		this.limits = this.category.limits; // for res limit editor
 		this.actions = this.category.actions; // for job action editor
@@ -254,9 +287,11 @@ Page.Categories = class Categories extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_category_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_category_dialog()">Delete Category...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_category()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_category_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_category_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_category()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -267,6 +302,24 @@ Page.Categories = class Categories extends Page.Base {
 		$('#fe_ec_id').attr('disabled', true);
 		SingleSelect.init( this.div.find('#fe_ec_color, #fe_ec_icon') );
 		this.setupBoxButtonFloater();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var category = this.get_category_form_json();
+		if (!category) return; // error
+		
+		this.showExportOptions({
+			name: 'category',
+			dataType: 'category',
+			api: this.args.id ? 'update_category' : 'create_category',
+			data: category
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#Categories?sub=history&id=' + this.category.id );
 	}
 	
 	do_save_category() {
@@ -519,6 +572,7 @@ Page.Categories = class Categories extends Page.Base {
 	
 	onDeactivate() {
 		// called when page is deactivated
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

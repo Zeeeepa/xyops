@@ -1,6 +1,6 @@
 // Admin Page -- Web Hooks Config
 
-Page.WebHooks = class WebHooks extends Page.Base {
+Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	onInit() {
 		// called once at page load
@@ -65,8 +65,8 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		var self = this;
 		html += this.getBasicGrid( opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onMouseUp="$P().edit_web_hook('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onMouseUp="$P().delete_web_hook('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().edit_web_hook('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().delete_web_hook('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
@@ -88,7 +88,8 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary" onMouseUp="$P().edit_web_hook(-1)">Add Web Hook...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary" onClick="$P().edit_web_hook(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Web Hook...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -129,6 +130,31 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		// delete web hook from search results
 		this.web_hook = this.web_hooks[idx];
 		this.show_delete_web_hook_dialog();
+	}
+	
+	go_history() {
+		Nav.go( '#WebHooks?sub=history' );
+	}
+	
+	gosub_history(args) {
+		// show revision history sub-page
+		app.setHeaderNav([
+			{ icon: 'webhook', loc: '#WebHooks?sub=list', title: 'Web Hooks' },
+			{ icon: 'history', title: "Revision History" }
+		]);
+		app.setWindowTitle( "Web Hook History" );
+		
+		this.goRevisionHistory({
+			activityType: 'web_hooks',
+			itemKey: 'web_hook',
+			editPageID: 'WebHooks',
+			itemMenu: {
+				label: '<i class="icon mdi mdi-webhook">&nbsp;</i>Web Hook:',
+				title: 'Select Web Hook',
+				options: [['', 'Any Web Hook']].concat( app.web_hooks ),
+				default_icon: 'webhook'
+			}
+		});
 	}
 	
 	gosub_new(args) {
@@ -173,9 +199,10 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_web_hook_edit()">Cancel</div>';
-			html += '<div class="button secondary" onMouseUp="$P().do_test_web_hook()"><i class="mdi mdi-test-tube">&nbsp;</i>Test Web Hook...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_web_hook()"><i class="mdi mdi-floppy">&nbsp;</i>Create Web Hook</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_web_hook_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_test_web_hook()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_new_web_hook()"><i class="mdi mdi-floppy">&nbsp;</i>Create Web Hook</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -225,6 +252,13 @@ Page.WebHooks = class WebHooks extends Page.Base {
 	receive_web_hook(resp) {
 		// edit existing web hook
 		var html = '';
+		
+		if (this.args.rollback && this.rollbackData) {
+			resp.web_hook = this.rollbackData;
+			delete this.rollbackData;
+			app.showMessage('info', `Revision ${resp.web_hook.revision} has been loaded as a draft edit.  Click 'Save Changes' to complete the rollback.  Note that a new revision number will be assigned.`);
+		}
+		
 		this.web_hook = resp.web_hook;
 		this.headers = this.web_hook.headers;
 		if (!this.active) return; // sanity
@@ -249,10 +283,12 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_web_hook_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_web_hook_dialog()">Delete Web Hook...</div>';
-			html += '<div class="button secondary" onMouseUp="$P().do_test_web_hook()"><i class="mdi mdi-test-tube">&nbsp;</i>Test Web Hook...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_save_web_hook()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_web_hook_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_web_hook_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_test_web_hook()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary" onClick="$P().do_save_web_hook()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -265,6 +301,24 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		// this.updateAddRemoveMe('#fe_ewh_email');
 		this.setupBoxButtonFloater();
 		this.setupEditor();
+	}
+	
+	do_export() {
+		// show export dialog
+		app.clearError();
+		var web_hook = this.get_web_hook_form_json();
+		if (!web_hook) return; // error
+		
+		this.showExportOptions({
+			name: 'web hook',
+			dataType: 'web_hook',
+			api: this.args.id ? 'update_web_hook' : 'create_web_hook',
+			data: web_hook
+		});
+	}
+	
+	go_edit_history() {
+		Nav.go( '#WebHooks?sub=history&id=' + this.web_hook.id );
 	}
 	
 	do_test_web_hook() {
@@ -518,7 +572,7 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		var html = '';
 		var rows = this.headers;
 		var cols = ['Header Name', 'Header Value', 'Actions'];
-		var add_link = '<div class="button small secondary" onMouseUp="$P().editHeader(-1)">New Header...</div>';
+		var add_link = '<div class="button small secondary" onClick="$P().editHeader(-1)">New Header...</div>';
 		
 		var targs = {
 			rows: rows,
@@ -531,8 +585,8 @@ Page.WebHooks = class WebHooks extends Page.Base {
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
 			var links = [];
-			links.push( '<span class="link" onMouseUp="$P().editHeader('+idx+')"><b>Edit</b></span>' );
-			links.push( '<span class="link danger" onMouseUp="$P().deleteHeader('+idx+')"><b>Delete</b></span>' );
+			links.push( '<span class="link" onClick="$P().editHeader('+idx+')"><b>Edit</b></span>' );
+			links.push( '<span class="link danger" onClick="$P().deleteHeader('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_big ellip"><i class="mdi mdi-form-textbox">&nbsp;</i><span class="link" onClick="$P().editHeader('+idx+')">' + encode_entities(item.name) + '</span></div>',
@@ -705,6 +759,7 @@ Page.WebHooks = class WebHooks extends Page.Base {
 	onDeactivate() {
 		// called when page is deactivated
 		this.killEditor();
+		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
 	}

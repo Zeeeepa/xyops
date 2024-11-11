@@ -52,7 +52,7 @@ Page.Users = class Users extends Page.Base {
 		
 		html += '<div class="box_title">';
 			html += 'User Accounts';
-			html += '<div class="box_title_widget" style="overflow:visible"><i class="mdi mdi-magnify" onMouseUp="$(\'#fe_ul_search\').focus()">&nbsp;</i><input type="text" id="fe_ul_search" placeholder="Find user..."/></div>';
+			html += '<div class="box_title_widget" style="overflow:visible"><i class="mdi mdi-magnify" onClick="$(\'#fe_ul_search\').focus()">&nbsp;</i><input type="text" id="fe_ul_search" placeholder="Find user..."/></div>';
 			html += '<div class="clear"></div>';
 		html += '</div>';
 		
@@ -61,8 +61,8 @@ Page.Users = class Users extends Page.Base {
 		var self = this;
 		html += this.getPaginatedGrid( resp, cols, 'user', function(user, idx) {
 			var actions = [
-				'<span class="link" onMouseUp="$P().edit_user('+idx+')"><b>Edit</b></span>',
-				'<span class="link danger" onMouseUp="$P().delete_user('+idx+')"><b>Delete</b></span>'
+				'<span class="link" onClick="$P().edit_user('+idx+')"><b>Edit</b></span>',
+				'<span class="link danger" onClick="$P().delete_user('+idx+')"><b>Delete</b></span>'
 			];
 			var avatar_url = '';
 			if (user.avatar) avatar_url = user.avatar.replace(/^\w+\:/, '');
@@ -83,7 +83,8 @@ Page.Users = class Users extends Page.Base {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button secondary ' + (app.config.external_users ? 'disabled' : '') + '" onMouseUp="$P().edit_user(-1)">Add User...</div>';
+			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button secondary ' + (app.config.external_users ? 'disabled' : '') + '" onClick="$P().edit_user(-1)"><i class="mdi mdi-account-plus">&nbsp;</i>New User...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -134,6 +135,10 @@ Page.Users = class Users extends Page.Base {
 		this.show_delete_account_dialog();
 	}
 	
+	go_history() {
+		Nav.go( '#ActivityLog?action=users' );
+	}
+	
 	gosub_new(args) {
 		// create new user
 		var html = '';
@@ -173,9 +178,9 @@ Page.Users = class Users extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_user_edit()">Cancel</div>';
-			if (config.debug) html += '<div class="button" onMouseUp="$P().populate_random_user()">Randomize...</div>';
-			html += '<div class="button primary" onMouseUp="$P().do_new_user()"><i class="mdi mdi-floppy">&nbsp;</i>Create User</div>';
+			html += '<div class="button" onClick="$P().cancel_user_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Cancel</div>';
+			if (config.debug) html += '<div class="button" onClick="$P().populate_random_user()"><i class="mdi mdi-dice-5">&nbsp;</i>Randomize...</div>';
+			html += '<div class="button primary" onClick="$P().do_new_user()"><i class="mdi mdi-floppy">&nbsp;</i>Create User</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -314,9 +319,10 @@ Page.Users = class Users extends Page.Base {
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onMouseUp="$P().cancel_user_edit()">Cancel</div>';
-			html += '<div class="button danger" onMouseUp="$P().show_delete_account_dialog()">Delete Account...</div>';
-			html += '<div class="button primary ' + (app.config.external_users ? 'disabled' : '') + '" onMouseUp="$P().do_save_user()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button mobile_collapse" onClick="$P().cancel_user_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_account_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
+			html += '<div class="button primary ' + (app.config.external_users ? 'disabled' : '') + '" onClick="$P().do_save_user()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -330,6 +336,10 @@ Page.Users = class Users extends Page.Base {
 		if (app.config.external_users) {
 			app.showMessage('warning', "Users are managed by an external system, so making changes here may have little effect.");
 		}
+	}
+	
+	go_edit_history() {
+		Nav.go( '#ActivityLog?action=users&query=' + this.user.username );
 	}
 	
 	upload_avatar() {
@@ -521,7 +531,7 @@ Page.Users = class Users extends Page.Base {
 				spellcheck: 'false',
 				value: ''
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-dice-5" title="Generate Random Password" onMouseUp="$P().generate_password()"></div>',
+			suffix: '<div class="form_suffix_icon mdi mdi-dice-5" title="Generate Random Password" onClick="$P().generate_password()"></div>',
 			caption: user.modified ? "Optionally enter a new password here to reset it.  Please make it secure." : "Enter a password for the account.  Please make it secure."
 		});
 		

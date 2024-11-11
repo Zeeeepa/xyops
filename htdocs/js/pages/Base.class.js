@@ -2051,6 +2051,12 @@ Page.Base = class Base extends Page {
 		// float box buttons if original is offscreen
 		this.boxButtons = this.div.find('.box_buttons');
 		
+		// add hover tooltips to mobile_collapse buttons
+		this.boxButtons.find('.button.mobile_collapse').each( function() {
+			var $this = $(this);
+			$this.attr('title', $this.find('span').text() );
+		} );
+		
 		var $copy = this.boxButtons.clone();
 		$copy.addClass('floater');
 		if (!initially_visible) $copy.addClass('hidden').addClass('gone');
@@ -2587,8 +2593,8 @@ Page.Base = class Base extends Page {
 		html += '</div>';
 		
 		var buttons_html = "";
-		buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()">Copy to Clipboard</div>';
-		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)">Close</div>';
+		buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i>Copy to Clipboard</div>';
+		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Close</div>';
 		
 		Dialog.showSimpleDialog(title, html, buttons_html);
 		
@@ -2618,8 +2624,8 @@ Page.Base = class Base extends Page {
 		
 		var buttons_html = "";
 		if (btn) buttons_html += btn;
-		else buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()">Copy to Clipboard</div>';
-		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)">Close</div>';
+		else buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i>Copy to Clipboard</div>';
+		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Close</div>';
 		
 		Dialog.showSimpleDialog(title, html, buttons_html);
 		

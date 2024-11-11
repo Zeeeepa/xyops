@@ -211,8 +211,7 @@ Page.Alerts = class Alerts extends Page.Base {
 		var query = this.getSearchQuery(args);
 		
 		// compose search query
-		this.records = [];
-		this.opts = {
+		var sopts = {
 			query: query.trim(),
 			offset: args.offset || 0,
 			limit: args.limit || config.items_per_page,
@@ -220,17 +219,17 @@ Page.Alerts = class Alerts extends Page.Base {
 		};
 		switch (args.sort) {
 			case 'date_asc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = 1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = 1;
 			break;
 			
 			case 'date_desc':
-				this.opts.sort_by = '_id'; 
-				this.opts.sort_dir = -1;
+				sopts.sort_by = '_id'; 
+				sopts.sort_dir = -1;
 			break;
 		} // sort
 		
-		app.api.get( 'app/search_alerts', this.opts, this.receiveResults.bind(this) );
+		app.api.get( 'app/search_alerts', sopts, this.receiveResults.bind(this) );
 	}
 	
 	receiveResults(resp) {
