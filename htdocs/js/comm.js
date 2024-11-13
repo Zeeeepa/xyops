@@ -156,6 +156,11 @@ app.comm = {
 				this.handleDataUpdate(data);
 			break;
 			
+			case 'single':
+				// server is sending us a single item update (api_key or user)
+				this.handleSingleDataUpdate(data);
+			break;
+			
 			case 'page_update':
 				// page-specific data update (e.g. live log)
 				this.handlePageUpdate(data);
@@ -235,6 +240,38 @@ app.comm = {
 		
 		// header widgets
 		app.updateAlertCounter();
+	},
+	
+	handleSingleDataUpdate: function(data) {
+		// update single item in app array (api_keys, users, events, etc.)
+		var id_key = (data.list == 'users') ? 'username' : 'id';
+		Debug.trace('comm', "Received single update for: " + data.list + ": " + data.item[id_key] );
+		
+		// setup crit to find a user (via username) or other (via id)
+		var crit = {};
+		crit[id_key] = data.item[id_key];
+		
+		// delete, replace or add new
+		if (data.delete) {
+			delete_object( app[data.list], crit );
+		}
+		else {
+			var idx = find_object_idx( app[data.list], crit );
+			if (idx > -1) app[data.list][idx] = data.item;
+			else app[data.list].push( data.item );
+		}
+		
+		app.presortTables();
+		app.pruneData();
+		
+		// notify page if wanted
+		if (app.page_manager && app.page_manager.current_page_id) {
+			var id = app.page_manager.current_page_id;
+			var page = app.page_manager.find(id);
+			if (page && page.onDataUpdate) {
+				page.onDataUpdate( data.list, app[data.list] );
+			}
+		}
 	},
 	
 	handlePageUpdate: function(data) {
