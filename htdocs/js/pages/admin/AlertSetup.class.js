@@ -115,10 +115,8 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		app.api.post( 'app/update_alert', item, function(resp) {
 			if (!self.active) return; // sanity
 			
-			if (item.enabled) $(elem).closest('tr').removeClass('disabled');
-			else $(elem).closest('tr').addClass('disabled');
-			
-			$(elem).closest('tr').find('div.td_big').html( self.getNiceAlert(item, true) );
+			if (item.enabled) $(elem).closest('ul').removeClass('disabled');
+			else $(elem).closest('ul').addClass('disabled');
 		} );
 	}
 	

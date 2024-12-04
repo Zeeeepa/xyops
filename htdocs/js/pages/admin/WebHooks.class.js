@@ -115,10 +115,8 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 		app.api.post( 'app/update_web_hook', item, function(resp) {
 			if (!self.active) return; // sanity
 			
-			if (item.enabled) $(elem).closest('tr').removeClass('disabled');
-			else $(elem).closest('tr').addClass('disabled');
-			
-			$(elem).closest('tr').find('div.td_big').html( self.getNiceWebHook(item, true) );
+			if (item.enabled) $(elem).closest('ul').removeClass('disabled');
+			else $(elem).closest('ul').addClass('disabled');
 		} );
 	}
 	
@@ -722,7 +720,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 			// check with cache
 			if (find_object(app.web_hooks, { id: id })) {
 				// web_hook taken
-				$elem.css('color','red').html('<span class="mdi mdi-web_hook-circle"></span>').attr('title', "Web Hook ID is taken.");
+				$elem.css('color','red').html('<span class="mdi mdi-alert-circle"></span>').attr('title', "Web Hook ID is taken.");
 				$field.addClass('warning');
 			}
 			else {
@@ -733,7 +731,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 		}
 		else if (id.length) {
 			// bad id
-			$elem.css('color','red').html('<span class="mdi mdi-web_hook-decagram"></span>').attr('title', "Web Hook ID is malformed.");
+			$elem.css('color','red').html('<span class="mdi mdi-alert-decagram"></span>').attr('title', "Web Hook ID is malformed.");
 			$field.addClass('warning');
 		}
 		else {

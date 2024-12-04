@@ -114,10 +114,8 @@ Page.Channels = class Channels extends Page.PageUtils {
 		app.api.post( 'app/update_channel', item, function(resp) {
 			if (!self.active) return; // sanity
 			
-			if (item.enabled) $(elem).closest('tr').removeClass('disabled');
-			else $(elem).closest('tr').addClass('disabled');
-			
-			$(elem).closest('tr').find('div.td_big').html( self.getNiceChannel(item, true) );
+			if (item.enabled) $(elem).closest('ul').removeClass('disabled');
+			else $(elem).closest('ul').addClass('disabled');
 		} );
 	}
 	
@@ -516,7 +514,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 				rows: 5,
 				value: channel.notes
 			}),
-			caption: 'Optionally enter notes for the channel, which will be included in all e-mail notifications.'
+			caption: 'Optionally enter notes for the channel, for your own internal use.'
 		});
 		
 		return html;
@@ -559,7 +557,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 			// check with cache
 			if (find_object(app.channels, { id: id })) {
 				// channel taken
-				$elem.css('color','red').html('<span class="mdi mdi-channel-circle"></span>').attr('title', "Channel ID is taken.");
+				$elem.css('color','red').html('<span class="mdi mdi-alert-circle"></span>').attr('title', "Channel ID is taken.");
 				$field.addClass('warning');
 			}
 			else {
@@ -570,7 +568,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 		}
 		else if (id.length) {
 			// bad id
-			$elem.css('color','red').html('<span class="mdi mdi-channel-decagram"></span>').attr('title', "Channel ID is malformed.");
+			$elem.css('color','red').html('<span class="mdi mdi-alert-decagram"></span>').attr('title', "Channel ID is malformed.");
 			$field.addClass('warning');
 		}
 		else {

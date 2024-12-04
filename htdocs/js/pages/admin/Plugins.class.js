@@ -135,10 +135,8 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		app.api.post( 'app/update_plugin', item, function(resp) {
 			if (!self.active) return; // sanity
 			
-			if (item.enabled) $(elem).closest('tr').removeClass('disabled');
-			else $(elem).closest('tr').addClass('disabled');
-			
-			$(elem).closest('tr').find('div.td_big').html( self.getNicePlugin(item, true) );
+			if (item.enabled) $(elem).closest('ul').removeClass('disabled');
+			else $(elem).closest('ul').addClass('disabled');
 		} );
 	}
 	
@@ -969,7 +967,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 			// check with cache
 			if (find_object(app.plugins, { id: id })) {
 				// plugin taken
-				$elem.css('color','red').html('<span class="mdi mdi-plugin-circle"></span>').attr('title', "Plugin ID is taken.");
+				$elem.css('color','red').html('<span class="mdi mdi-alert-circle"></span>').attr('title', "Plugin ID is taken.");
 				$field.addClass('warning');
 			}
 			else {
@@ -980,7 +978,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		}
 		else if (id.length) {
 			// bad id
-			$elem.css('color','red').html('<span class="mdi mdi-plugin-decagram"></span>').attr('title', "Plugin ID is malformed.");
+			$elem.css('color','red').html('<span class="mdi mdi-alert-decagram"></span>').attr('title', "Plugin ID is malformed.");
 			$field.addClass('warning');
 		}
 		else {
