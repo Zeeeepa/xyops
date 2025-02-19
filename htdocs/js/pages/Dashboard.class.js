@@ -695,7 +695,9 @@ Page.Dashboard = class Dashboard extends Page.Base {
 				"title": def.title,
 				"dataType": def.type,
 				"dataSuffix": def.suffix,
-				"minVertScale": def.minVertScale || 0,
+				"minVertScale": def.min_vert_scale || 0,
+				"delta": def.delta || false,
+				"divideByDelta": def.divide_by_delta || false,
 				"_quick": true
 			});
 			chart.on('mouseover', function(event) { render_chart_overlay(def.id); });
@@ -747,11 +749,10 @@ Page.Dashboard = class Dashboard extends Page.Base {
 		
 		config.quick_monitors.forEach( function(def) {
 			var chart = self.charts[def.id];
-			var layer = find_object( chart.layers, { id: data.id } );
+			var layer_idx = find_object_idx( chart.layers, { id: data.id } );
 			
-			if (layer) {
-				layer.data.push({ x: data.row.date, y: data.row[def.id] || 0 });
-				if (layer.data.length > 60) layer.data.shift();
+			if (layer_idx > -1) {
+				chart.addLayerSample(layer_idx, { x: data.row.date, y: data.row[def.id] || 0 }, 60 );
 			}
 			else {
 				// add new layer (new server just added?)
