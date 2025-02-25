@@ -1025,6 +1025,7 @@ Page.Base = class Base extends Page {
 		var html = '';
 		var counter = Math.min(1, Math.max(0, amount || 0));
 		var bar_width = this.bar_width || 100;
+		if (extra_classes.match(/\b(wider)\b/)) bar_width = 150;
 		var cx = Math.floor( counter * bar_width );
 		var label = '' + Math.floor( (counter / 1.0) * 100 ) + '%';
 		var extra_attribs = show_label ? '' : ('title="' + label + '"');
