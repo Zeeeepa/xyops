@@ -231,12 +231,12 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 		}, */
 		
 		html += '<div class="dash_donut_grid">';
-			html += this.getDonutDashUnit({ value: mem.used, max: mem.total, type: 'bytes', suffix: '', label: 'Used', color: app.colors[2] });
-			html += this.getDonutDashUnit({ value: mem.active, max: mem.total, type: 'bytes', suffix: '', label: 'Active', color: app.colors[3] });
-			html += this.getDonutDashUnit({ value: mem.available, max: mem.total, type: 'bytes', suffix: '', label: 'Available', color: app.colors[0] });
-			html += this.getDonutDashUnit({ value: mem.free, max: mem.total, type: 'bytes', suffix: '', label: 'Free', color: app.colors[1] });
-			html += this.getDonutDashUnit({ value: mem.buffers, max: mem.total, type: 'bytes', suffix: '', label: 'Buffered', color: app.colors[4] });
-			html += this.getDonutDashUnit({ value: mem.cached, max: mem.total, type: 'bytes', suffix: '', label: 'Cached', color: app.colors[5] });
+			html += this.getDonutDashUnit({ id: 'mem_used', value: mem.used, max: mem.total, type: 'bytes', suffix: '', label: 'Used', color: app.colors[2] });
+			html += this.getDonutDashUnit({ id: 'mem_active', value: mem.active, max: mem.total, type: 'bytes', suffix: '', label: 'Active', color: app.colors[3] });
+			html += this.getDonutDashUnit({ id: 'mem_available', value: mem.available, max: mem.total, type: 'bytes', suffix: '', label: 'Available', color: app.colors[0] });
+			html += this.getDonutDashUnit({ id: 'mem_free', value: mem.free, max: mem.total, type: 'bytes', suffix: '', label: 'Free', color: app.colors[1] });
+			html += this.getDonutDashUnit({ id: 'mem_buffers', value: mem.buffers, max: mem.total, type: 'bytes', suffix: '', label: 'Buffered', color: app.colors[4] });
+			html += this.getDonutDashUnit({ id: 'mem_cached', value: mem.cached, max: mem.total, type: 'bytes', suffix: '', label: 'Cached', color: app.colors[5] });
 		html += '</div>';
 		
 		return html;
@@ -250,30 +250,25 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 		var cpu_totals = data.cpu.totals;
 		
 		html += '<div class="dash_donut_grid">';
-			html += this.getDonutDashUnit({ value: cpu_totals.user, max: 100, type: 'float', suffix: '%', label: 'User %', color: app.colors[6] });
-			html += this.getDonutDashUnit({ value: cpu_totals.system, max: 100, type: 'float', suffix: '%', label: 'System %', color: app.colors[7] });
-			html += this.getDonutDashUnit({ value: cpu_totals.nice, max: 100, type: 'float', suffix: '%', label: 'Nice %', color: app.colors[8] });
-			html += this.getDonutDashUnit({ value: cpu_totals.iowait, max: 100, type: 'float', suffix: '%', label: 'I/O Wait %', color: app.colors[9] });
-			html += this.getDonutDashUnit({ value: cpu_totals.irq, max: 100, type: 'float', suffix: '%', label: 'Hard IRQ %', color: app.colors[10] });
-			html += this.getDonutDashUnit({ value: cpu_totals.softirq, max: 100, type: 'float', suffix: '%', label: 'Soft IRQ %', color: app.colors[11] });
+			html += this.getDonutDashUnit({ id: 'cpu_user', value: cpu_totals.user, max: 100, type: 'float', suffix: '%', label: 'User %', color: app.colors[6] });
+			html += this.getDonutDashUnit({ id: 'cpu_system', value: cpu_totals.system, max: 100, type: 'float', suffix: '%', label: 'System %', color: app.colors[7] });
+			html += this.getDonutDashUnit({ id: 'cpu_nice', value: cpu_totals.nice, max: 100, type: 'float', suffix: '%', label: 'Nice %', color: app.colors[8] });
+			html += this.getDonutDashUnit({ id: 'cpu_iowait', value: cpu_totals.iowait, max: 100, type: 'float', suffix: '%', label: 'I/O Wait %', color: app.colors[9] });
+			html += this.getDonutDashUnit({ id: 'cpu_irq', value: cpu_totals.irq, max: 100, type: 'float', suffix: '%', label: 'Hard IRQ %', color: app.colors[10] });
+			html += this.getDonutDashUnit({ id: 'cpu_softirq', value: cpu_totals.softirq, max: 100, type: 'float', suffix: '%', label: 'Soft IRQ %', color: app.colors[11] });
 		html += '</div>';
 		
 		html += '<div style="height:30px;"></div>';
 		
 		var rows = (data.cpu && data.cpu.cpus) ? data.cpu.cpus : [];
 		
-		// var cpus = (data.cpu && data.cpu.cpus) ? data.cpu.cpus : {};
-		// var sorted_keys = Object.keys(cpus).sort( function(a, b) {
-		// 	return parseInt( a.replace(/^cpu/, '') ) - parseInt( b.replace(/^cpu/, '') );
-		// } );
-		// var rows = sorted_keys.map( function(key) { return cpus[key]; } );
-		
 		var cols = ['CPU #', 'User %', 'System %', 'Nice %', 'I/O Wait %', 'Hard IRQ %', 'Soft IRQ %', 'Total %'];
 		
 		var grid_args = {
 			rows: rows,
 			cols: cols,
-			data_type: 'cpu'
+			data_type: 'cpu',
+			grid_template_columns: 'repeat(8, 1fr)'
 		};
 		
 		html += this.getBasicGrid( grid_args, function(item, idx) {
@@ -288,6 +283,10 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 				self.getNiceProgressBar( (100 - item.idle) / 100, 'static wider', true )
 			];
 		}); // grid
+		
+		// piggybacking onto this for storing bar animation state
+		if (!this.donutDashUnits) this.donutDashUnits = {};
+		this.donutDashUnits._bars = rows;
 		
 		return html;
 	}
@@ -349,10 +348,10 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 		// opts: { value, max, type, suffix, label, color }
 		var html = '';
 		var amount = opts.value / (opts.max || 1);
-		var pct = amount * 100;
+		var pct = short_float( amount * 100, 3 );
 		var value_disp = this.getDashValue(opts.value, opts.type, opts.suffix);
 		
-		html += '<div class="dash_donut_container">';
+		html += '<div class="dash_donut_container" id="ddc_' + opts.id + '">';
 			html += '<div class="dash_donut_image" style="background-image:conic-gradient( ' + opts.color + ' ' + pct + '%, var(--border-color) 0);">';
 				html += '<div class="dash_donut_overlay"></div>';
 				html += '<div class="dash_donut_value">' + value_disp + '</div>';
@@ -360,6 +359,9 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 			html += '</div>';
 			// html += '<div class="dash_donut_label">' + opts.label + '</div>';
 		html += '</div>';
+		
+		if (!this.donutDashUnits) this.donutDashUnits = {};
+		this.donutDashUnits[ opts.id ] = opts;
 		
 		return html;
 	}

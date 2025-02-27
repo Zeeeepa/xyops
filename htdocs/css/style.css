@@ -1844,7 +1844,7 @@ i.mdi.mdi-moon-waning-crescent:before {
 	.data_grid.activity_grid > ul > div:nth-child(6) { visibility: hidden; }
 	
 	/* 'CPU #', 'User %', 'System %', 'Nice %', 'I/O Wait %', 'Hard IRQ %', 'Soft IRQ %', 'Total %' */
-	.data_grid.cpu_grid { grid-template-columns: auto auto auto auto auto 0px 0px auto !important; }
+	.data_grid.cpu_grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0px 0px 1fr !important; }
 	.data_grid.cpu_grid > ul > div:nth-child(6) { visibility: hidden; }
 	.data_grid.cpu_grid > ul > div:nth-child(7) { visibility: hidden; }
 	
@@ -2233,7 +2233,7 @@ i.mdi.mdi-moon-waning-crescent:before {
 	.data_grid.activity_grid > ul > div:nth-child(6) { visibility: hidden; }
 	
 	/* 'CPU #', 'User %', 'System %', 'Nice %', 'I/O Wait %', 'Hard IRQ %', 'Soft IRQ %', 'Total %' */
-	.data_grid.cpu_grid { grid-template-columns: auto auto auto auto 0px 0px 0px auto !important; }
+	.data_grid.cpu_grid { grid-template-columns: 1fr 1fr 1fr 1fr 0px 0px 0px 1fr !important; }
 	.data_grid.cpu_grid > ul > div:nth-child(5) { visibility: hidden; }
 	.data_grid.cpu_grid > ul > div:nth-child(6) { visibility: hidden; }
 	.data_grid.cpu_grid > ul > div:nth-child(7) { visibility: hidden; }

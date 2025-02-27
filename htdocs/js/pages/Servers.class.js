@@ -1382,6 +1382,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		// append sample to quickmon chart (real-time from server)
 		// { id, row }
 		var self = this;
+		if (!this.active) return; // sanity
 		
 		config.quick_monitors.forEach( function(def) {
 			var chart = self.charts[def.id];
@@ -1393,10 +1394,174 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		}); // foreach monitor
 		
 		// also update mem and cpu details
-		if (data.data) {
-			this.div.find('#d_vs_mem > .box_content').html( this.getMemDetails(data) );
-			this.div.find('#d_vs_cpus > .box_content').html( this.getCPUDetails(data) );
+		if (data.data && this.donutDashUnits) {
+			// this.div.find('#d_vs_mem > .box_content').html( this.getMemDetails(data) );
+			// this.div.find('#d_vs_cpus > .box_content').html( this.getCPUDetails(data) );
+			this.resetDetailAnimation();
+			this.updateMemDetails(data);
+			this.updateCPUDetails(data);
+			this.startDetailAnimation();
 		}
+	}
+	
+	resetDetailAnimation() {
+		// reset detail animation
+		var raf = !!(this.detailAnimation && this.detailAnimation.raf);
+		this.detailAnimation = { raf, start: Date.now(), duration: 500, donuts: [], bars: [] };
+	}
+	
+	startDetailAnimation() {
+		// start animation frames
+		if (!this.detailAnimation.raf) {
+			this.detailAnimation.raf = true;
+			requestAnimationFrame( this.renderDetailAnimation.bind(this) );
+		}
+	}
+	
+	renderDetailAnimation() {
+		// update animation in progress
+		if (!this.active) return; // sanity
+		
+		var now = Date.now();
+		var anim = this.detailAnimation;
+		anim.raf = false;
+		
+		var progress = Math.min(1.0, (now - anim.start) / anim.duration ); // linear
+		var eased = progress * progress * (3 - 2 * progress); // ease-in-out
+		
+		// donuts need their conic-gradient redrawn
+		anim.donuts.forEach( function(donut) {
+			var pct = short_float( donut.from + ((donut.to - donut.from) * eased), 3 );
+			donut.elem.css('background-image', 'conic-gradient( ' + donut.color + ' ' + pct + '%, var(--border-color) 0)');
+		} );
+		
+		// bars just need their width changed
+		anim.bars.forEach( function(bar) {
+			var cx = Math.floor( bar.from + ((bar.to - bar.from) * eased) );
+			bar.elem.css( 'width', '' + cx + 'px' );
+		} );
+		
+		if (progress < 1.0) {
+			// more frames still needed
+			anim.raf = true;
+			requestAnimationFrame( this.renderDetailAnimation.bind(this) );
+		}
+		else {
+			// done, cleanup
+			delete this.detailAnimation;
+		}
+	}
+	
+	updateMemDetails(snapshot) {
+		// update mem donuts smoothly
+		var self = this;
+		var data = snapshot.data;
+		var mem = data.memory || data.mem;
+		var $cont = this.div.find('#d_vs_mem');
+		
+		for (var id in this.donutDashUnits) {
+			if (id.match(/^mem_(\w+)$/)) {
+				var key = RegExp.$1;
+				var opts = this.donutDashUnits[id];
+				
+				var new_value = mem[key] || 0;
+				var old_value = opts.value || 0;
+				
+				var new_pct = short_float( (new_value / (opts.max || 1)) * 100, 3 );
+				var old_pct = short_float( (old_value / (opts.max || 1)) * 100, 3 );
+				
+				var value_disp = this.getDashValue(new_value, opts.type, opts.suffix);
+				var $elem = $cont.find('#ddc_' + id + ' > div.dash_donut_image');
+				$elem.find('> div.dash_donut_value').html( value_disp );
+				
+				// add animation controller for donut change
+				if (new_pct != old_pct) this.detailAnimation.donuts.push({
+					elem: $elem,
+					from: old_pct,
+					to: new_pct,
+					color: opts.color
+				});
+				
+				opts.value = new_value;
+			}
+		}
+	}
+	
+	updateCPUDetails(snapshot) {
+		// update cpu donuts and progress bars smoothly
+		var self = this;
+		var data = snapshot.data;
+		var cpu_totals = data.cpu.totals;
+		var $cont = this.div.find('#d_vs_cpus');
+		
+		for (var id in this.donutDashUnits) {
+			if (id.match(/^cpu_(\w+)$/)) {
+				var key = RegExp.$1;
+				var opts = this.donutDashUnits[id];
+				
+				var new_value = cpu_totals[key] || 0;
+				var old_value = opts.value || 0;
+				
+				var new_pct = short_float( (new_value / (opts.max || 1)) * 100, 3 );
+				var old_pct = short_float( (old_value / (opts.max || 1)) * 100, 3 );
+				
+				var value_disp = this.getDashValue(new_value, opts.type, opts.suffix);
+				var $elem = $cont.find('#ddc_' + id + ' > div.dash_donut_image');
+				$elem.find('> div.dash_donut_value').html( value_disp );
+				
+				// add animation controller for donut change
+				if (new_pct != old_pct) this.detailAnimation.donuts.push({
+					elem: $elem,
+					from: old_pct,
+					to: new_pct,
+					color: opts.color
+				});
+				
+				opts.value = new_value;
+			}
+		}
+		
+		// grid and bars
+		var bar_width = 150;
+		var rows = (data.cpu && data.cpu.cpus) ? data.cpu.cpus : [];
+		var old_rows = this.donutDashUnits._bars;
+		var $grid_rows = $cont.find('div.data_grid.cpu_grid ul.grid_row');
+		
+		$grid_rows.each( function(idx) {
+			var item = rows[idx];
+			var old_item = old_rows[idx];
+			var $row = $(this);
+			var $cols = $row.find('> div');
+			
+			// $cols[0] is the numerical index label (#1, #2, etc.)
+			$cols[1].innerHTML = short_float(item.user) + '%';
+			$cols[2].innerHTML = short_float(item.system) + '%';
+			$cols[3].innerHTML = short_float(item.nice) + '%';
+			$cols[4].innerHTML = short_float(item.iowait) + '%';
+			$cols[5].innerHTML = short_float(item.irq) + '%';
+			$cols[6].innerHTML = short_float(item.softirq) + '%';
+			
+			var $bar = $cols.eq(7).find('div.progress_bar_container');
+			var amount = (100 - item.idle) / 100;
+			var counter = Math.min(1, Math.max(0, amount || 0));
+			var cx = Math.floor( counter * bar_width );
+			var label = '' + Math.floor( (counter / 1.0) * 100 ) + '%';
+			
+			$bar.find('div.progress_bar_label').html( label ); // should update 2 elements
+			
+			var old_amount = (100 - old_item.idle) / 100;
+			var old_counter = Math.min(1, Math.max(0, old_amount || 0));
+			var old_cx = Math.floor( old_counter * bar_width );
+			
+			// add animation controller for bar change
+			if (cx != old_cx) self.detailAnimation.bars.push({
+				elem: $bar.find('div.progress_bar_inner'),
+				from: old_cx,
+				to: cx
+			});
+		} );
+		
+		this.donutDashUnits._bars = rows;
 	}
 	
 	applyQuickMonitorFilter(elem) {
@@ -1666,6 +1831,8 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		delete this.server;
 		delete this.snapshot;
 		delete this.online;
+		delete this.donutDashUnits;
+		delete this.detailAnimation;
 		
 		// destroy charts if applicable (view page)
 		if (this.charts) {
