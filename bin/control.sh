@@ -116,7 +116,7 @@ do
 			exit 1;
 		fi
 		shift
-		node --trace-warnings $HOMEDIR/lib/main.js --debug --debug_level 9 --echo "$@"
+		node --trace-warnings $HOMEDIR/lib/main.js --debug --debug_level 9 --repl --color --echo "$@"
 		exit
 	;;
 	setup)
