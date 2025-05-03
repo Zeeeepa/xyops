@@ -78,6 +78,27 @@
 		}
 	},
 	
+	"satellite": {
+		"base_url": "https://github.com/pixlcore/orchestra-satellite/releases",
+		"version": "latest",
+		"cache_ttl": 86400,
+		"config": { 
+			"secure": false,
+			"socket_opts": { "rejectUnauthorized": false },
+			"pid_file": "pid.txt",
+			"log_dir": "logs",
+			"log_filename": "satellite.log",
+			"log_crashes": true,
+			"log_archive_path": "logs/archives/[filename]-[yyyy]-[mm]-[dd].log.gz",
+			"log_archive_keep": "7 days",
+			"temp_dir": "temp",
+			"debug_level": 5,
+			"child_kill_timeout": 10,
+			"max_sleep_ms": 5000,
+			"monitoring_enabled": true
+		}
+	},
+	
 	"quick_monitors": [
 		{ "id": "_qm_cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "", "min_vert_scale": 1.0 },
 		{ "id": "_qm_cpu_usage", "title": "CPU Usage %", "source": "cpu.currentLoad", "type": "float", "suffix": "%", "min_vert_scale": 100 },
@@ -85,11 +106,11 @@
 		{ "id": "_qm_mem_used", "title": "Memory in Use", "source": "mem.used", "type": "bytes", "suffix": "" },
 		{ "id": "_qm_mem_avail", "title": "Memory Available", "source": "mem.available", "type": "bytes", "suffix": "" },
 		
-		{ "id": "_qm_disk_read_sec", "title": "Disk Read (Bytes)", "source": "fs.rx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "divide_by_delta": true },
-		{ "id": "_qm_disk_write_sec", "title": "Disk Write (Bytes)", "source": "fs.wx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "divide_by_delta": true },
+		{ "id": "_qm_disk_read_sec", "title": "Disk Read (Bytes)", "source": "fs.rx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "delta_min_value": 0, "divide_by_delta": true },
+		{ "id": "_qm_disk_write_sec", "title": "Disk Write (Bytes)", "source": "fs.wx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "delta_min_value": 0, "divide_by_delta": true },
 		
-		{ "id": "_qm_net_in_sec", "title": "Network In (Bytes)", "source": "net.rx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "divide_by_delta": true },
-		{ "id": "_qm_net_out_sec", "title": "Network Out (Bytes)", "source": "net.tx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "divide_by_delta": true }
+		{ "id": "_qm_net_in_sec", "title": "Network In (Bytes)", "source": "net.rx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "delta_min_value": 0, "divide_by_delta": true },
+		{ "id": "_qm_net_out_sec", "title": "Network Out (Bytes)", "source": "net.tx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "delta_min_value": 0, "divide_by_delta": true }
 	],
 	
 	"default_user": {
@@ -266,8 +287,9 @@
 		"http_max_concurrent_requests": 32,
 		"http_log_requests": true,
 		"http_legacy_callback_support": false,
-		"http_startup_message": true,
+		"http_startup_message": false,
 		"http_debug_ttl": true,
+		"http_debug_bind_local": true,
 		
 		"https": true,
 		"https_port": 5523,
