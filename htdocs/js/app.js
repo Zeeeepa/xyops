@@ -104,6 +104,7 @@ app.extend({
 			{ ID: 'Masters' },
 			{ ID: 'Servers' },
 			{ ID: 'ServerHist' },
+			{ ID: 'GroupHist' },
 			{ ID: 'Snapshots' },
 			{ ID: 'Alerts' },
 			{ ID: 'System' }
