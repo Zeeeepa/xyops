@@ -290,7 +290,8 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		
 		app.setHeaderNav([
 			{ icon: 'lan', loc: '#Groups?sub=list', title: 'Server Groups' },
-			{ icon: this.group.icon || 'server-network', title: this.group.title }
+			{ icon: this.group.icon || 'server-network', loc: '#Groups?sub=view&id=' + this.group.id, title: this.group.title },
+			{ icon: 'file-edit-outline', title: "Edit Group" }
 		]);
 		
 		html += '<div class="box">';
@@ -618,7 +619,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		html += '<div class="box" style="border:none;">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_left">Live &mdash; Real-Time View</div>';
-				html += '<div class="box_title_left"><div class="button secondary" onClick="$P().chooseHistoricalView()"><i class="mdi mdi-calendar-cursor">&nbsp;</i>Change...</div></div>';
+				html += '<div class="box_title_left"><div class="button secondary" onClick="$P().chooseHistoricalView(true)"><i class="mdi mdi-calendar-cursor">&nbsp;</i>Change...</div></div>';
 				
 				html += '<div class="box_title_right"><div class="button primary" onClick="$P().createSnapshot()"><i class="mdi mdi-monitor-eye">&nbsp;</i>Snapshot</div></div>';
 				html += '<div class="box_title_right" id="d_vg_watch_btn">' + this.getWatchButton() + '</div>';
@@ -669,7 +670,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 					html += '</div>';
 					
 					html += '<div>';
-						html += '<div class="info_label">Active Servers</div>';
+						html += '<div class="info_label">Servers</div>';
 						html += '<div class="info_value" id="d_vg_stat_servers">' + commify(this.servers.length) + '</div>';
 					html += '</div>';
 					
@@ -760,7 +761,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		html += '<div class="box" id="d_vg_quickmon" style="display:none">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyQuickMonitorFilter(this)"></div>';
-				html += this.getChartSizeSelector();
+				html += this.getChartSizeSelector('chart_size_quick');
 				html += 'Quick Look &mdash; Last Minute <span class="s_grp_filtered"></span>';
 			html += '</div>';
 			html += '<div class="box_content table">';
@@ -855,7 +856,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		var self = this;
 		var group = this.group;
 		var html = '';
-		html += '<div class="chart_grid_horiz ' + (app.getPref('chart_size') || 'medium') + '">';
+		html += '<div class="chart_grid_horiz ' + (app.getPref('chart_size_quick') || 'medium') + '">';
 		
 		config.quick_monitors.forEach( function(def) {
 			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
@@ -1158,7 +1159,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 	}
 	
 	renderActiveJobs() {
-		// show all active jobs for server
+		// show all active jobs for group
 		var self = this;
 		var html = '';
 		
@@ -1543,10 +1544,6 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		
 		// update chart layers and delete old ones
 		this.updateChartLayers();
-	}
-	
-	chooseHistoricalView() {
-		// TODO: this
 	}
 	
 	openWatchDialog() {
