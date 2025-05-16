@@ -770,6 +770,9 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		this.servers = servers;
 		this.epoch = snapshot.date;
 		
+		// give hint for behavior in components (like the server table)
+		this.groupMode = 'snapshot';
+		
 		app.setHeaderNav([
 			{ icon: 'monitor-multiple', loc: '#Snapshots?sub=list', title: 'Snapshots' },
 			{ icon: 'monitor-screenshot', title: "Group Snapshot Details" }
