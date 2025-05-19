@@ -29,6 +29,9 @@ body.highcon .multiselect .item {
 body.highcon .button {
 	--shadow-color: rgb(233, 236, 240);
 }
+body.highcon div.header_widget:hover, body.highcon div.header_widget.popped {
+	--shadow-color: rgb(233, 236, 240);
+}
 
 /* Low Contrast */
 
