@@ -164,13 +164,13 @@ Page.Job = class Job extends Page.PageUtils {
 					// html += '<div class="button right secondary" onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json">&nbsp;</i>View JSON...</div>';
 					// html += '<div class="button right danger" onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Job...</div>';
 					
-					html += '<div class="button icon right" title="Run Again" onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast"></i></div>';
+					html += '<div class="button icon right danger" title="Delete Job..." onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline"></i></div>';
 					
 					html += '<div class="button icon right secondary" title="Add Comment..." onClick="$P().do_edit_comment(-1)"><i class="mdi mdi-comment-processing-outline"></i></div>';
 					html += '<div class="button icon right secondary" title="Update Tags..." onMouseDown="$P().do_update_tags(this)"><i class="mdi mdi-tag-plus-outline"></i></div>';
 					
 					// html += '<div class="button icon right secondary" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
-					html += '<div class="button icon right danger" title="Delete Job..." onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline"></i></div>';
+					html += '<div class="button icon right" title="Run Again" onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast"></i></div>';
 					
 					html += '<div class="clear"></div>';
 				}
@@ -195,7 +195,7 @@ Page.Job = class Job extends Page.PageUtils {
 					// row 1
 					html += '<div>';
 						html += '<div class="info_label">Job ID</div>';
-						html += '<div class="info_value">' + this.getNiceJob(job) + '</div>';
+						html += '<div class="info_value monospace">' + this.getNiceCopyableID(job.id) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -1007,10 +1007,27 @@ Page.Job = class Job extends Page.PageUtils {
 		else delete this.logSpool;
 	}
 	
+	getEmptyLogMessageHTML() {
+		// get custom empty log message for job state
+		var html = '';
+		
+		switch (this.job.state) {
+			case 'queued':
+			case 'start_delay':
+			case 'retry_delay':
+				html = 'Job is currently in state:&nbsp;&nbsp;' + this.getNiceJobState(this.job);
+			break;
+			
+			default:
+				html = 'Waiting for job output...';
+			break;
+		} // switch state
+		
+		return html;
+	}
+	
 	setupLiveJobLog() {
-		// this.term = new Terminal();
-		// this.term.open( document.getElementById('d_live_job_log') );
-        // this.term.write( 'Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ' );
+		// kickstart the log stream
 		var self = this;
 		
 		if (this.emptyLogAttempts >= 3) return;
@@ -1025,7 +1042,7 @@ Page.Job = class Job extends Page.PageUtils {
 				self.appendLiveJobLog(text);
 			}
 			else if (!self.emptyLogMessage) {
-				self.div.find('#d_live_job_log').append( '<div class="loading_container"><div class="loading"></div></div>' );
+				self.div.find('#d_live_job_log').append( '<div class="inline_page_message">' + self.getEmptyLogMessageHTML() + '</div>' );
 				self.emptyLogMessage = true;
 			}
 			
@@ -1043,7 +1060,7 @@ Page.Job = class Job extends Page.PageUtils {
 		var need_scroll = ((scroll_max - scroll_y) <= 10);
 		
 		if (this.emptyLogMessage) {
-			$cont.find('div.loading_container').remove();
+			$cont.find('div.inline_page_message').remove();
 			// $cont.addClass('active');
 			this.emptyLogMessage = false;
 		}
@@ -1991,6 +2008,11 @@ Page.Job = class Job extends Page.PageUtils {
 			
 			// race condition with setting up live log and jobs that immediately print something at startup
 			if (this.job.log_file_size && this.emptyLogMessage) this.setupLiveJobLog();
+			
+			// massage UX with jobs coming out of queue, delay, etc.
+			if (this.emptyLogMessage && !this.job.log_file_size) {
+				this.div.find('#d_live_job_log > div.inline_page_message').html( this.getEmptyLogMessageHTML() );
+			}
 		}
 		
 		// special behavior for queued jobs, they are NOT in app.activeJobs client-side, so just wait for it to appear
