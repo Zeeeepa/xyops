@@ -222,7 +222,7 @@ Page.Search = class Search extends Page.Base {
 							title: 'Date Range',
 							options: date_items.map( function(item) { 
 								return item[0] ? { id: item[0], title: item[1], icon: 'calendar-range' } : item; 
-							} ),
+							} ).concat([ { id: 'custom', title: 'Custom...', icon: 'cog-outline' } ]),
 							value: args.date,
 							'data-shrinkwrap': 1
 						})
@@ -277,7 +277,12 @@ Page.Search = class Search extends Page.Base {
 		SingleSelect.init( this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_group, #fe_s_sort') );
 		// $('.header_search_widget').hide();
 		
-		this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_group, #fe_s_sort').on('change', function() {
+		this.div.find('#fe_s_date').on('change', function() {
+			if (this.value == 'custom') self.showDateRangePicker( self.navSearch.bind(self) );
+			else self.navSearch();
+		});
+		
+		this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_group, #fe_s_sort').on('change', function() {
 			self.navSearch();
 		});
 		
@@ -347,7 +352,13 @@ Page.Search = class Search extends Page.Base {
 		if (group) args.group = group;
 		
 		var date = this.div.find('#fe_s_date').val();
-		if (date) args.date = date;
+		if (date) {
+			args.date = date;
+			if (date == 'custom') {
+				args.start = this.args.start || yyyy_mm_dd(0, '-');
+				args.end = this.args.end || yyyy_mm_dd(0, '-');
+			}
+		}
 		
 		var sort = this.div.find('#fe_s_sort').val();
 		if (sort != 'date_desc') args.sort = sort;
