@@ -427,7 +427,7 @@ Page.Base = class Base extends Page {
 	getNiceTarget(target) {
 		// get formatted target, which may be a group or a server
 		if (find_object(app.groups, { id: target })) return this.getNiceGroup(target, true);
-		if (find_object(app.servers, { hostname: target })) return this.getNiceServer(target, true);
+		if (find_object(app.servers, { id: target })) return this.getNiceServer(target, true);
 		return target;
 	}
 	
@@ -481,6 +481,25 @@ Page.Base = class Base extends Page {
 		else {
 			html += icon + tag.title;
 		}
+		html += '</span>';
+		
+		return html;
+	}
+	
+	getNiceAlgo(id) {
+		// get nice event target algorithm
+		var default_icon = 'arrow-decision';
+		var algo = find_object( config.ui.event_target_algo_menu, { id: id } );
+		if (!algo && id.match(/^monitor\:(\w+)$/)) {
+			var mon_id = RegExp.$1;
+			var mon_def = find_object( app.monitors, { id: mon_id } );
+			if (mon_def) algo = mon_def;
+		}
+		if (!algo) return 'n/a';
+		
+		var html = '<span class="nowrap">';
+		var icon = '<i class="mdi mdi-' + (algo.icon || default_icon) + '"></i>';
+		html += icon + algo.title;
 		html += '</span>';
 		
 		return html;
@@ -1322,6 +1341,58 @@ Page.Base = class Base extends Page {
 		this.div.find('#d_' + dom_prefix + '_reslim_table').html( html );
 	}
 	
+	getResLimitDisplayArgs(item) {
+		// get nice title and description for resource limit
+		var nice_title = '';
+		var nice_desc = '';
+		var icon = 'gauge';
+		
+		switch (item.type) {
+			case 'mem':
+				nice_title = "Max Memory";
+				nice_desc = get_text_from_bytes(item.amount) + " for " + get_text_from_seconds(item.duration, false, true);
+			break;
+			
+			case 'cpu':
+				nice_title = "Max CPU %";
+				nice_desc = item.amount + "% for " + get_text_from_seconds(item.duration, false, true);
+			break;
+			
+			case 'log':
+				nice_title = "Max Log Size";
+				nice_desc = get_text_from_bytes(item.amount);
+			break;
+			
+			case 'time':
+				nice_title = "Max Run Time";
+				nice_desc = get_text_from_seconds(item.duration, false, true);
+			break;
+			
+			case 'job':
+				nice_title = "Max Jobs";
+				if (!item.amount) nice_desc = "None";
+				else nice_desc = "Up to " + commify(item.amount) + " concurrent " + pluralize("job", item.amount);
+			break;
+			
+			case 'retry':
+				nice_title = "Max Retries";
+				if (!item.amount) nice_desc = "No retries will be attempted";
+				else {
+					nice_desc = "Up to " + commify(item.amount);
+					if (item.duration) nice_desc += " (" + get_text_from_seconds(item.duration, false, true) + " delay)";
+				}
+			break;
+			
+			case 'queue':
+				nice_title = "Max Queue";
+				if (!item.amount) nice_desc = "No jobs allowed in queue";
+				else nice_desc = "Up to " + commify(item.amount) + " " + pluralize("job", item.amount) + " allowed in queue";
+			break;
+		} // switch item.type
+		
+		return { nice_title, nice_desc, icon };
+	}
+	
 	getResLimitTable() {
 		// get html for resource limit table
 		var self = this;
@@ -1349,57 +1420,14 @@ Page.Base = class Base extends Page {
 			actions.push( '<span class="link" onMouseUp="$P().editResLimit('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onMouseUp="$P().deleteResLimit('+idx+')"><b>Delete</b></span>' );
 			
-			var nice_title = '';
-			var nice_desc = '';
-			switch (item.type) {
-				case 'mem':
-					nice_title = "Max Memory";
-					nice_desc = get_text_from_bytes(item.amount) + " for " + get_text_from_seconds(item.duration, false, true);
-				break;
-				
-				case 'cpu':
-					nice_title = "Max CPU %";
-					nice_desc = item.amount + "% for " + get_text_from_seconds(item.duration, false, true);
-				break;
-				
-				case 'log':
-					nice_title = "Max Log Size";
-					nice_desc = get_text_from_bytes(item.amount);
-				break;
-				
-				case 'time':
-					nice_title = "Max Run Time";
-					nice_desc = get_text_from_seconds(item.duration, false, true);
-				break;
-				
-				case 'job':
-					nice_title = "Max Jobs";
-					if (!item.amount) nice_desc = "None";
-					else nice_desc = "Up to " + commify(item.amount) + " concurrent " + pluralize("job", item.amount);
-				break;
-				
-				case 'retry':
-					nice_title = "Max Retries";
-					if (!item.amount) nice_desc = "No retries will be attempted";
-					else {
-						nice_desc = "Up to " + commify(item.amount);
-						if (item.duration) nice_desc += " (" + get_text_from_seconds(item.duration, false, true) + " delay)";
-					}
-				break;
-				
-				case 'queue':
-					nice_title = "Max Queue";
-					if (!item.amount) nice_desc = "No jobs allowed in queue";
-					else nice_desc = "Up to " + commify(item.amount) + " " + pluralize("job", item.amount) + " allowed in queue";
-				break;
-			} // switch item.type
+			var { nice_title, nice_desc, icon } = self.getResLimitDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
 					checked: item.enabled,
 					onChange: '$P().toggleResLimitEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big nowrap"><span class="link" onClick="$P().editResLimit('+idx+')"><i class="mdi mdi-gauge"></i>' + nice_title + '</span></div>',
+				'<div class="td_big nowrap"><span class="link" onClick="$P().editResLimit('+idx+')"><i class="mdi mdi-' + icon + '"></i>' + nice_title + '</span></div>',
 				'<div class="ellip">' + nice_desc + '</div>',
 				actions.join(' | ')
 			];
@@ -1647,8 +1675,8 @@ Page.Base = class Base extends Page {
 		// get display args for job action
 		// returns: { trigger, type, text, desc, icon }
 		var trigger_titles = {
-			'start': "On Job Start",
-			'complete': "On Job Completion",
+			'start': "On Start",
+			'complete': "On Completion",
 			'success': "On Success",
 			'warning': "On Warning",
 			'error': "On Error",
@@ -1808,9 +1836,9 @@ Page.Base = class Base extends Page {
 				id: 'fe_eja_trigger',
 				title: 'Select Action Trigger',
 				options: [ 
-					{ id: 'start', title: "On Job Start", icon: 'play-circle' },
-					{ id: 'complete', title: "On Job Completion", icon: 'stop-circle' },
-					{ id: 'success', title: "On Success", icon: 'check-circle-outline', group: "On Job Result:" },
+					{ id: 'start', title: "On Start", icon: 'play-circle' },
+					{ id: 'complete', title: "On Completion", icon: 'stop-circle' },
+					{ id: 'success', title: "On Success", icon: 'check-circle-outline', group: "On Result:" },
 					{ id: 'error', title: "On Error", icon: 'alert-decagram-outline' },
 					{ id: 'warning', title: "On Warning", icon: 'alert-outline' },
 					{ id: 'critical', title: "On Critical", icon: 'fire-alert' },
