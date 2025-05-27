@@ -271,6 +271,30 @@
 				"compress": true,
 				"keep": 7
 			}
+		},
+		
+		"AWS": {
+			"region": "us-west-1",
+			"credentials": {
+				"accessKeyId": "", 
+				"secretAccessKey": ""
+			}
+		},
+		
+		"S3": {
+			"connectTimeout": 5000,
+			"socketTimeout": 5000,
+			"maxAttempts": 50,
+			"keyPrefix": "",
+			"fileExtensions": true,
+			"params": {
+				"Bucket": ""
+			},
+			"cache": {
+				"enabled": true,
+				"maxItems": 1000,
+				"maxBytes": 10485760
+			}
 		}
 	},
 	
