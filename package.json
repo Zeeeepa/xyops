@@ -1,6 +1,7 @@
 {
 	"name": "orchestra",
 	"version": "0.0.1",
+	"private": true,
 	"description": "A complete task scheduler and server monitoring system.",
 	"author": "Joseph Huckaby <jhuckaby@gmail.com>",
 	"homepage": "https://github.com/jhuckaby/orchestra",
