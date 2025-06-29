@@ -6,22 +6,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		// called once at page load
 		this.default_sub = 'list';
 		this.dom_prefix = 'ep';
-		this.ctype_labels = {
-			text: "Text Field",
-			textarea: "Text Box",
-			code: "Code Editor",
-			checkbox: "Checkbox",
-			select: "Menu",
-			hidden: "Hidden"
-		};
-		this.ctype_icons = {
-			text: "form-textbox",
-			textarea: "form-textarea",
-			code: "code-json",
-			checkbox: "checkbox-marked-outline",
-			select: "form-dropdown",
-			hidden: "eye-off-outline"
-		};
+		this.controlTypes = ['checkbox', 'code', 'hidden', 'select', 'text', 'textarea'];
 	}
 	
 	onActivate(args) {
@@ -231,15 +216,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		this.setPluginType();
 		this.setupBoxButtonFloater();
 		this.setupEditor();
-		
-		this.setupDraggableGrid({
-			table_sel: this.div.find('div.data_grid'), 
-			handle_sel: 'div.td_drag_handle', 
-			drag_ghost_sel: 'div:nth-child(2)', 
-			drag_ghost_x: 5, 
-			drag_ghost_y: 10, 
-			callback: this.moveParam.bind(this)
-		});
+		this.renderParamEditor();
 	}
 	
 	cancel_plugin_edit() {
@@ -328,15 +305,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		this.setDefaultEditorMode();
 		this.setupEditor();
 		this.setupBoxButtonFloater();
-		
-		this.setupDraggableGrid({
-			table_sel: this.div.find('div.data_grid'), 
-			handle_sel: 'div.td_drag_handle', 
-			drag_ghost_sel: 'div:nth-child(2)', 
-			drag_ghost_x: 5, 
-			drag_ghost_y: 10, 
-			callback: this.moveParam.bind(this)
-		});
+		this.renderParamEditor();
 	}
 	
 	do_export() {
@@ -513,7 +482,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		html += this.getFormRow({
 			id: 'd_ep_params',
 			label: 'Parameters:',
-			content: '<div id="d_ep_params_table">' + this.getParamsTable() + '</div>',
+			content: '<div id="d_params_table"></div>',
 			caption: 'Parameters are passed to your Plugin via JSON, and as environment variables. For example, you can use this to customize the PATH variable, if your Plugin requires it.'
 		});
 		
@@ -601,8 +570,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		// swap out the plugin type dynamic caption
 		var plugin_type = $('#fe_ep_type').val();
 		var md = config.ui.plugin_type_descriptions[ plugin_type ];
-		var html = marked(md, config.ui.marked_config).trim().replace(/^<p>(.+)<\/p>$/, '$1');
-		this.div.find('#s_ep_plugin_type_desc').html( html );
+		this.div.find('#s_ep_plugin_type_desc').html( inline_marked(md) );
 		
 		// hide/show sections based on new type
 		switch (plugin_type) {
@@ -618,305 +586,6 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				this.div.find('#d_ep_format').hide();
 			break;
 		} // switch plugin_type
-	}
-	
-	renderParamEditor() {
-		// render plugin param editor
-		var html = this.getParamsTable();
-		this.div.find('#d_ep_params_table').html( html );
-		
-		this.setupDraggableGrid({
-			table_sel: this.div.find('div.data_grid'), 
-			handle_sel: 'div.td_drag_handle', 
-			drag_ghost_sel: 'div:nth-child(2)', 
-			drag_ghost_x: 5, 
-			drag_ghost_y: 10, 
-			callback: this.moveParam.bind(this)
-		});
-	}
-	
-	getParamsTable() {
-		// get html for params table
-		var self = this;
-		var html = '';
-		var rows = this.params;
-		var cols = ['<i class="mdi mdi-menu"></i>', 'Label', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onClick="$P().editParam(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Param...</div>';
-		
-		var targs = {
-			rows: rows,
-			cols: cols,
-			data_type: 'param',
-			class: 'data_grid',
-			empty_msg: add_link,
-			always_append_empty_msg: true,
-			grid_template_columns: '40px auto auto auto auto'
-		};
-		
-		html += this.getCompactGrid(targs, function(item, idx) {
-			var actions = [];
-			actions.push( '<span class="link" onClick="$P().editParam('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
-			
-			var nice_type = self.ctype_labels[item.type];
-			var nice_icon = self.ctype_icons[item.type];
-			var nice_label_icon = item.locked ? 'lock' : 'cube-outline';
-			
-			var param = item;
-			var pairs = [];
-			switch (param.type) {
-				case 'text':
-					if (param.value.length) pairs.push([ 'Default', '&ldquo;' + param.value + '&rdquo;' ]);
-					else pairs.push([ "(No default)" ]);
-				break;
-				
-				case 'textarea':
-					if (param.value.length) pairs.push([ 'Default', '(' + param.value.length + ' chars)' ]);
-					else pairs.push([ "(No default)" ]);
-				break;
-				
-				case 'code':
-					if (param.value.length) pairs.push([ 'Default', '(' + param.value.length + ' chars)' ]);
-					else pairs.push([ "(No default)" ]);
-				break;
-				
-				case 'checkbox':
-					pairs.push([ 'Default', param.value ? 'Checked' : 'Unchecked' ]);
-					if (!param.value) nice_icon = 'checkbox-blank-outline';
-				break;
-				
-				case 'hidden':
-					pairs.push([ 'Value', '&ldquo;' + param.value + '&rdquo;' ]);
-				break;
-				
-				case 'select':
-					pairs.push([ 'Items', '(' + param.value + ')' ]);
-				break;
-			}
-			for (var idy = 0, ley = pairs.length; idy < ley; idy++) {
-				if (pairs[idy].length == 2) pairs[idy] = '<b>' + pairs[idy][0] + ':</b> ' + pairs[idy][1];
-				else pairs[idy] = pairs[idy][0];
-			}
-			
-			return [
-				// '<div class="td_big mono">' + item.id + '</div>',
-				'<div class="td_drag_handle" draggable="true" title="Drag to reorder"><i class="mdi mdi-menu"></i></div>',
-				'<div class="td_big ellip" title="ID: ' + item.id + '"><i class="mdi mdi-' + nice_label_icon + '">&nbsp;</i><span class="link" onClick="$P().editParam('+idx+')">' + item.title + '</span></div>',
-				'<div class="ellip"><i class="mdi mdi-' + nice_icon + '">&nbsp;</i>' + nice_type + '</div>',
-				'<div class="ellip">' + pairs.join(', ') + '</div>',
-				'<div class="">' + actions.join(' | ') + '</div>'
-			];
-		} ); // getCompactGrid
-		
-		return html;
-	}
-	
-	moveParam($rows) {
-		// user completed a drag-drop reorder op
-		var self = this;
-		var params = [];
-		
-		$rows.each( function(idx) {
-			var $row = $(this);
-			var id = $row.data('id');
-			params.push( find_object( self.params, { id: id } ) );
-		});
-		
-		this.params = this.plugin.params = params;
-	}
-	
-	editParam(idx) {
-		// show dialog to configure param
-		var self = this;
-		var param = (idx > -1) ? this.params[idx] : { type: 'text', value: '' };
-		var title = (idx > -1) ? "Editing Parameter" : "New Parameter";
-		var btn = (idx > -1) ? ['check-circle', "Apply Changes"] : ['plus-circle', "Add Param"];
-		var plugin_type = $('#fe_ep_type').val();
-		
-		// hide code type if non-event plugin
-		var ctypes = Object.keys(this.ctype_labels).map (function(key) { return { id: key, title: self.ctype_labels[key] }; } );
-		sort_by( ctypes, 'title' );
-		
-		var html = '<div class="dialog_box_content">';
-		
-		// id
-		html += this.getFormRow({
-			label: 'Param ID:',
-			content: this.getFormText({
-				id: 'fe_epa_id',
-				class: 'monospace',
-				spellcheck: 'false',
-				value: param.id
-			}),
-			caption: 'Enter a unique ID for the parameter (alphanumerics only).'
-		});
-		
-		// label
-		html += this.getFormRow({
-			label: 'Label:',
-			content: this.getFormText({
-				id: 'fe_epa_title',
-				spellcheck: 'false',
-				value: param.title
-			}),
-			caption: 'Enter a label for the parameter, for display purposes.'
-		});
-		
-		// type
-		html += this.getFormRow({
-			label: 'Control Type:',
-			content: this.getFormMenuSingle({
-				id: 'fe_epa_type',
-				title: 'Select Control Type',
-				options: ctypes,
-				value: param.type
-			}),
-			caption: 'Select the desired control type for the parameter.'
-		});
-		
-		// type-specific
-		html += this.getFormRow({
-			id: 'd_epa_value_text',
-			label: 'Default Value:',
-			content: this.getFormText({
-				id: 'fe_epa_value_text',
-				spellcheck: 'false',
-				value: param.value || ''
-			}),
-			caption: 'Enter the default value for the text field.'
-		});
-		html += this.getFormRow({
-			id: 'd_epa_value_textarea',
-			label: 'Default Value:',
-			content: this.getFormTextarea({
-				id: 'fe_epa_value_textarea',
-				rows: 5,
-				spellcheck: 'false',
-				value: (param.value || '').toString()
-			}),
-			caption: "Enter the default value for the text box."
-		});
-		html += this.getFormRow({
-			id: 'd_epa_value_code',
-			label: 'Default Value:',
-			content: this.getFormTextarea({
-				id: 'fe_epa_value_code',
-				rows: 5,
-				class: 'monospace',
-				spellcheck: 'false',
-				value: (param.value || '').toString()
-			}),
-			caption: "Enter the default value for the code editor."
-		});
-		html += this.getFormRow({
-			id: 'd_epa_value_checkbox',
-			label: 'Default State:',
-			content: this.getFormCheckbox({
-				id: 'fe_epa_value_checkbox',
-				label: 'Checked',
-				checked: !!param.value
-			}),
-			caption: 'Select the default state for the checkbox.'
-		});
-		html += this.getFormRow({
-			id: 'd_epa_value_select',
-			label: 'Menu Items:',
-			content: this.getFormText({
-				id: 'fe_epa_value_select',
-				spellcheck: 'false',
-				value: param.value || ''
-			}),
-			caption: "Enter items for the menu, separated by commas.  The first will be selected by default."
-		});
-		html += this.getFormRow({
-			id: 'd_epa_value_hidden',
-			label: 'Default Value:',
-			content: this.getFormText({
-				id: 'fe_epa_value_hidden',
-				spellcheck: 'false',
-				value: param.value || ''
-			}),
-			caption: 'Enter the default value for the hidden field.'
-		});
-		
-		// admin lock
-		html += this.getFormRow({
-			label: 'Security:',
-			content: this.getFormCheckbox({
-				id: 'fe_epa_locked',
-				label: 'Administrator Locked',
-				checked: !!param.locked
-			}),
-			caption: 'Check this box to disallow changes from the event editor and API (except for administrators).'
-		});
-		
-		html += '</div>';
-		Dialog.confirm( title, html, btn, function(result) {
-			if (!result) return;
-			Dialog.hide();
-			
-			param.id = $('#fe_epa_id').val();
-			param.title = $('#fe_epa_title').val();
-			param.type = $('#fe_epa_type').val();
-			param.locked = !!$('#fe_epa_locked').is(':checked');
-			
-			switch (param.type) {
-				case 'text':
-					param.value = $('#fe_epa_value_text').val();
-				break;
-				
-				case 'textarea':
-					param.value = $('#fe_epa_value_textarea').val();
-				break;
-				
-				case 'code':
-					param.value = $('#fe_epa_value_code').val();
-				break;
-				
-				case 'checkbox':
-					param.value = !!$('#fe_epa_value_checkbox').is(':checked');
-				break;
-				
-				case 'select':
-					param.value = $('#fe_epa_value_select').val();
-				break;
-				
-				case 'hidden':
-					param.value = $('#fe_epa_value_hidden').val();
-				break;
-			} // switch action.type
-			
-			// see if we need to add or replace
-			if (idx == -1) {
-				self.params.push(param);
-			}
-			
-			// self.dirty = true;
-			self.renderParamEditor();
-		} ); // Dialog.confirm
-		
-		var change_param_type = function(new_type) {
-			$('#d_epa_value_text, #d_epa_value_textarea, #d_epa_value_code, #d_epa_value_checkbox, #d_epa_value_select, #d_epa_value_hidden').hide();
-			$('#d_epa_value_' + new_type).show();
-			Dialog.autoResize();
-		}; // change_action_type
-		
-		change_param_type(param.type);
-		
-		$('#fe_epa_type').on('change', function() {
-			change_param_type( $(this).val() );
-		}); // type change
-		
-		if (idx == -1) $('#fe_epa_id').focus();
-		
-		SingleSelect.init( $('#fe_epa_type') );
-		Dialog.autoResize();
-	}
-	
-	deleteParam(idx) {
-		// delete selected param
-		this.params.splice( idx, 1 );
-		this.renderParamEditor();
 	}
 	
 	get_plugin_form_json() {
