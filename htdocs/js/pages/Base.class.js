@@ -2491,8 +2491,10 @@ Page.Base = class Base extends Page {
 			if (!category.enabled) return false;
 			
 			// check for disabled plugin
-			var plugin = find_object( app.plugins, { id: event.plugin } );
-			if (!plugin.enabled) return false;
+			if (event.plugin && !event.plugin.match(/^_/)) {
+				var plugin = find_object( app.plugins, { id: event.plugin } );
+				if (plugin && !plugin.enabled) return false;
+			}
 			
 			// process timings
 			var timings = event.timings.filter( function(timing) { return timing.enabled; } );
