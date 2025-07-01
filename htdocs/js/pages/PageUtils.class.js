@@ -2080,7 +2080,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			break;
 			
 			case 'manual':
-				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
+				nice_icon = '<i class="mdi mdi-gesture-tap-button"></i>';
 				nice_type = 'On-Demand';
 				nice_desc = '<i class="mdi mdi-run-fast">&nbsp;</i>Manual Run';
 				short_desc = "Manual Run";
