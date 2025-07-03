@@ -1492,6 +1492,9 @@ body.dark span.hljs-number {
 i.mdi.mdi-moon-waning-crescent:before {
 	transform: rotate(-35deg);
 }
+i.mdi.mdi-content-duplicate:before {
+	transform: scale(1.15) !important;
+}
 
 /* Basic Responsive Overrides */
 
