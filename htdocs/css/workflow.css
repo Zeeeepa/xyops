@@ -400,7 +400,7 @@ body.dark .wf_condition {
 
 .wf_condition.start { background: var(--orange); }
 .wf_condition.complete { background: var(--blue); }
-.wf_condition.continue { background: var(--teal); font-size: 26px; }
+.wf_condition.continue { background: var(--teal); font-size: 24px; }
 .wf_condition.success { background: var(--green); }
 .wf_condition.error { background: var(--red); }
 .wf_condition.warning { background: var(--yellow); font-size: 28px; }
