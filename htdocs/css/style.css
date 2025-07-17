@@ -27,10 +27,26 @@ div.header {
 div.header > div.header_title > i {
 	color: var(--theme-color);
 } */
- 
-div.header_widget.marquee, div.box.marquee, div.button.marquee {
+
+div.header_widget.marquee {
+	--active-color: var(--theme-color);
 	border: 1px solid transparent !important;
-	background: linear-gradient(var(--box-background-color), var(--box-background-color)) padding-box, linear-gradient(-45deg, rgba(128, 128, 128, 0.4) 25%, transparent 25%, transparent 50%, rgba(128, 128, 128, 0.4) 50%, rgba(128, 128, 128, 0.4) 75%, transparent 75%, transparent) 0 / 31px 31px;
+	
+	background:
+		linear-gradient(var(--box-background-color), var(--box-background-color)) padding-box,
+		linear-gradient(-45deg,
+			var(--active-color) 25%,
+			transparent 25%,
+			transparent 50%,
+			var(--active-color) 50%,
+			var(--active-color) 75%,
+			transparent 75%,
+			transparent
+		) border-box;
+	
+	background-size: 30px 30px;
+	background-position: 0 0;
+	
 	animation: kfmarquee 2s linear infinite;
 }
 div.header_widget.marquee:hover {
@@ -104,10 +120,6 @@ body.dark .button.secondary {
 .button.secondary:hover {
 	color: var(--green);
 	border: 1px solid var(--green);
-}
-.button.secondary.marquee:hover {
-	color: var(--green);
-	background: linear-gradient(var(--box-background-color), var(--box-background-color)) padding-box, linear-gradient(-45deg, var(--green) 25%, transparent 25%, transparent 50%, var(--green) 50%, var(--green) 75%, transparent 75%, transparent) 0 / 31px 31px;
 }
 
 .button.default {
