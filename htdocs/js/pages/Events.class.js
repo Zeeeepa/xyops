@@ -956,7 +956,7 @@ Page.Events = class Events extends Page.PageUtils {
 		this.setupToggleBoxes();
 		this.fetchRevisionHistory();
 		this.setupJobHistoryDayGraph();
-		this.setupWorkflow();
+		if (is_workflow) this.setupWorkflow();
 	}
 	
 	goEditWorkflow() {
@@ -1335,7 +1335,7 @@ Page.Events = class Events extends Page.PageUtils {
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				self.getNiceServer(job.server, true),
 				self.getNiceJobSource(job),
-				self.getShortDateTime( job.started ),
+				self.getRelativeDateTime( job.started, true ),
 				self.getNiceJobElapsedTime(job, true),
 				self.getNiceJobAvgCPU(job) + ' / ' + self.getNiceJobAvgMem(job),
 				self.getNiceJobResult(job),
@@ -2925,6 +2925,29 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Select an end date/time for the range in your local timezone (' + this.getUserTimezone() + ').'
 		});
 		
+		// precision desc
+		html += this.getFormRow({
+			id: 'd_et_precision_desc',
+			label: 'Description:',
+			content: 'This option allows you to set the precise seconds when each job should launch via the scheduler.  This does not affect jobs launched manually in the UI or via the API.'
+		});
+		
+		// precision seconds
+		html += this.getFormRow({
+			id: 'd_et_seconds',
+			label: 'Seconds:',
+			content: this.getFormMenuMulti({
+				id: 'fe_et_seconds',
+				title: 'Select Seconds',
+				placeholder: '(On The Minute)',
+				options: this.getSecondOptions(),
+				values: trigger.seconds || [],
+				'data-hold': 1,
+				'data-shrinkwrap': 1,
+				// 'data-compact': 1
+			})
+		});
+		
 		// timezone (shared by schedule and crontab types)
 		var zones = [
 			['', "Server Default (" + app.config.tz + ")"],
@@ -3085,6 +3108,11 @@ Page.Events = class Events extends Page.PageUtils {
 					if (!trigger.duration) return app.badField('#fe_et_delay', "Please enter or select the number of seconds to delay.");
 				break;
 				
+				case 'precision':
+					// precision (seconds)
+					trigger.seconds = $('#fe_et_seconds').val().map( function(v) { return parseInt(v); } );
+				break;
+				
 				case 'plugin':
 					trigger.plugin_id = $('#fe_et_plugin').val();
 					if (!trigger.plugin_id) return app.badField('#fe_et_plugin', "Please select a Plugin for scheduling.");
@@ -3197,6 +3225,12 @@ Page.Events = class Events extends Page.PageUtils {
 					new_btn_label = 'Add Option';
 				break;
 				
+				case 'precision':
+					$('#d_et_precision_desc').show();
+					$('#d_et_seconds').show();
+					new_btn_label = 'Add Option';
+				break;
+				
 				case 'plugin':
 					$('#d_et_plugin').show();
 					$('#d_et_plugin_params').show();
@@ -3223,7 +3257,7 @@ Page.Events = class Events extends Page.PageUtils {
 		}); // type change
 		
 		SingleSelect.init( $('#fe_et_type, #fe_et_tz, #fe_et_plugin') );
-		MultiSelect.init( $('#fe_et_years, #fe_et_months, #fe_et_weekdays, #fe_et_days, #fe_et_hours, #fe_et_minutes') );
+		MultiSelect.init( $('#fe_et_years, #fe_et_months, #fe_et_weekdays, #fe_et_days, #fe_et_hours, #fe_et_minutes, #fe_et_seconds') );
 		// this.updateAddRemoveMe('#fe_eja_email');
 		
 		change_trigger_type( tmode );
@@ -3385,9 +3419,27 @@ Page.Events = class Events extends Page.PageUtils {
 		while (options.length < 60) {
 			var parts = formatter.formatToParts(date);
 			var label = (find_object(parts, { type: 'literal' }) || { value: ':' }).value + find_object(parts, { type: 'minute' }).value;
-			// var label = ':' + this.formatDate( date.getTime() / 1000, { minute: '2-digit', timeZone: false } );
 			options.push([ ''+options.length, label.trim() ]);
 			date.setTime( date.getTime() + 60000 );
+		}
+		
+		return options;
+	}
+	
+	getSecondOptions() {
+		// get locale-formatted seconds for a full minute (precision option)
+		var cur_year = yyyy();
+		var options = [];
+		
+		var date = new Date( cur_year, 6, 1, 0, 0, 0, 0 );
+		var opts = this.getDateOptions({ minute: '2-digit', second: '2-digit', timeZone: false });
+		var formatter = new Intl.DateTimeFormat( opts.locale, opts );
+		
+		while (options.length < 60) {
+			var parts = formatter.formatToParts(date);
+			var label = (find_object(parts, { type: 'literal' }) || { value: ':' }).value + find_object(parts, { type: 'second' }).value;
+			options.push([ ''+options.length, label.trim() ]);
+			date.setTime( date.getTime() + 1000 );
 		}
 		
 		return options;
