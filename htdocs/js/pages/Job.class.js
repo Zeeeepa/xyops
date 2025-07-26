@@ -399,7 +399,7 @@ Page.Job = class Job extends Page.PageUtils {
 		html += '</div>'; // box
 		
 		// uploaded files (completed job only)
-		if (job.final && job.files && job.files.length) {
+		if (job.final && ((job.files && job.files.length) || (job.input && job.input.files && job.input.files.length))) {
 			html += '<div class="box toggle" id="d_job_files">';
 				html += '<div class="box_title">';
 					html += '<i></i><span>Job Files</span>';
@@ -408,6 +408,18 @@ Page.Job = class Job extends Page.PageUtils {
 					html += this.getFileTable();
 				html += '</div>'; // box_content
 			html += '</div>'; // box
+		}
+		
+		// job data (input and output)
+		if (job.final) {
+			var has_input_data = !!(job.input && job.input.data && first_key(job.input.data));
+			var has_output_data = !!(job.data && first_key(job.data));
+			if (has_input_data || has_output_data) {
+				html += '<div class="box_grid double">';
+					html += '<div class="box_unit"><div class="box_title"><span>Input Data</span>' + (has_input_data ? '<div class="button icon right ghost" title="Copy input data to clipboard" onClick="$P().copyJobData(this)" data-path="input.data"><i class="mdi mdi-clipboard-text-outline"></i></div>' : '') + '</div>' + this.getJobDataDisplay( job.input ? job.input.data : null ) + '</div>';
+					html += '<div class="box_unit"><div class="box_title"><span>Output Data</span>' + (has_output_data ? '<div class="button icon right ghost" title="Copy output data to clipboard" onClick="$P().copyJobData(this)" data-path="data"><i class="mdi mdi-clipboard-text-outline"></i></div>' : '') + '</div>' + this.getJobDataDisplay( job.data || null ) + '</div>';
+				html += '</div>';
+			}
 		}
 		
 		if (!is_workflow) {
@@ -508,6 +520,31 @@ Page.Job = class Job extends Page.PageUtils {
 			this.setupActiveWorkflow();
 			this.renderWorkflowJobs();
 		}
+	}
+	
+	copyJobData(elem) {
+		// copy job input or output data to clipboard
+		var payload = JSON.stringify( get_path( this.job, $(elem).data('path') ), null, "\t" );
+		copyToClipboard( payload );
+		$(elem).find('i.mdi').removeClass().addClass([ 'mdi', 'mdi-clipboard-check-outline' ]);
+		// $(elem).css('color', 'var(--green)');
+		app.showMessage('info', "The data was copied to your clipboard.");
+	}
+	
+	getJobDataDisplay(json) {
+		// format json with syntax highlighting
+		var html = '';
+		
+		if (json) {
+			html += '<div class="box_code_viewer">';
+			html += '<pre><code class="hljs">' + app.highlightAuto( JSON.stringify(json, null, "\t") ) + '</code></pre>';
+			html += '</div>';
+		}
+		else {
+			html += `<div class="box_code_none">(No data to show)</div>`;
+		}
+		
+		return html;
 	}
 	
 	goEditWorkflow() {
@@ -1476,7 +1513,7 @@ Page.Job = class Job extends Page.PageUtils {
 		activity.push(row);
 		this.metaRowCount = activity.length;
 		
-		var $table = this.div.find('#d_job_meta table');
+		var $table = this.div.find('#d_job_meta div.data_grid');
 		$table.append( '<ul class="grid_row"><div>' + this.formatMetaRow(row).join('</div><div>') + '</div></ul>' );
 	}
 	
@@ -2103,22 +2140,22 @@ Page.Job = class Job extends Page.PageUtils {
 			var classes = [];
 			var actions = [
 				'<a href="' + url + '" target="_blank"><b>View</b></a>',
-				'<a href="' + url + '?download=1"><b>Download</b></a>',
+				'<a href="' + url + '?download=' + encodeURIComponent(file.filename) + '"><b>Download</b></a>',
 				'<span class="link danger" onMouseUp="$P().do_delete_file(' + idx + ')"><b>Delete</b></span>'
 			];
 			
 			var nice_source = (file.source == 'input') ? 
-				'<i class="mdi mdi-download-circle-outline">&nbsp;</i>Input' : 
-				'<i class="mdi mdi-upload-circle-outline">&nbsp;</i>Output';
+				(file.bucket ? self.getNiceBucket(file.bucket, true) : '<i class="mdi mdi-file-download-outline">&nbsp;</i>Input') : 
+				'<i class="mdi mdi-file-upload-outline">&nbsp;</i>Output';
 			
 			var tds = [
 				'<b>' + self.getNiceFile(file.filename, url) + '</b>',
 				// '<span class="monospace">' + file.id + '</span>',
-				get_text_from_bytes( file.size || 0 ),
+				'<i class="mdi mdi-floppy">&nbsp;</i>' + get_text_from_bytes( file.size || 0 ),
 				self.getRelativeDateTime(file.date),
 				nice_source,
-				self.getNiceJob(file.job || job.id),
-				self.getNiceServer(file.server || job.server),
+				self.getNiceJob(file.job || job.id, self.isWorkflow),
+				self.getNiceServer(file.server || job.server, true),
 				actions.join(' | ')
 			];
 			
