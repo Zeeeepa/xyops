@@ -1202,7 +1202,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			if (param.type == 'hidden') return;
 			
 			html += '<div>'; // grid unit
-			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + param.title + '</div>';
+			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + strip_html(param.title) + '</div>';
 			html += '<div class="info_value">';
 			
 			switch (param.type) {
@@ -1210,7 +1210,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'textarea':
 					if (elem_value.toString().length) {
 						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-						html += elem_value;
+						html += strip_html( elem_value );
 					}
 					else html += none;
 				break;
@@ -1218,7 +1218,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'code':
 					if (elem_value.toString().length) {
 						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-						html += '<span class="monospace">' + elem_value + '</span>';
+						html += '<span class="monospace">' + strip_html(elem_value) + '</span>';
 					}
 					else html += none;
 				break;
@@ -1232,7 +1232,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				
 				case 'select':
 					html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-					html += elem_value.toString().replace(/\,.*$/, '');
+					html += strip_html( elem_value.toString().replace(/\,.*$/, '') );
 				break;
 			} // switch type
 			
@@ -1312,7 +1312,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			if (param.type == 'hidden') return;
 			
 			html += '<div>'; // grid unit
-			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + param.title + '</div>';
+			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + strip_html(param.title) + '</div>';
 			html += '<div class="info_value">';
 			
 			switch (param.type) {
@@ -1320,7 +1320,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'textarea':
 					if (elem_value.toString().length) {
 						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-						html += elem_value;
+						html += strip_html(elem_value);
 					}
 					else html += none;
 				break;
@@ -1328,7 +1328,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'code':
 					if (elem_value.toString().length) {
 						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-						html += '<span class="monospace">' + elem_value + '</span>';
+						html += '<span class="monospace">' + strip_html(elem_value) + '</span>';
 					}
 					else html += none;
 				break;
@@ -1342,7 +1342,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				
 				case 'select':
 					html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
-					html += elem_value.toString().replace(/\,.*$/, '');
+					html += strip_html( elem_value.toString().replace(/\,.*$/, '') );
 				break;
 			} // switch type
 			
@@ -1552,12 +1552,12 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			break;
 			
 			case 'split':
-				label = '<span class="monospace">' + node.data.split + '</span>';
+				label = '<span class="monospace">' + encode_entities(node.data.split) + '</span>';
 			break;
 			
 			case 'decision':
-				label = '<span class="monospace">' + node.data.decision + '</span>';
-				if (node.data.label) title = node.data.label;
+				label = '<span class="monospace">' + encode_entities(node.data.decision) + '</span>';
+				if (node.data.label) title = strip_html( node.data.label );
 				if (node.data.icon) icon = node.data.icon;
 			break;
 		} // switch type
@@ -1816,7 +1816,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			var pairs = [];
 			switch (param.type) {
 				case 'text':
-					if (param.value.length) pairs.push([ 'Default', '&ldquo;' + param.value + '&rdquo;' ]);
+					if (param.value.length) pairs.push([ 'Default', '&ldquo;' + strip_html(param.value) + '&rdquo;' ]);
 					else pairs.push([ "(No default)" ]);
 				break;
 				
@@ -1836,11 +1836,11 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				break;
 				
 				case 'hidden':
-					pairs.push([ 'Value', '&ldquo;' + param.value + '&rdquo;' ]);
+					pairs.push([ 'Value', '&ldquo;' + strip_html(param.value) + '&rdquo;' ]);
 				break;
 				
 				case 'select':
-					pairs.push([ 'Items', '(' + param.value + ')' ]);
+					pairs.push([ 'Items', '(' + strip_html(param.value) + ')' ]);
 				break;
 			}
 			for (var idy = 0, ley = pairs.length; idy < ley; idy++) {
@@ -2015,10 +2015,14 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		html += '</div>';
 		Dialog.confirm( title, html, btn, function(result) {
 			if (!result) return;
-			Dialog.hide();
+			app.clearError();
 			
-			param.id = $('#fe_epa_id').val();
-			param.title = $('#fe_epa_title').val();
+			param.id = $('#fe_epa_id').val().trim().replace(/\W+/g, '').toLowerCase();
+			if (!param.id.length) return app.badField('#fe_epa_id', "The ID field is required.");
+			
+			param.title = strip_html( $('#fe_epa_title').val().trim() );
+			if (!param.title.length) return app.badField('#fe_epa_title', "The Title field is required.");
+			
 			param.type = $('#fe_epa_type').val();
 			param.locked = !!$('#fe_epa_locked').is(':checked');
 			
@@ -2054,6 +2058,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			}
 			
 			// self.dirty = true;
+			Dialog.hide();
 			self.renderParamEditor();
 		} ); // Dialog.confirm
 		

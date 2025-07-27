@@ -1131,7 +1131,7 @@ Page.Base = class Base extends Page {
 		}
 		
 		var nice_id = job.id;
-		if (job.label && (job.type != 'adhoc')) nice_id = job.label + ' (' + job.id + ')';
+		if (job.label && (job.type != 'adhoc')) nice_id = strip_html(job.label) + ' (' + job.id + ')';
 		
 		var icon = '<i class="mdi mdi-timer-outline"></i>';
 		if (job.type == 'workflow') icon = '<i class="mdi mdi-clipboard-play-outline"></i>';
@@ -3149,14 +3149,14 @@ Page.Base = class Base extends Page {
 			if (param.type == 'hidden') return;
 			
 			html += '<div>'; // grid unit
-			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + param.title + '</div>';
+			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + strip_html(param.title) + '</div>';
 			html += '<div class="info_value">';
 			
 			switch (param.type) {
 				case 'text':
 					if (elem_value.toString().length) {
 						html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
-						html += elem_value.toString().length ? elem_value : none;
+						html += elem_value.toString().length ? strip_html(elem_value) : none;
 					}
 					else html += none;
 				break;
@@ -3179,7 +3179,7 @@ Page.Base = class Base extends Page {
 				
 				case 'select':
 					html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
-					html += elem_value.toString().replace(/\,.*$/, '');
+					html += strip_html( elem_value.toString().replace(/\,.*$/, '') );
 				break;
 			} // switch type
 			

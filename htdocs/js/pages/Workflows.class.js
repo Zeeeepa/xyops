@@ -1328,7 +1328,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			if (!result) return;
 			app.clearError();
 			
-			node.data.label = $('#fe_wfd_title').val();
+			node.data.label = strip_html( $('#fe_wfd_title').val() );
 			node.data.icon = $('#fe_wfd_icon').val();
 			node.data.category = $('#fe_wfd_cat').val();
 			node.data.plugin = $('#fe_wfd_plugin').val();
@@ -1776,7 +1776,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				break;
 				
 				case 'decision':
-					node.data.label = $('#fe_wfd_title').val();
+					node.data.label = strip_html( $('#fe_wfd_title').val() );
 					node.data.icon = $('#fe_wfd_icon').val();
 					node.data.decision = $('#fe_wfd_if').val().trim();
 					if (!node.data.decision.length) return app.badField('#fe_wfd_if', "Please enter an expression to evaluate.");
