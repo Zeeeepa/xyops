@@ -373,13 +373,7 @@ Page.System = class System extends Page.Base {
 		var form = new FormData();
 		form.append('file1', file);
 		
-		var opts = {
-			method: 'POST', 
-			body: form,
-			timeout: 300 * 1000 // 5 minutes
-		};
-		
-		app.api.request( app.base_api_url + '/app/admin_import_data', opts, function(resp) {
+		app.api.upload( 'app/admin_import_data', form, function(resp) {
 			Dialog.hideProgress();
 			app.showMessage('success', "Your import job has started in the background.");
 		} );
