@@ -5,7 +5,11 @@
 	
 	"mail_settings": {
 		"host": "localhost",
-		"port": 25
+		"port": 25,
+		"auth": {
+			"user": "",
+			"pass": ""
+		}
 	},
 	"max_emails_per_day": 0,
 	
@@ -233,12 +237,12 @@
 		"bucket_upload_settings": {
 			"max_files_per_bucket": 100,
 			"max_file_size": 1073741824,
-			"accepted_file_types": []
+			"accepted_file_types": ""
 		},
 		"job_upload_settings": {
 			"max_files_per_job": 100,
 			"max_file_size": 1073741824,
-			"accepted_file_types": []
+			"accepted_file_types": ""
 		}
 	},
 	
