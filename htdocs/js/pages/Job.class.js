@@ -707,7 +707,8 @@ Page.Job = class Job extends Page.PageUtils {
 				// these node types have simple state props we can key off of
 				$elem.toggleClass('wf_active', !!state.active);
 				$elem.toggleClass('wf_completed', !!state.completed);
-				$elem.toggleClass('disabled', !state.active && !state.completed);
+				$elem.toggleClass('wf_error', !!state.error);
+				$elem.toggleClass('disabled', !state.active && !state.completed && !state.error);
 			}
 			else if (node.type.match(/^(event|job)$/)) {
 				// event and job types are more complex
@@ -1435,16 +1436,8 @@ Page.Job = class Job extends Page.PageUtils {
 	
 	formatMetaRow(row) {
 		// convert meta log row into table columns
-		
-		// var nice_timestamp = this.formatDate(row.epoch, { 
-		// 	year: 'numeric',
-		// 	month: 'numeric',
-		// 	day: 'numeric',
-		// 	// weekday: 'long',
-		// 	hour: 'numeric',
-		// 	minute: '2-digit',
-		// 	second: '2-digit'
-		// });
+		var tds = [];
+		var classes = [];
 		var nice_timestamp = this.getRelativeDateTime(row.epoch, true);
 		
 		var nice_server = '-';
@@ -1457,6 +1450,10 @@ Page.Job = class Job extends Page.PageUtils {
 		}
 		
 		var nice_msg = row.msg.replace(/\#(\w+)/g, '<code>#$1</code>').replace(/\{(.+?)\}/g, '<code>$1</code>');
+		if (nice_msg.match(/^WARNING\:/)) {
+			nice_msg = nice_msg.replace(/^(WARNING\:)/, '<b>$1</b>');
+			classes.push('warning');
+		}
 		
 		if (this.isWorkflow) {
 			var nice_node_id = '-';
@@ -1467,7 +1464,7 @@ Page.Job = class Job extends Page.PageUtils {
 				var node = find_object( this.job.workflow.nodes, { id: row.node } );
 				if (node) nice_node_type = this.getNiceWorkflowNodeType(node);
 			}
-			return [
+			tds = [
 				nice_timestamp,
 				nice_server,
 				'<span class="monospace">' + nice_node_id + '</span>',
@@ -1475,12 +1472,16 @@ Page.Job = class Job extends Page.PageUtils {
 				nice_msg
 			];
 		} // workflow
+		else {
+			tds = [
+				nice_timestamp,
+				nice_server,
+				nice_msg
+			];
+		}
 		
-		return [
-			nice_timestamp,
-			nice_server,
-			nice_msg
-		];
+		tds.className = classes.join(' ');
+		return tds;
 	}
 	
 	getMetaLog() {
