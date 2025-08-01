@@ -310,8 +310,8 @@
 		"fe_ete_scope": {
 			"title": "Select Test Scope",
 			"options": [
-				{ "id": "single", "title": "Single Node", "icon": "timer-play-outline" },
-				{ "id": "entire", "title": "Entire Workflow", "icon": "clipboard-play-outline" }
+				{ "id": "single", "title": "Single node in isolation", "icon": "timer-play-outline" },
+				{ "id": "entire", "title": "Entire workflow starting at selection", "icon": "clipboard-play-outline" }
 			]
 		},
 		"d_ete_actions": {
@@ -494,7 +494,8 @@
 		"wfdj_no_plugins": "You must create at least one Plugin to add workflow plugin nodes.",
 		"wfdj_plugin_not_found": "Plugin ID \"[node.data.plugin]\" could not be found.  Did someone delete it?",
 		"fe_wfdj_targets": "You must select at least one target for the plugin job.",
-		"fe_wf_title": "Please enter a title for the workflow."
+		"fe_wf_title": "Please enter a title for the workflow.",
+		"wf_test_no_limit": "Limit nodes cannot be tested directly.  Please select the attached event or plugin node instead."
 	},
 	
 	"titles": {
@@ -530,7 +531,7 @@
 		"save_changes": "Save Changes",
 		
 		"wf_new_save": "Save Workflow",
-		"wfd_run_now": "Run Now",
+		"wfd_run_test": "Run Test",
 		"wfd_edit_json": "Edit JSON...",
 		"wfd_add_node": "Add Node",
 		"wfd_add_action": "Add Action",
