@@ -1302,6 +1302,11 @@
 		margin-right: 0;
 	}
 	
+	div.box.charts > div.box_content {
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+	
 	/* 'Enabled', 'Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Status', 'Actions' */
 	.data_grid.event_grid { grid-template-columns: 0px auto auto 0px 0px 0px 0px 0px !important; }
 	.data_grid.event_grid > ul > div:nth-child(1) { visibility: hidden; }

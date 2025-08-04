@@ -87,7 +87,7 @@ Page.Dashboard = class Dashboard extends Page.PageUtils {
 		html += '</div>'; // box
 		
 		// quickmon charts
-		html += '<div class="box" id="d_dash_monitors">';
+		html += '<div class="box charts" id="d_dash_monitors">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyQuickMonitorFilter(this)"></div>';
 				html += this.getChartSizeSelector('chart_size_quick');

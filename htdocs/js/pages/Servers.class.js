@@ -781,7 +781,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		
 		html += '<div class="box" style="border:none;">';
 			html += '<div class="box_title">';
-				html += '<div class="box_title_left">' + (online ? 'Live &mdash; Real-Time View' : 'Offline &mdash; Last Known State') + '</div>';
+				html += '<div class="box_title_left">' + (online ? 'Live &mdash; Real-Time View' : 'Offline &mdash; Last <span class="sm_hide">Known</span> State') + '</div>';
 				html += '<div class="box_title_left"><div class="button secondary mobile_collapse" onClick="$P().chooseHistoricalView()"><i class="mdi mdi-calendar-cursor">&nbsp;</i><span>Change...</span></div></div>';
 				
 				if (online) {
@@ -926,7 +926,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		html += '</div>'; // box
 		
 		// quickmon charts
-		html += '<div class="box" id="d_vs_quickmon" style="display:none">';
+		html += '<div class="box charts" id="d_vs_quickmon" style="display:none">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyQuickMonitorFilter(this)"></div>';
 				html += this.getChartSizeSelector('chart_size_quick');
@@ -963,7 +963,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		html += '</div>';
 		
 		// monitors
-		html += '<div class="box" id="d_vs_monitors">';
+		html += '<div class="box charts" id="d_vs_monitors">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyMonitorFilter(this)"></div>';
 				html += this.getChartSizeSelector();

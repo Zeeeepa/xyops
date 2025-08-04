@@ -458,7 +458,7 @@ Page.Job = class Job extends Page.PageUtils {
 			html += '</div>'; // box
 			
 			// charts
-			html += '<div class="box" id="d_job_graphs" >';
+			html += '<div class="box charts" id="d_job_graphs" >';
 				html += '<div class="box_title">';
 					html += this.getChartSizeSelector('chart_size_quick');
 					html += 'Job Monitors';
