@@ -211,6 +211,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		this.updateAddRemoveMe('#fe_ea_email');
 		$('#fe_ea_title').focus();
 		this.setupBoxButtonFloater();
+		this.setupEditor('text/plain');
 	}
 	
 	cancel_alert_edit() {
@@ -295,6 +296,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		SingleSelect.init( this.div.find('#fe_ea_monitor, #fe_ea_channel, #fe_ea_run_event, #fe_ea_icon, #fe_ea_web_hook') );
 		this.updateAddRemoveMe('#fe_ea_email');
 		this.setupBoxButtonFloater();
+		this.setupEditor('text/plain');
 	}
 	
 	do_export() {
@@ -449,9 +451,10 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		
 		// message
 		html += this.getFormRow({
+			id: 'd_editor',
 			label: 'Message:',
 			content: this.getFormTextarea({
-				id: 'fe_ea_message',
+				id: 'fe_editor',
 				rows: 5,
 				class: 'monospace',
 				value: alert.message
@@ -587,7 +590,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		alert.groups = $('#fe_ea_groups').val();
 		alert.expression = $('#fe_ea_expression').val();
 		alert.samples = parseInt( $('#fe_ea_samples').val() ) || 1;
-		alert.message = $('#fe_ea_message').val();
+		alert.message = this.editor.getValue().trim();
 		alert.monitor_id = $('#fe_ea_monitor').val();
 		alert.channel_id = $('#fe_ea_channel').val();
 		alert.email = $('#fe_ea_email').val();
@@ -612,8 +615,19 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		if ((key == 'alerts') && (this.args.sub == 'list')) this.gosub_list(this.args);
 	}
 	
+	onResize() {
+		// resize codemirror to match
+		this.handleEditorResize();
+	}
+	
+	onThemeChange(theme) {
+		// change codemirror theme too
+		this.handleEditorThemeChange(theme);
+	}
+	
 	onDeactivate() {
 		// called when page is deactivated
+		this.killEditor();
 		this.cleanupRevHistory();
 		this.div.html( '' );
 		return true;
