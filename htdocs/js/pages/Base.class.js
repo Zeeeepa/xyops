@@ -2412,24 +2412,24 @@ Page.Base = class Base extends Page {
 		return html;
 	}
 	
-	setupEditor() {
+	setupEditor(mode = null) {
 		// codemirror go!
 		var self = this;
-		var mode = null;
 		var elem = document.getElementById("fe_editor");
+		var auto_mode = !mode;
 		
-		if (elem.value.length) {
+		if (!mode && elem.value.length) {
 			mode = app.detectCodemirrorMode(elem.value) || this.defaultEditorMode || null;
 			Debug.trace('debug', "Detected initial language: " + mode);
 		}
 		
 		this.editor = CodeMirror.fromTextArea(elem, merge_objects( config.editor_defaults, {
-			mode: mode,
+			mode: { name: 'mustache', backdrop: mode },
 			theme: app.getCodemirrorTheme(),
 			viewportMargin: Infinity
 		}));
 		
-		this.setupEditorAutoDetect();
+		if (auto_mode) this.setupEditorAutoDetect();
 		
 		// required for auto-sizing to fit width
 		setTimeout( function() { self.handleEditorResize(); }, 100 );
@@ -2451,7 +2451,7 @@ Page.Base = class Base extends Page {
 				var mode = app.detectCodemirrorMode(value) || self.defaultEditorMode || null;
 				if (mode != self.editor.getOption('mode')) {
 					Debug.trace('debug', "Detected language: " + mode);
-					self.editor.setOption('mode', mode);
+					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
 					self.editor.refresh();
 				}
 			}
@@ -2464,7 +2464,7 @@ Page.Base = class Base extends Page {
 				var mode = app.detectCodemirrorMode(value) || self.defaultEditorMode || null;
 				if (mode != self.editor.getOption('mode')) {
 					Debug.trace('debug', "Detected language: " + mode);
-					self.editor.setOption('mode', mode);
+					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
 					self.editor.refresh();
 				}
 			}, 1 );
@@ -2532,7 +2532,7 @@ Page.Base = class Base extends Page {
 				elem.firstChild.replaceWith(cm_elem);
 			}, 
 			merge_objects( config.editor_defaults, {
-				mode: mode,
+				mode: { name: 'mustache', backdrop: mode },
 				theme: app.getCodemirrorTheme(),
 				scrollbarStyle: "simple",
 				value: code
