@@ -201,14 +201,14 @@ Page.MySettings = class MySettings extends Page.Base {
 		
 		// grayscale
 		html += this.getFormRow({
-			label: 'Grayscale:',
+			label: 'Saturation:',
 			content: this.getFormCheckbox({
 				id: 'fe_ms_grayscale',
-				label: 'Desaturate All Colors',
+				label: 'Grayscale Mode',
 				checked: !!user.grayscale,
 				onChange: '$P().previewGrayscale(this)'
 			}),
-			caption: 'Check this box to remove all color from the user interface, and instead use shades of gray.'
+			caption: 'Check this box to desaturate all color from the user interface, and instead use shades of gray.'
 		});
 		
 		// show page descriptions
@@ -240,7 +240,8 @@ Page.MySettings = class MySettings extends Page.Base {
 			content: this.getFormCheckbox({
 				id: 'fe_ms_effects',
 				label: 'Visual Effects',
-				checked: !!user.effects
+				checked: !!user.effects,
+				onChange: '$P().previewVisualEffects(this)'
 			}),
 			caption: 'Who doesn\'t need a little whimsy in their life?  This adds playful animations for certain app events.'
 		});
@@ -254,7 +255,7 @@ Page.MySettings = class MySettings extends Page.Base {
 				checked: !!user.privacy_mode,
 				onChange: '$P().previewPrivacyMode(this)'
 			}),
-			caption: 'Enable or disable streamer mode, which hides sensitive information such as IP addresses, hostnames, usernames, and email addresses.'
+			caption: 'Enable or disable streamer mode, which hides sensitive information such as IP addresses, hostnames, usernames, full names, and email addresses.'
 		});
 		
 		html += '</div>'; // box_content
@@ -295,10 +296,19 @@ Page.MySettings = class MySettings extends Page.Base {
 		app.updateAccessibility();
 	}
 	
+	previewVisualEffects(elem) {
+		// preview fireworks if checkbox is checked
+		app.user.effects = $(elem).is(':checked');
+		app.confetti({
+			particleCount: 150,
+			origin: elem
+		});
+	}
+	
 	playPreviewSound() {
 		// play preview sound at new volume level (unless zero)
 		var volume = parseInt( this.div.find('#fe_ms_volume').val() );
-		if (volume > 0) app.playSound('success-2.mp3', volume);
+		if (volume > 0) app.playSound( rand_array(app.sounds), volume);
 	}
 	
 	update_date_time_preview() {
