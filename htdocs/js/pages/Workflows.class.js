@@ -340,7 +340,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			
 			if (self.wfSoldering) {
 				// allow clicks anywhere in the node for completing solders
-				if ($this.find('.wf_pole_button').length) return self.completeSolder($this, id);
+				if ($this.find('.wf_pole_button').length) return self.completeSolder($this.find('.wf_pole_button').first(), id);
 				else return self.cancelSolder();
 			}
 			
@@ -372,6 +372,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		$cont.find('div.wf_condition').on( 'pointerdown', function(event) {
 			var native = event.originalEvent;
 			if (native.button !== 0) return; // only capture left-clicks
+			if (self.wfSoldering) return; // no clicky during solder
 			
 			this.setPointerCapture(native.pointerId);
 			var conn_id = this.id.replace(/^d_wft_/, '');
@@ -381,7 +382,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			event.preventDefault();
 			
 			$elem.on( 'pointerup.quick', function() {
-				$elem.on( 'pointerup.quick' );
+				$elem.off( 'pointerup.quick' );
 				self.quickEditCondition( $elem, conn_id );
 			} );
 		}); // pointerdown (conditions)
@@ -502,7 +503,25 @@ Page.Workflows = class Workflows extends Page.Events {
 			var $elem = $cont.find('#d_wfn_' + id);
 			void $elem[0].offsetWidth; // force DOM recalc for animation before state
 			$elem.addClass('wf_flash');
-		} );
+			
+			// how about a little confetti for the new family member?
+			var node = find_object( workflow.nodes, { id } );
+			var color = new Color( app.getCSSVar( self.getNodeColor(node) ) );
+			
+			app.confetti({
+				origin: $elem,
+				colors: [ color.hex(), color.clone().mix('#FFFFFF', 0.5).hex() ],
+				angle: 0,
+				spread: 360,
+				particleCount: 40,
+				startVelocity: node.type.match(/^(event|job)$/) ? 15 : 10,
+				gravity: 0.5,
+				decay: 0.9,
+				scalar: 0.5,
+				ticks: 50,
+				shapes: ['star']
+			});
+		} ); // foreach key
 		
 		// pole buttons
 		$cont.find('.wf_pole_button').remove();
@@ -916,6 +935,9 @@ Page.Workflows = class Workflows extends Page.Events {
 			return this.cancelSolder();
 		}
 		
+		// add some sparks for fun
+		this.addSolderSparks( solder, $elem );
+		
 		// swap start/end nodes & poles if user started on a dest pole
 		if (solder.start_pole.match(/^(wf_input_pole|wf_up_pole)$/)) {
 			var temp = '';
@@ -958,6 +980,53 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.drawWorkflow(true);
 		this.afterDraw();
 		this.addState();
+	}
+	
+	getNodeColor(node) {
+		// get CSS variable name for node color
+		var color_name = '--blue';
+		switch (node.type) {
+			case 'controller': color_name = '--purple'; break;
+			case 'trigger': color_name = '--orange'; break;
+			case 'action': color_name = '--green'; break;
+			case 'limit': color_name = '--cyan'; break;
+		}
+		return color_name;
+	}
+	
+	addSolderSparks(solder, $elem) {
+		// add solder point sparks for whimsy
+		// Note: solder is PRE-swap for reserve solders, so end will be where the user clicked
+		var workflow = this.workflow;
+		
+		// find end node so we can get the color
+		var node = find_object( workflow.nodes, { id: solder.end_node } );
+		if (!node) return; // sanity
+		var color_name = this.getNodeColor(node);
+		
+		var opts = { 
+			origin: $elem,
+			spread: 180,
+			particleCount: 20,
+			startVelocity: 10,
+			gravity: 0.5,
+			decay: 0.9,
+			scalar: 0.5,
+			ticks: 50,
+			shapes: ['star']
+		};
+		
+		switch (solder.end_pole) {
+			case 'wf_input_pole': opts.angle = 180; opts.startVelocity = 7; break;
+			case 'wf_output_pole': opts.angle = 0; opts.startVelocity = 7; break;
+			case 'wf_down_pole': opts.angle = 270; color_name = '--cyan'; opts.startVelocity = 5; break;
+			case 'wf_up_pole': opts.angle = 90; opts.startVelocity = 5; break;
+		}
+		
+		var color = new Color( app.getCSSVar(color_name) );
+		opts.colors = [ color.hex(), color.clone().mix('#FFFFFF', 0.5).hex() ];
+		
+		app.confetti(opts);
 	}
 	
 	doTestSelection() {
