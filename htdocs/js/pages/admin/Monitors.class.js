@@ -206,6 +206,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		// buttons at bottom
 		html += '<div class="box_buttons">';
 			html += '<div class="button phone_collapse" onClick="$P().cancel_monitor_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
+			html += '<div class="button secondary phone_collapse" onClick="$P().do_test_monitor()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>';
 			html += '<div class="button secondary phone_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
 			html += '<div class="button primary" onClick="$P().do_new_monitor()"><i class="mdi mdi-floppy">&nbsp;</i><span>Create Monitor</span></div>';
 		html += '</div>'; // box_buttons
@@ -288,6 +289,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		html += '<div class="box_buttons">';
 			html += '<div class="button mobile_collapse" onClick="$P().cancel_monitor_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
 			html += '<div class="button danger mobile_collapse" onClick="$P().show_delete_monitor_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>';
+			html += '<div class="button secondary mobile_collapse" onClick="$P().do_test_monitor()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>';
 			html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
 			html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
 			html += '<div class="button primary phone_collapse" onClick="$P().do_save_monitor()"><i class="mdi mdi-floppy">&nbsp;</i><span>Save Changes</span></div>';
@@ -594,6 +596,87 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		}
 		
 		return monitor;
+	}
+	
+	do_test_monitor() {
+		// open dialog for testing monitor on select server
+		var self = this;
+		var title = "Test Monitor";
+		var html = '';
+		
+		app.clearError();
+		var monitor = this.get_monitor_form_json();
+		if (!monitor) return; // error
+		
+		var servers = this.getCategorizedServers(true);
+		if (!servers.length) return app.doError(config.ui.errors.sde_no_servers);
+		
+		html += `<div class="dialog_intro">Evaluate your monitor's data source expression against your own live server data, to see what the computed result comes out as.</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
+		
+		// server picker
+		html += this.getFormRow({
+			id: 'd_ex_server',
+			content: this.getFormMenuSingle({
+				id: 'fe_ex_server',
+				options: servers,
+				value: '',
+				default_icon: 'router-network'
+			})
+		});
+		
+		// result
+		html += this.getFormRow({
+			id: 'd_emd_result',
+			label: monitor.title + ':',
+			content: `<div id="d_emd_form_result" class="form_result">...</div>`,
+			caption: 'Your monitor result will appear above.'
+		});
+		
+		html += '</div>'; // dialog_box_content
+		
+		var buttons_html = "";
+		buttons_html += `<div id="btn_emd_retry" class="button"><i class="mdi mdi-refresh">&nbsp;</i>${config.ui.buttons.retry}</div>`;
+		buttons_html += `<div class="button primary" onClick="Dialog.hide()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>${config.ui.buttons.close}</div>`;
+		
+		Dialog.showSimpleDialog(title, html, buttons_html);
+		
+		SingleSelect.init('#fe_ex_server');
+		
+		$('#fe_ex_server').on('change', function() {
+			var id = $(this).val();
+			if (!id) return; // sanity
+			
+			$('#d_emd_form_result').removeClass().addClass('form_result').html('...');
+			app.clearError();
+			
+			// now test monitor
+			app.api.post( 'app/test_monitor', { ...monitor, server: id }, function(resp) {
+				if (resp.fail) {
+					$('#d_emd_form_result').addClass('invalid').html( `<i class="mdi mdi-alert-decagram-outline"></i><b>No Value</b>` );
+					return;
+				}
+				
+				var value = '<i class="mdi mdi-check-circle-outline"></i><b>' + resp.value + '</b>';
+				if (monitor.data_type == 'bytes') value += ' (' + get_text_from_bytes(resp.value) + ')';
+				$('#d_emd_form_result').addClass('success').html(value);
+				
+				// apply flash effect
+				if (!$('#d_emd_form_result').hasClass('iflash')) {
+					$('#d_emd_form_result').addClass('iflash');
+					setTimeout( function() { $('#d_emd_form_result').removeClass('iflash'); }, 1500 );
+				}
+			} ); // api.get
+		}); // on change
+		
+		$('#btn_emd_retry').on('click', function() {
+			// retry the op
+			$('#d_emd_form_result').html('...');
+			$('#fe_ex_server').trigger('change');
+		});
+		
+		// trigger change to load first server
+		$('#fe_ex_server').trigger('change');
 	}
 	
 	onDataUpdate(key, data) {
