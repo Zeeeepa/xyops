@@ -514,7 +514,8 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 				spellcheck: 'false',
 				placeholder: 'email@sample.com',
 				value: alert.email,
-				onChange: '$P().updateAddRemoveMe(this)'
+				onChange: '$P().updateAddRemoveMe(this)',
+				'data-private': ''
 			}),
 			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally add e-mail recipients to be notified for this alert.'

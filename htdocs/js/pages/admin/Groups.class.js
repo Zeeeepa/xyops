@@ -470,7 +470,8 @@ Page.Groups = class Groups extends Page.ServerUtils {
 				spellcheck: 'false',
 				placeholder: 'email@sample.com',
 				value: group.alert_email || '',
-				onChange: '$P().updateAddRemoveMe(this)'
+				onChange: '$P().updateAddRemoveMe(this)',
+				'data-private': ''
 			}),
 			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally set the default e-mail recipients to be notified for alerts in this group. Note that individual alerts can override this setting.'

@@ -87,7 +87,8 @@ Page.ActivityLog = class ActivityLog extends Page.PageUtils {
 							} ) ),
 							value: args.username || '',
 							default_icon: 'account',
-							'data-shrinkwrap': 1
+							'data-shrinkwrap': 1,
+							'data-private': 1
 						})
 					});
 				html += '</div>';

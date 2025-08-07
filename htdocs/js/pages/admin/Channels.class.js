@@ -440,7 +440,8 @@ Page.Channels = class Channels extends Page.PageUtils {
 				} ),
 				values: channel.users || [],
 				default_icon: 'account',
-				'data-hold': 1
+				'data-hold': 1,
+				'data-private': 1
 				// 'data-shrinkwrap': 1
 			}),
 			caption: 'Select which users should be notified for this channel.'
@@ -455,7 +456,8 @@ Page.Channels = class Channels extends Page.PageUtils {
 				spellcheck: 'false',
 				placeholder: 'email@sample.com',
 				value: channel.email,
-				onChange: '$P().updateAddRemoveMe(this)'
+				onChange: '$P().updateAddRemoveMe(this)',
+				'data-private': ''
 			}),
 			suffix: '<div class="form_suffix_icon mdi" title="" onClick="$P().addRemoveMe(this)"></div>',
 			caption: 'Optionally add custom e-mail recipients to be notified for this channel.'

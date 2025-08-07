@@ -51,7 +51,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 							} ) ),
 							value: args.username || '',
 							default_icon: 'account',
-							'data-shrinkwrap': 1
+							'data-shrinkwrap': 1,
+							'data-private': 1
 						})
 					});
 				html += '</div>';
@@ -1485,7 +1486,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				} ),
 				values: action.users || [],
 				default_icon: 'account',
-				'data-hold': 1
+				'data-hold': 1,
+				'data-private': 1
 				// 'data-shrinkwrap': 1
 			}),
 			caption: 'Select which users should be emailed for the action.'
@@ -1502,7 +1504,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				autocomplete: 'off',
 				maxlength: 8192,
 				placeholder: 'email@sample.com',
-				value: action.email || ''
+				value: action.email || '',
+				'data-private': ''
 			}),
 			caption: 'Optionally enter one or more additional email addresses for the action.'
 		});
