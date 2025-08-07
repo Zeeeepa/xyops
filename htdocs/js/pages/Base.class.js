@@ -1473,6 +1473,47 @@ Page.Base = class Base extends Page {
 		return events;
 	}
 	
+	getCategorizedServers(inc_offline) {
+		// get list of categorized servers for menu
+		// sorted by group, then by title/hostname
+		var last_grp_id = '';
+		var grp_map = obj_array_to_hash( app.groups, 'id' );
+		var servers = Object.values(app.servers).map( function(server) { return { ...server }; } );
+		
+		// optionally merge in recently offline servers
+		if (inc_offline) {
+			for (var server_id in app.serverCache) {
+				if (!app.servers[server_id]) {
+					var server = app.serverCache[server_id];
+					servers.push( merge_objects(server, { offline: true, icon: server.icon || 'close-network-outline' }) );
+				}
+			}
+		}
+		
+		servers.sort( function(a, b) {
+			if (a.groups[0] == b.groups[0]) {
+				return (a.title || a.hostname).toLowerCase().localeCompare( (b.title || b.hostname).toLowerCase() );
+			}
+			else {
+				var grp_a = grp_map[ a.groups[0] ] || { sort_order: 99999 };
+				var grp_b = grp_map[ b.groups[0] ] || { sort_order: 99999 };
+				return (grp_a.sort_order < grp_b.sort_order) ? -1 : 1;
+			}
+		} );
+		
+		servers.forEach( function(server) {
+			server.title = server.title || app.formatHostname(server.hostname);
+			
+			if (server.groups[0] != last_grp_id) {
+				last_grp_id = server.groups[0];
+				var grp = grp_map[ server.groups[0] ] || { title: server.groups[0] };
+				server.group = grp.title;
+			}
+		} );
+		
+		return servers;
+	}
+	
 	getFormIDCopier() {
 		return `<div class="form_suffix_icon mdi mdi-clipboard-text-outline" title="${config.ui.tooltips.copy_id}" onClick="$P().copyFormID(this)"></div>`;
 	}
