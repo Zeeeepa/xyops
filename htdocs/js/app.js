@@ -1196,6 +1196,9 @@ app.extend({
 		// color accessibilty
 		if (this.user.color_acc) $body.addClass('coloracc'); else $body.removeClass('coloracc');
 		
+		// grayscale mode
+		if (this.user.grayscale) $body.addClass('grayscale'); else $body.removeClass('grayscale');
+		
 		// privacy mode
 		if (this.user.privacy_mode) $body.addClass('privacy'); else $body.removeClass('privacy');
 	},

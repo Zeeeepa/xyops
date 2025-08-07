@@ -128,6 +128,7 @@
 		"hour_cycle": "h12",
 		"timezone": "",
 		"color_acc": false,
+		"grayscale": false,
 		"privacy_mode": false,
 		"effects": true,
 		"page_info": true,

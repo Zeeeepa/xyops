@@ -199,6 +199,18 @@ Page.MySettings = class MySettings extends Page.Base {
 			caption: 'Enable or disable color assistance, which uses indicators other than color for differentiation.'
 		});
 		
+		// grayscale
+		html += this.getFormRow({
+			label: 'Grayscale:',
+			content: this.getFormCheckbox({
+				id: 'fe_ms_grayscale',
+				label: 'Desaturate All Colors',
+				checked: !!user.grayscale,
+				onChange: '$P().previewGrayscale(this)'
+			}),
+			caption: 'Check this box to remove all color from the user interface, and instead use shades of gray.'
+		});
+		
 		// show page descriptions
 		html += this.getFormRow({
 			label: 'Assistance:',
@@ -271,6 +283,12 @@ Page.MySettings = class MySettings extends Page.Base {
 		app.updateAccessibility();
 	}
 	
+	previewGrayscale(elem) {
+		// set local mode on change
+		app.user.grayscale = $(elem).is(':checked');
+		app.updateAccessibility();
+	}
+	
 	previewPrivacyMode(elem) {
 		// set local mode on change
 		app.user.privacy_mode = $(elem).is(':checked');
@@ -321,6 +339,7 @@ Page.MySettings = class MySettings extends Page.Base {
 			motion: this.div.find('#fe_ms_motion').val(),
 			contrast: this.div.find('#fe_ms_contrast').val(),
 			color_acc: this.div.find('#fe_ms_coloracc').is(':checked'),
+			grayscale: this.div.find('#fe_ms_grayscale').is(':checked'),
 			privacy_mode: this.div.find('#fe_ms_privacy').is(':checked'),
 			page_info: this.div.find('#fe_ms_pageinfo').is(':checked'),
 			notifications: this.div.find('#fe_ms_notify').is(':checked'),
@@ -344,6 +363,7 @@ Page.MySettings = class MySettings extends Page.Base {
 		if (json.motion != user.motion) return true;
 		if (json.contrast != user.contrast) return true;
 		if (json.color_acc != user.color_acc) return true;
+		if (json.grayscale != user.grayscale) return true;
 		if (json.privacy_mode != user.privacy_mode) return true;
 		if (json.page_info != user.page_info) return true;
 		if (json.notifications != user.notifications) return true;
