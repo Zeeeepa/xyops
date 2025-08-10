@@ -465,7 +465,7 @@ Page.ActivityLog = class ActivityLog extends Page.PageUtils {
 				'' + desc + '',
 				'' + self.getNiceUser(item.admin || item.username, true) + '',
 				self.getNiceIP(item.ip),
-				'' + actions.join(' | ') + ''
+				actions.join(' | ') || '&nbsp;'
 			];
 			if (color) tds.className = color;
 			
