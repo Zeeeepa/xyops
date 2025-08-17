@@ -2383,7 +2383,7 @@ Page.Base = class Base extends Page {
 		html += '<div class="code_viewer scroll_shadows">';
 		html += '<div class="markdown-body">';
 		
-		html += marked(text, config.ui.marked_config);
+		html += marked.parse(text, config.ui.marked_config);
 		
 		html += '</div>'; // markdown-body
 		html += '</div>'; // code_viewer
@@ -2672,7 +2672,7 @@ Page.Base = class Base extends Page {
 			html += '<div class="code_viewer scroll_shadows">';
 			html += '<div class="markdown-body">';
 			
-			html += marked(md, config.ui.marked_config);
+			html += marked.parse(md, config.ui.marked_config);
 			
 			html += '</div>'; // markdown-body
 			html += '</div>'; // code_viewer

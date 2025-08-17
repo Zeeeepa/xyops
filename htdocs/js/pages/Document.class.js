@@ -93,7 +93,7 @@ Page.Document = class Document extends Page.Base {
 		html += '<div class="markdown-body ' + extra_classes + '" style="' + (app.user ? this.getUserFontStyle() : 'font-size:16px') + '">';
 		// html += '<div class="markdown-body code" style="font-size:16px">';
 		
-		html += marked(text, {
+		html += marked.parse(text, {
 			gfm: true,
 			tables: true,
 			breaks: false,
