@@ -360,8 +360,8 @@
 		
 		"https": true,
 		"https_port": 5523,
-		"https_cert_file": "conf/ssl.crt",
-		"https_key_file": "conf/ssl.key",
+		"https_cert_file": "conf/tls.crt",
+		"https_key_file": "conf/tls.key",
 		"https_force": false,
 		"https_timeout": 30,
 		"https_header_detect": {
