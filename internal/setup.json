@@ -595,9 +595,9 @@
 			
 			[ "symlinkCompress", "node_modules/canvas-confetti/dist/confetti.browser.js", "htdocs/js/external/" ],
 			
-			[ "symlinkFile", "node_modules/orchestra-theme/js", "htdocs/js/common" ],
-			[ "symlinkFile", "node_modules/orchestra-theme/css/normalize.css", "htdocs/css/" ],
-			[ "symlinkFile", "node_modules/orchestra-theme/css/base.css", "htdocs/css/" ],
+			[ "symlinkFile", "node_modules/pixl-xyapp/js", "htdocs/js/common" ],
+			[ "symlinkFile", "node_modules/pixl-xyapp/css/normalize.css", "htdocs/css/" ],
+			[ "symlinkFile", "node_modules/pixl-xyapp/css/base.css", "htdocs/css/" ],
 			
 			[ "chmodFiles", "755", "bin/*" ],
 			
