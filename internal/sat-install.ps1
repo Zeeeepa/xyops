@@ -55,7 +55,7 @@ if (-Not (Test-Path $installDir)) {
 
 # Download the package tarball.
 $tempPackageFile = Join-Path $env:TEMP "xyOpsSatellite.tar.gz"
-Write-Output "Downloading package from $packageUrl ..."
+Write-Output "Downloading package from $base_url ..."
 try {
     Invoke-WebRequest -Uri $packageUrl -OutFile $tempPackageFile -UseBasicParsing
 } catch {
@@ -79,7 +79,7 @@ Write-Output "Package extracted to $installDir."
 
 # Download the configuration file and save it as config.json.
 $configFilePath = Join-Path $installDir "config.json"
-Write-Output "Downloading configuration from $configUrl ..."
+Write-Output "Downloading configuration from $base_url ..."
 try {
     Invoke-WebRequest -Uri $configUrl -OutFile $configFilePath -UseBasicParsing
 } catch {
@@ -106,6 +106,6 @@ if (-Not (Test-Path $mainJs)) {
 
 Write-Output "Running installation command..."
 # Execute the final installation command.
-& $nodePath $mainJs -- install
+& $nodePath $mainJs --install
 
 Write-Output "xyOps Satellite installation complete."
