@@ -39,7 +39,7 @@ A few things to note here:
 - In this case xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
 - Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
 
-As an aside, when you add worker servers via the UI, secret keys are not used (nor are they *ever* sent over the wire).  Instead, a special cryptographic token is used to authenticate new worker servers.  You can also add batches of servers in bulk via API Keys.  See [Adding Servers](#adding-servers) for more details.
+As an aside, when you add worker servers via the UI, secret keys are not used (nor are they *ever* sent over the wire).  Instead, a special cryptographic token is used to authenticate new worker servers.  You can also add batches of servers in bulk via API Keys.  See [Adding Servers](usage.md#adding-servers) for more details.
 
 ## Configuration
 
@@ -222,13 +222,9 @@ xyops-data-export-YYYY-MM-DD-UNIQUEID.txt.gz
 
 Please note that this example will export **everything**, and can take quite a while and produce a very large file depending on your xyOps database size.  To limit what exactly gets included in the backup, consult the [admin_export_data](api.md#admin_export_data) API docs.
 
-You can then add a command like this to auto-delete backups older than 30 days:
-
-```sh
-find . -name 'xyops-data-export-*' -mtime +30 -type f -delete
-```
-
 # TLS
+
+
 
 sso guide links here (no longer?  yes, it still does -- talk about how to configure HTTPS with real certs, satellite reject unauthorized flag, etc.)
 
@@ -240,8 +236,11 @@ let's encrypt!  make sure your instructions still work!
 
 
 
-
 # Satellite
+
+**xyOps Satellite (xySat)** is a companion to the [xyOps](https://xyops.io) workflow automation and server monitoring platform.  It is both a job runner, and a data collector for server monitoring and alerting.  xySat is designed to be installed on *all* of your servers, so it is lean and mean, and has zero dependencies.
+
+
 
 ## Overriding The Connect URL
 
@@ -250,5 +249,18 @@ sso guide links here
 
 
 
-# Adding Servers
+# Air-Gapped Mode
 
+
+
+```json
+"airgap": {
+	"enabled": false,
+	"outbound_whitelist": ["127.0.0.1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fd00::/8", "169.254.0.0/16", "fe80::/10"],
+	"outbound_blacklist": []
+}
+```
+
+These rules automatically propagate to all connected worker servers, and affect things like the [HTTP Plugin](plugins.md#http-plugin).
+
+TODO: Talk about satellite, and the local filesystem package thing.  We need to create an air-gapped package for enterprise customers.
