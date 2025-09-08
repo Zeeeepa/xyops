@@ -78,6 +78,7 @@
 	},
 	
 	"multi": {
+		"list_url": "https://api.github.com/repos/pixlcore/xyops/releases",
 		"protocol": "ws:",
 		"connect_timeout_sec": 3,
 		"master_timeout_sec": 10,
@@ -338,7 +339,7 @@
 		"http_max_upload_size": 1073741824,
 		"http_static_ttl": 31536000,
 		"http_static_index": "index.html",
-		"http_server_signature": "xyOps v1.0",
+		"http_server_signature": "xyOps",
 		"http_compress_text": true,
 		"http_enable_brotli": true,
 		"http_timeout": 30,
