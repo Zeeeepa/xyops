@@ -518,7 +518,6 @@
 				"title": "Select targets for upgrade",
 				"placeholder": "Select targets for upgrade..."
 			},
-			
 			"d_sys_sat_release": {
 				"label": "Satellite Version:",
 				"caption": "Select the desired xyOps Satellite version to be installed."
@@ -526,10 +525,29 @@
 			"fe_sys_sat_release": {
 				"title": "Select Satellite Version"
 			},
-			
 			"d_sys_sat_stagger": {
 				"label": "Stagger Installs:",
-				"caption": "Optionally stagger the install requests by a custom interval."
+				"caption": "Optionally stagger the installs by a custom interval."
+			},
+			
+			"d_sys_multi_targets": {
+				"label": "Upgrade Masters:",
+				"caption": "Select which master servers you want to upgrade."
+			},
+			"fe_sys_multi_targets": {
+				"title": "Select masters for upgrade",
+				"placeholder": "Select masters for upgrade..."
+			},
+			"d_sys_multi_release": {
+				"label": "xyOps Version:",
+				"caption": "Select the desired xyOps version to be installed."
+			},
+			"fe_sys_multi_release": {
+				"title": "Select xyOps Version"
+			},
+			"d_sys_multi_stagger": {
+				"label": "Stagger Installs:",
+				"caption": "Optionally stagger the installs by a custom interval."
 			}
 		}
 		

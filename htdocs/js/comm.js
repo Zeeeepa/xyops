@@ -166,6 +166,13 @@ app.comm = {
 					self.sendCommand.apply( self, item );
 				} );
 				this.commandQueue = [];
+				
+				// verify server version
+				if (data.version && app.version && (data.version != app.version)) {
+					// server software was upgraded, so we need a refresh
+					Debug.trace('user', "Software version mismatch: " + data.version + " != " + app.version);
+					this.forceVersionRefresh(data);
+				}
 			break;
 			
 			case 'logout':
@@ -215,6 +222,17 @@ app.comm = {
 			// more commands here
 			
 		} // switch cmd
+	},
+	
+	forceVersionRefresh: function(data) {
+		// server software was upgraded, need client refresh
+		var msg = `The primary master server was upgraded to xyOps v${data.version}.  We now need to refresh your client to complete the upgrade.  Sorry for the inconvenience!`;
+		
+		Dialog.confirm( 'Refresh Needed', msg, ['refresh', 'Refresh'], function(result) {
+			if (!result) return;
+			app.clearError();
+			window.location.reload();
+		} ); // confirm
 	},
 	
 	handleSelfUpdate: function(data) {

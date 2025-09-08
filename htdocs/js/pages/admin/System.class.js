@@ -107,7 +107,7 @@ Page.System = class System extends Page.Base {
 		// shutdown server
 		html += '<div class="maint_unit">';
 			html += '<div class="button danger" onClick="$P().shutdown_master()"><i class="mdi mdi-power">&nbsp;</i>Shutdown Server...</div>';
-			html += '<div class="caption">Shutdown the current master server (secondary will take over).  <a href="#">Learn More</a></div>';
+			html += '<div class="caption">Shutdown the current master server (secondary will take over if applicable).  <a href="#">Learn More</a></div>';
 		html += '</div>';
 		
 		// restart server
@@ -124,7 +124,7 @@ Page.System = class System extends Page.Base {
 		
 		// upgrade masters
 		html += '<div class="maint_unit">';
-			html += '<div class="button danger" onClick="$P().upgrade_master()"><i class="mdi mdi-database-arrow-up-outline">&nbsp;</i>Upgrade Masters...</div>';
+			html += '<div class="button danger" onClick="$P().do_upgrade_masters()"><i class="mdi mdi-database-arrow-up-outline">&nbsp;</i>Upgrade Masters...</div>';
 			html += '<div class="caption">Upgrade or downgrade xyOps on your master servers to any selected version.  <a href="#">Learn More</a></div>';
 		html += '</div>';
 		
@@ -704,6 +704,88 @@ Page.System = class System extends Page.Base {
 			
 			// change menu items and fire onChange event for redraw
 			$('#fe_sys_sat_release').html( render_menu_options( items, items[0].id ) ).trigger('change');
+		} ); // api.get
+	}
+	
+	do_upgrade_masters() {
+		// upgrade selected masters
+		var self = this;
+		var html = '';
+		
+		html += `<div class="dialog_intro">This allows you to upgrade the xyOps software on your master servers.  Note that if you include the current primary master in the upgrade list, it will be upgraded last (and the client will be disconnected during the upgrade process).</div>`;
+		html += '<div class="dialog_box_content maximize" style="max-height:75vh; overflow-x:hidden; overflow-y:auto;">';
+		
+		// targets
+		var masters = sort_by( Object.values(app.masters), 'id' ).filter( function(host) { return !!host.online; } ).map( function(host) { 
+			return { id: host.id, title: host.id, icon: host.master ? 'database' : 'database-outline' }; 
+		} );
+		
+		html += this.getFormRow({
+			id: 'd_sys_multi_targets',
+			content: this.getFormMenuMulti({
+				id: 'fe_sys_multi_targets',
+				options: masters,
+				values: [],
+				'data-hold': 1,
+				'data-shrinkwrap': 1
+			})
+		});
+		
+		// release version
+		html += this.getFormRow({
+			id: 'd_sys_multi_release',
+			content: this.getFormMenuSingle({
+				id: 'fe_sys_multi_release',
+				options: [ { id: '', title: config.ui.menu_bits.generic_loading } ],
+				value: '',
+				'data-shrinkwrap': 1
+			})
+		});
+		
+		// delay between
+		html += this.getFormRow({
+			id: 'd_sys_multi_stagger',
+			content: this.getFormRelativeTime({
+				id: 'fe_sys_multi_stagger',
+				value: 60
+			})
+		});
+		
+		html += '</div>';
+		Dialog.confirmDanger( "Upgrade Master Servers", html, ['database-arrow-up-outline', "Upgrade Now"], function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var targets = $('#fe_sys_multi_targets').val();
+			if (!targets.length) return app.badField('#fe_sys_multi_targets', "Please select one or more masters to upgrade.");
+			
+			var release = $('#fe_sys_multi_release').val();
+			var stagger = parseInt( $('#fe_sys_multi_stagger').val() ) || 0;
+			
+			Dialog.hide();
+			
+			// start the job
+			app.api.post( 'app/admin_upgrade_masters', { targets, release, stagger }, function(resp) {
+				app.showMessage('success', "Your upgrade job has started in the background.");
+			}); // api.post
+		}); // confirm
+		
+		SingleSelect.init('#fe_sys_multi_release');
+		MultiSelect.init( $('#fe_sys_multi_targets') );
+		RelativeTime.init( $('#fe_sys_multi_stagger') );
+		Dialog.autoResize();
+		
+		// load release list
+		app.api.get( 'app/get_master_releases', {}, function(resp) {
+			var title_map = {
+				latest: 'Latest Stable'
+			};
+			var items = (resp.releases || []).map( function(release) {
+				return { id: release, title: title_map[release] || release.replace(/^v([\d\.]+)$/, 'Version $1'), icon: title_map[release] ? 'tag-text' : 'tag-text-outline' };
+			} );
+			
+			// change menu items and fire onChange event for redraw
+			$('#fe_sys_multi_release').html( render_menu_options( items, items[0].id ) ).trigger('change');
 		} ); // api.get
 	}
 	
