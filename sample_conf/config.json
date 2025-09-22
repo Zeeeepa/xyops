@@ -403,14 +403,6 @@
 		"use_bcrypt": true,
 		"mail_logger": true,
 		"valid_username_match": "^[\\w\\-\\.]+$",
-		
-		"email_templates": {
-			"welcome_new_user": "conf/emails/welcome_new_user.txt",
-			"changed_password": "conf/emails/changed_password.txt",
-			"recover_password": "conf/emails/recover_password.txt",
-			"logout_all_sessions": "conf/emails/logout_all_sessions.txt"
-		},
-		
 		"cookie_settings": {
 			"path": "/",
 			"secure": "auto",
