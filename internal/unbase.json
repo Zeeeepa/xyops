@@ -45,6 +45,10 @@
 				{
 					"id": "workflow",
 					"source": "/workflow/event"
+				},
+				{
+					"id": "tickets",
+					"source": "/tickets"
 				}
 			],
 			"sorters": [
@@ -90,6 +94,10 @@
 				{
 					"id": "jobs",
 					"source": "/jobs"
+				},
+				{
+					"id": "tickets",
+					"source": "/tickets"
 				}
 			]
 		},
@@ -360,7 +368,7 @@
 				{
 					"id": "due",
 					"source": "/due",
-					"type": "due"
+					"type": "number"
 				}
 			]
 		}
