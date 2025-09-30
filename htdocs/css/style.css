@@ -595,6 +595,10 @@ body.dark div.maint_unit {
 	margin-bottom: 0 !important;
 }
 
+.markdown-body a {
+	color: var(--blue);
+}
+
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3,
@@ -637,6 +641,10 @@ body.dark div.maint_unit {
 	list-style-type: none;
 }
 
+.markdown-body li i.mdi {
+	color: var(--label-color);
+	padding-right: 5px;
+}
 .markdown-body li i.mdi:before {
 	transform: scale(1.20);
 }
@@ -650,21 +658,30 @@ body.dark div.maint_unit {
 }
 
 .markdown-body table {
-	border: 1px solid var(--icon-color);
+	border: 1px solid var(--border-color);
 	border-collapse: collapse; 
 	border-spacing: 0;
 }
 
 .markdown-body table tr th {
-	padding: 3px 20px 3px 3px;
-	border-bottom: 1px solid var(--icon-color);
+	padding: 2px 20px 2px 10px;
+	border-bottom: 1px solid var(--border-color);
 	background-color: var(--form-background-color);
+	font-weight: 600;
 	color: var(--label-color);
 	text-align: left;
+	white-space: nowrap;
+}
+.dialog .markdown-body table tr th {
+	background-color: var(--shadow-color);
+}
+body.dark .dialog .markdown-body table tr th {
+	background-color: var(--form-background-color);
 }
 
 .markdown-body table tr td {
-	padding: 2px 15px 2px 3px;
+	padding: 6px 15px 6px 10px;
+	border-bottom: 1px solid var(--border-color);
 }
 
 .markdown-body input {
@@ -682,14 +699,16 @@ body.dark div.maint_unit {
 }
 
 .markdown-body p code {
-	/* background-color: var(--border-color);
-	border: 1px solid var(--icon-color); */
+	background-color: var(--shadow-color);
 	border-radius: 4px;
 	padding: 2px 4px 2px 4px;
 	margin-left: 3px;
 	margin-right: 3px;
 	/* font-size: 13px; */
 	font-size: 0.85em;
+}
+body.dark .markdown-body p code {
+	background-color: var(--border-color);
 }
 
 .markdown-body pre {
