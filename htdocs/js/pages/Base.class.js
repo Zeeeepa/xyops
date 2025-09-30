@@ -466,6 +466,12 @@ Page.Base = class Base extends Page {
 		else return this.getNiceEvent(job.event, link);
 	}
 	
+	getNiceTicket(ticket, link) {
+		// return formatted ticket subject
+		if (link) return '<span class="nowrap"><a href="#' + ticket.num + '"><i class="mdi mdi-text-box-outline"></i><b>' + strip_html(ticket.subject) + '</b></a></span>';
+		else return '<span class="nowrap"><i class="mdi mdi-text-box-outline"></i><b>' + strip_html(ticket.subject) + '</b></span>';
+	}
+	
 	getNiceTicketStatus(status) {
 		// get formatted ticket status with suitable icon
 		if (!status) return 'n/a';
@@ -1643,7 +1649,7 @@ Page.Base = class Base extends Page {
 		if (!this.boxButtons || !this.boxFloater) return;
 		
 		var box = this.boxButtons[0].getBoundingClientRect();
-		this.boxFloater.css({ left: box.left, top: window.innerHeight - box.height, width: box.width });
+		this.boxFloater.css({ left: box.left - 1, top: window.innerHeight - box.height, width: box.width + 2 });
 	}
 	
 	updateBoxButtonFloaterState() {
@@ -1666,7 +1672,7 @@ Page.Base = class Base extends Page {
 			// box buttons are offscreen, so floater should be visible
 			if (this.boxFloater.hasClass('gone')) {
 				this.boxFloater.removeClass('gone');
-				this.boxFloater.css({ left: box.left, top: window.innerHeight - box.height, width: box.width });
+				this.boxFloater.css({ left: box.left - 1, top: window.innerHeight - box.height, width: box.width + 2 });
 				this.boxFloater[0].offsetWidth; // trigger dom reflow
 			}
 			if (this.boxFloater.hasClass('hidden')) this.boxFloater.removeClass('hidden');
