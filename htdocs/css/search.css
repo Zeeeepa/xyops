@@ -166,7 +166,7 @@ div.load_more {
 	grid-template-columns: 1fr;
 }
 
-.form_grid .multiselect > .single {
+.form_grid .multiselect > .single, .form_grid .multiselect.multi > .placeholder {
 	max-width: 12vw;
 }
 .form_grid.four .multiselect > .single {
@@ -177,7 +177,7 @@ div.load_more {
 
 @media only screen and (min-width: 1025px) and (max-width: 1280px) {
 	
-	.form_grid .multiselect > .single {
+	.form_grid .multiselect > .single, .form_grid .multiselect.multi > .placeholder {
 		max-width: 10vw;
 	}
 	.form_grid.four .multiselect > .single {
@@ -197,7 +197,7 @@ div.load_more {
 		grid-template-columns: 1fr 1fr;
 	}
 	
-	.form_grid .multiselect > .single {
+	.form_grid .multiselect > .single, .form_grid .multiselect.multi > .placeholder {
 		max-width: 30vw;
 	}
 	.form_grid.four .multiselect > .single {
@@ -220,7 +220,7 @@ div.load_more {
 		grid-template-columns: 1fr 1fr;
 	}
 	
-	.form_grid .multiselect > .single {
+	.form_grid .multiselect > .single, .form_grid .multiselect.multi > .placeholder {
 		max-width: 80vw;
 	}
 	.form_grid.four .multiselect > .single {
@@ -243,5 +243,32 @@ div.load_more {
 /* Smaller Phones */
 
 @media only screen and (min-width: 240px) and (max-width: 500px) {
+	
+	.form_grid {
+		grid-template-columns: 1fr;
+		grid-row-gap: 20px;
+	}
+	.form_grid.four {
+		grid-template-columns: 1fr;
+	}
+	
+	.form_grid .multiselect > .single, .form_grid .multiselect.multi > .placeholder {
+		max-width: 80vw;
+	}
+	.form_grid.four .multiselect > .single {
+		max-width: 80vw;
+	}
+	
+	#btn_s_download {
+		display: none;
+	}
+	
+	.search_total {
+		top: 0px;
+		line-height: 12px;
+		margin-top: -5px;
+		margin-bottom: 5px;
+		padding-bottom: 4px;
+	}
 	
 }
