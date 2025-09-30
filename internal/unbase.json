@@ -321,8 +321,7 @@
 				{
 					"id": "due",
 					"source": "/due",
-					"type": "number",
-					"divide": 3600
+					"type": "date"
 				},
 				{
 					"id": "subject",
@@ -356,18 +355,8 @@
 					"type": "number"
 				},
 				{
-					"id": "created",
-					"source": "/created",
-					"type": "number"
-				},
-				{
 					"id": "modified",
 					"source": "/modified",
-					"type": "number"
-				},
-				{
-					"id": "due",
-					"source": "/due",
 					"type": "number"
 				}
 			]
