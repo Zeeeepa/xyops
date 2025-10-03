@@ -520,6 +520,18 @@ Page.Base = class Base extends Page {
 		// get server label or hostname in plain text (no HTML markup)
 		if (!item) return '(None)';
 		if (app.privacyMode()) return '(Redacted)';
+		
+		if (typeof(item) == 'string') {
+			// assume id (fallback to hostname, then fallback to "offline" server)
+			var orig_item = item;
+			item = find_object(app.servers, { id: orig_item }) || find_object(app.servers, { hostname: orig_item });
+			if (!item && this.servers) item = find_object(this.servers, { id: orig_item });
+			if (!item) {
+				item = { id: orig_item, hostname: orig_item, icon: 'close-network-outline' };
+			}
+		}
+		if (!item) return '(None)';
+		
 		return item.title || app.formatHostname(item.hostname);
 	}
 	
