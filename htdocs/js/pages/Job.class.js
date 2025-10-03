@@ -188,8 +188,10 @@ Page.Job = class Job extends Page.PageUtils {
 					// html += '<div class="button icon right secondary sm_hide" title="Add Comment..." onClick="$P().do_edit_comment(-1)"><i class="mdi mdi-comment-processing-outline"></i></div>';
 					html += '<div class="button icon right secondary" title="Update Tags..." onMouseDown="$P().do_update_tags(this)"><i class="mdi mdi-tag-plus-outline"></i></div>';
 					
-					if (app.hasPrivilege('ticket_jobs')) {
+					if (app.hasPrivilege('edit_tickets')) {
 						html += '<div class="button icon right secondary sm_hide" title="Add to Ticket..." onClick="$P().doAddToTicket()"><i class="mdi mdi-text-box-search-outline"></i></div>';
+					}
+					if (app.hasPrivilege('create_tickets') && app.hasPrivilege('edit_tickets')) {
 						html += '<div class="button icon right secondary sm_hide" title="Create Ticket..." onClick="$P().doCreateTicket()"><i class="mdi mdi-text-box-plus-outline"></i></div>';
 					}
 					
@@ -556,38 +558,9 @@ Page.Job = class Job extends Page.PageUtils {
 		var event = job.event ? find_object(app.events, { id: job.event }) : { title: "n/a" };
 		if (!event) event = { title: "n/a" };
 		
-		var category = find_object(app.categories, { id: job.category } ) || { title: "n/a" };
-		
-		var plugin = find_object(app.plugins, { id: job.plugin }) || { title: "n/a" };
-		if (!job.plugin || (job.plugin == '_workflow')) plugin = { title: "(Workflow)" };
-		
-		var server = app.servers[ job.server ];
-		var nice_server = server ? (server.title || app.formatHostname(server.hostname)) : "n/a";
-		
-		var nice_elapsed = get_text_from_seconds_round( job.elapsed );
-		
-		var new_details = 
-			`- **Job ID:** \`${job.id}\`\n` + 
-			`- **Event:** ${event.title}\n` + 
-			`- **Category:** ${category.title}\n` + 
-			`- **Plugin:** ${plugin.title}\n` + 
-			`- **Server:** ${nice_server}\n` + 
-			`- **Elapsed:** ${nice_elapsed}\n`;
-		
-		var new_subject = '';
-		var new_body = '';
-		
-		if (job.code) {
-			// failed
-			new_subject = `Job #${job.id} failed with code: ${job.code} (${event.title})`;
-			new_body = `This ticket was created to discuss job \`#${job.id}\` from event "**${event.title}**", which failed with code: \`${job.code}\`.  Here are the job details:\n\n` + 
-				new_details + `\n### Error Description:\n\n\`\`\`\n${job.description || '(None)'}\n\`\`\`\n`;
-		}
-		else {
-			// success
-			new_subject = `Job #${job.id} succeeded (${event.title})`;
-			new_body = `This ticket was created to discuss job \`#${job.id}\` from event "**${event.title}**".  Here are the job details:\n\n` + new_details;
-		}
+		var new_subject = job.code ? 
+			`Job #${job.id} failed with code: ${job.code} (${event.title})` : 
+			`Job #${job.id} succeeded (${event.title})`;
 		
 		html += `<div class="dialog_intro">${config.ui.intros.job_create_ticket}</div>`;
 		html += '<div class="dialog_box_content scroll maximize">';
@@ -643,7 +616,8 @@ Page.Job = class Job extends Page.PageUtils {
 			
 			var ticket = {
 				subject: $('#fe_nt_subject').val().trim(),
-				body: new_body,
+				template: 'job', // generate ticket body from template
+				job: job.id,
 				type: $('#fe_nt_type').val(),
 				status: 'open',
 				category: job.category || '',
@@ -652,7 +626,8 @@ Page.Job = class Job extends Page.PageUtils {
 				notify: [],
 				events: [],
 				tags: $('#fe_nt_tags').val(),
-				due: ''
+				due: '',
+				server: job.server || ''
 			};
 			if (!ticket.subject.length) return app.badField('#fe_nt_subject', "Please enter a subject line for the ticket.");
 			
@@ -679,7 +654,8 @@ Page.Job = class Job extends Page.PageUtils {
 		MultiSelect.init( $('#fe_nt_tags') );
 		SingleSelect.init( $('#fe_nt_type, #fe_nt_assignee') );
 		Dialog.autoResize();
-		$('#fe_nt_subject').focus();
+		
+		$('#fe_nt_subject').focus().get(0).setSelectionRange( new_subject.length, new_subject.length );
 	}
 	
 	doAddToTicket() {
@@ -708,30 +684,6 @@ Page.Job = class Job extends Page.PageUtils {
 			caption: "Select a ticket to attach the job to."
 		});
 		
-		// assign to me
-		html += this.getFormRow({
-			id: 'd_jd_assign',
-			label: 'Assignee:',
-			content: this.getFormCheckbox({
-				id: 'fe_jd_assign',
-				label: 'Assign to Me',
-				checked: false
-			}),
-			caption: 'Optionally assign the ticket to yourself.'
-		});
-		
-		// add to cc list
-		html += this.getFormRow({
-			id: 'd_jd_cc',
-			label: 'Follow:',
-			content: this.getFormCheckbox({
-				id: 'fe_jd_cc',
-				label: 'Add to Cc List',
-				checked: false
-			}),
-			caption: 'Optionally add yourself to the ticket Cc list.'
-		});
-		
 		html += '</div>';
 		Dialog.confirm( title, html, btn, function(result) {
 			if (!result) return;
@@ -745,12 +697,9 @@ Page.Job = class Job extends Page.PageUtils {
 			
 			job.tickets.push( ticket_id );
 			
-			var assign_to_me = $('#fe_jd_assign').is(':checked');
-			var add_to_cc = $('#fe_jd_cc').is(':checked');
-			
 			Dialog.showProgress( 1.0, "Updating Ticket..." );
 			
-			var finish = function() {
+			app.api.post( 'app/manage_job_tickets', { id: job.id, tickets: job.tickets }, function(resp) {
 				// all done
 				Dialog.hideProgress();
 				app.cacheBust = hires_time_now();
@@ -758,26 +707,7 @@ Page.Job = class Job extends Page.PageUtils {
 				
 				// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
 				Nav.go('Tickets?sub=view&id=' + ticket_id);
-			}; // finish
-			
-			app.api.post( 'app/manage_job_tickets', { id: job.id, tickets: job.tickets }, function(resp) {
-				if (!assign_to_me && !add_to_cc) return finish();
-				
-				// also update ticket attribs
-				var updates = { id: ticket_id };
-				var ticket = find_object(tickets, { id: ticket_id });
-				if (!ticket.cc) ticket.cc = [];
-				
-				if (add_to_cc && !ticket.cc.includes(app.username)) {
-					ticket.cc.push(app.username);
-					updates.cc = ticket.cc;
-				}
-				if (assign_to_me && (ticket.assignee != app.username)) {
-					ticket.assignee = updates.assignee = app.username;
-				}
-				
-				app.api.post( 'app/update_ticket', updates, finish);
-			} ); // api.post (mjt)
+			} ); // api.post
 		}); // Dialog.confirm
 		
 		SingleSelect.init('#fe_jd_ticket');
