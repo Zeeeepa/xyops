@@ -688,7 +688,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		this.ticket.created = this.ticket.modified = time_now();
 		
 		// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
-		Nav.go('Tickets?sub=view&id=' + this.ticket.id);
+		Nav.go('Tickets?id=' + this.ticket.id);
 		app.showMessage('success', "The new ticket was created successfully.");
 	}
 	
@@ -1941,7 +1941,18 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		var self = this;
 		var ticket = this.ticket;
 		
-		if (!this.get_ticket_form_json()) return; // error
+		var subject = this.div.find('#fe_et_subject').val().trim();
+		var body = this.editor.getValue();
+		
+		if (!subject.length) {
+			return app.badField('#fe_nt_subject', "Please enter a subject line for the ticket.");
+		}
+		if (!body.length) {
+			return app.doError("Please enter some body text for the ticket.");
+		}
+		
+		ticket.subject = subject;
+		ticket.body = body;
 		
 		// send changes to server
 		var data = {
@@ -2089,6 +2100,10 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 					
 					case 'category':
 						md += substitute( text, { disp: self.getNiceCategory(change.value) } );
+					break;
+					
+					case 'server':
+						md += substitute( text, { disp: self.getNiceServer(change.value) } );
 					break;
 					
 					case 'assignee':
@@ -2455,10 +2470,8 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		app.doError("Upload Failed: " + message);
 	}
 	
-	// Editor Toolbar:
-	
 	getEditToolbar() {
-		// return HTML for editor toolbar buttons and help link
+		// return HTML for editor toolbar buttons
 		var html = '';
 		
 		html += '<div class="editor_toolbar">';
@@ -2638,6 +2651,40 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		this.editorInsertBlockElem('> ');
 	}
 	
+	updateTicket(ticket) {
+		// received server update for ticket, redraw everything
+		this.ticket = ticket;
+		app.cacheBust = hires_time_now();
+		
+		// rerender subject and markdown
+		this.div.find('#d_ticket_main_body div.btg_title').html( ticket.subject );
+		this.div.find('#d_ticket_main_body div.markdown-body').html( marked.parse(ticket.body, config.ui.marked_config) );
+		
+		this.expandInlineImages('#d_ticket_main_body');
+		this.highlightCodeBlocks('#d_ticket_main_body');
+		
+		// update all attribute controls
+		this.div.find('#fe_et_assignee').val( ticket.assignee ).trigger('redraw');
+		this.div.find('#fe_et_type').val( ticket.type ).trigger('redraw');
+		this.div.find('#fe_et_status').val( ticket.status ).trigger('redraw');
+		this.div.find('#fe_et_category').val( ticket.category ).trigger('redraw');
+		this.div.find('#fe_et_server').val( ticket.server ).trigger('redraw');
+		this.div.find('#fe_et_tags').val( ticket.tags ).trigger('redraw');
+		this.div.find('#fe_et_cc').val( ticket.cc ).trigger('redraw');
+		this.div.find('#fe_et_notify').val( ticket.notify ).trigger('redraw');
+		this.div.find('#fe_et_due').val( ticket.due ? this.formatDateTZ(ticket.due, '[yyyy]-[mm]-[dd]', config.tz) : '' ).trigger('redraw'); // system timezone
+		
+		// render jobs, files, alerts
+		this.renderTicketEvents();
+		this.getTicketJobs();
+		this.getTicketAlerts();
+		
+		// misc
+		this.render_header();
+		this.update_buttons();
+		this.render_ticket_changes();
+	}
+	
 	onResize() {
 		if (this.editor) {
 			switch (this.current_editor_type) {
@@ -2675,6 +2722,14 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 					this.getTicketAlerts();
 				}
 			break;
+		}
+	}
+	
+	onPageUpdate(pcmd, pdata) {
+		// received update specifically for this page
+		if ((this.args.sub == 'view') && (pcmd == 'ticket_updated') && (pdata.username != app.username)) {
+			Debug.trace("Received ticket update from: " + pdata.username);
+			this.updateTicket( pdata.ticket );
 		}
 	}
 	
