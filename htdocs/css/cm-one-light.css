@@ -55,7 +55,7 @@
 
 .cm-s-one-light span.cm-builtin,
 .cm-s-one-light span.cm-qualifier,
-.cm-s-one-light span.cm-property { color: #c18401; }
+.cm-s-one-light span.cm-property { color: #61aeee; }
 
 .cm-s-one-light span.cm-bracket { color: #383a42; }
 
@@ -66,9 +66,9 @@
 
 .cm-s-one-light span.cm-link:visited { color: #4078f2; }
 
-.cm-s-one-light span.cm-variable-2 {
+.cm-s-one-light span.cm-variable-3 {
   color: #c18401;
 }
-.cm-s-one-light span.cm-variable-3 {
+.cm-s-one-light span.cm-variable-2 {
   color: #50a14f;
 }

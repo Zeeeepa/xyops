@@ -55,7 +55,7 @@
 
 .cm-s-one-dark span.cm-builtin,
 .cm-s-one-dark span.cm-qualifier,
-.cm-s-one-dark span.cm-property { color: #e6c07b; }
+.cm-s-one-dark span.cm-property { color: #61aeee; }
 
 .cm-s-one-dark span.cm-bracket { color: #abb2bf; }
 
@@ -66,9 +66,9 @@
 
 .cm-s-one-dark span.cm-link:visited { color: #61aeee; }
 
-.cm-s-one-dark span.cm-variable-2 {
+.cm-s-one-dark span.cm-variable-3 {
   color: #d19a66;
 }
-.cm-s-one-dark span.cm-variable-3 {
+.cm-s-one-dark span.cm-variable-2 {
   color: #6abe81;
 }
