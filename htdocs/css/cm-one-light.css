@@ -37,7 +37,7 @@
 .cm-s-one-light span.cm-keyword { color: #a626a4; }
 
 .cm-s-one-light span.cm-atom,
-.cm-s-one-light span.cm-operator { color: #0184bb; }
+.cm-s-one-light span.cm-operator { color: #6c3bc6; }
 
 .cm-s-one-light span.cm-number,
 .cm-s-one-light span.cm-variable,
@@ -55,7 +55,7 @@
 
 .cm-s-one-light span.cm-builtin,
 .cm-s-one-light span.cm-qualifier,
-.cm-s-one-light span.cm-property { color: #61aeee; }
+.cm-s-one-light span.cm-property { color: #2c7ec2; }
 
 .cm-s-one-light span.cm-bracket { color: #383a42; }
 
