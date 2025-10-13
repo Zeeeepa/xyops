@@ -653,6 +653,34 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		}
 	}
 	
+	onDragDrop(files) {
+		// intercept drag-drop event and upload files to code editor
+		var self = this;
+		
+		if (this.editor) {
+			// plop file into editor
+			var reader = new FileReader();
+			
+			reader.onload = function(e) {
+				self.editor.setValue( e.target.result );
+				self.editor.focus();
+				
+				var old_mode = self.editor.getOption('mode');
+				if (old_mode.backdrop) old_mode = old_mode.backdrop;
+				var mode = self.defaultEditorMode || app.detectCodemirrorMode(e.target.result) || null;
+				
+				if (mode != old_mode) {
+					Debug.trace('debug', "Detected language: " + mode);
+					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
+					self.editor.refresh();
+				}
+			};
+			
+			reader.readAsText( files[0] );
+		}
+		else this.doPrepImportFile( files[0] );
+	}
+	
 	onResize() {
 		// resize codemirror to match
 		this.handleEditorResize();
