@@ -2327,7 +2327,7 @@ Page.Base = class Base extends Page {
 			return;
 		}
 		
-		html += this.getParamSummaryGrid(plugin.params, params);
+		html += '<div class="summary_grid">' + this.getParamSummaryGrid(plugin.params, params) + '</div>';
 		
 		this.div.find(sel).show();
 		this.div.find( sel + ' > .box_title > span').html( plugin.title + " Parameters" );
@@ -2337,14 +2337,14 @@ Page.Base = class Base extends Page {
 	getParamSummaryGrid(fields, params) {
 		// get HTML for a summary grid containing param previews
 		// (for plugin params or event params)
+		var self = this;
 		var html = '';
 		var none = '<span>(None)</span>';
-		
-		html += '<div class="summary_grid">';
 		
 		fields.forEach( function(param, idx) {
 			var elem_value = (param.id in params) ? params[param.id] : param.value;
 			var elem_icon = config.ui.control_type_icons[param.type];
+			var after = '';
 			if (param.type == 'hidden') return;
 			
 			html += '<div>'; // grid unit
@@ -2381,13 +2381,22 @@ Page.Base = class Base extends Page {
 					html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
 					html += '<span class="data_value">' + encode_entities( elem_value.toString().replace(/\,.*$/, '') ) + '</span>';
 				break;
+				
+				case 'toolset':
+					if (!param.data) param.data = {};
+					if (!param.data.tools) param.data.tools = [];
+					var tool = find_object( param.data.tools, { id: elem_value } );
+					if (tool) {
+						html += `<i class="mdi mdi-${elem_icon}">&nbsp;</i><span class="data_value">${strip_html(tool.title)}</span>`;
+						if (tool.fields) after = self.getParamSummaryGrid(tool.fields, params);
+					}
+				break;
 			} // switch type
 			
 			html += '</div>'; // info_value
 			html += '</div>'; // grid unit
+			html += after;
 		} ); // foreach param
-		
-		html += '</div>'; // summary_grid
 		
 		return html;
 	}
@@ -2627,12 +2636,18 @@ Page.Base = class Base extends Page {
 		var self = this;
 		var html = '';
 		
+		var old_editor = this.editor || null;
+		delete this.editor;
+		
+		var old_default_mode = this.defaultEditorMode || null;
+		delete this.defaultEditorMode;
+		
 		// start with a "fake" codemirror element so the dialog can auto-size itself
 		html += '<div id="fe_dialog_editor"><div class="CodeMirror"></div></div>';
 		
 		var buttons_html = "";
 		buttons_html += '<div class="button phone_collapse" onClick="CodeEditor.hide()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
-		buttons_html += '<div class="button phone_collapse" onMouseUp="$P().copyCodeToClipboard()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i><span>Copy to Clipboard</span></div>';
+		buttons_html += '<div class="button phone_collapse" onClick="$P().copyCodeToClipboard()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i><span>Copy to Clipboard</span></div>';
 		buttons_html += '<div id="btn_ceditor_confirm" class="button primary"><i class="mdi mdi-check-circle">&nbsp;</i><span>Accept</span></div>';
 		
 		title += ' <div class="dialog_title_widget mobile_hide"><span class="link" onClick="$P().toggleDialogCodeEditorSize(this)">Maximize<i style="padding-left:3px" class="mdi mdi-arrow-top-right-thick"></i></span></div>';
@@ -2642,7 +2657,14 @@ Page.Base = class Base extends Page {
 		CodeEditor.onHide = function() {
 			// clean shutdown of codemirror
 			self.editor.setOption('mode', 'text');
-			delete self.editor;
+			
+			if (old_editor) {
+				// restore original editor
+				self.editor = old_editor;
+				if (old_default_mode) self.defaultEditorMode = old_default_mode;
+				self.handleEditorResize(); // in case window resized while in dialog
+			}
+			else delete self.editor;
 		};
 		
 		// now setup the editor itself
