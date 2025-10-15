@@ -1324,6 +1324,18 @@ Page.Workflows = class Workflows extends Page.Events {
 			})
 		});
 		
+		// tags
+		html += this.getFormRow({
+			id: 'd_wfde_tags',
+			content: this.getFormMenuMulti({
+				id: 'fe_wfde_tags',
+				options: app.tags,
+				values: node.data.tags || [],
+				default_icon: 'tag-outline',
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
 		// params
 		html += this.getFormRow({
 			id: 'd_wfde_user_params',
@@ -1338,6 +1350,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			node.data.event = $('#fe_wfde_event').val();
 			node.data.targets = $('#fe_wfde_targets').val();
 			node.data.algo = $('#fe_wfde_algo').val();
+			node.data.tags = $('#fe_wfde_tags').val();
 			
 			var event = find_object( app.events, { id: node.data.event } );
 			node.data.params = self.getParamValues(event.fields);
@@ -1375,7 +1388,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			self.addState();
 		}); // Dialog.confirm
 		
-		MultiSelect.init( $('#fe_wfde_targets') );
+		MultiSelect.init( $('#fe_wfde_targets, #fe_wfde_tags') );
 		SingleSelect.init( $('#fe_wfde_event, #fe_wfde_algo') );
 		
 		// handle event change
@@ -1491,6 +1504,18 @@ Page.Workflows = class Workflows extends Page.Events {
 			})
 		});
 		
+		// tags
+		html += this.getFormRow({
+			id: 'd_wfdj_tags',
+			content: this.getFormMenuMulti({
+				id: 'fe_wfdj_tags',
+				options: app.tags,
+				values: node.data.tags || [],
+				default_icon: 'tag-outline',
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
 		// params
 		html += this.getFormRow({
 			id: 'd_wfdj_user_params',
@@ -1507,6 +1532,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			node.data.plugin = $('#fe_wfdj_plugin').val();
 			node.data.targets = $('#fe_wfdj_targets').val();
 			node.data.algo = $('#fe_wfdj_algo').val();
+			node.data.tags = $('#fe_wfdj_tags').val();
 			
 			if (!node.data.targets.length) return app.badField('#fe_wfdj_targets');
 			
@@ -1546,7 +1572,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			self.addState();
 		}); // Dialog.confirm
 		
-		MultiSelect.init( $('#fe_wfdj_targets') );
+		MultiSelect.init( $('#fe_wfdj_targets, #fe_wfdj_tags') );
 		SingleSelect.init( $('#fe_wfdj_cat, #fe_wfdj_plugin, #fe_wfdj_algo') );
 		
 		// handle plugin change

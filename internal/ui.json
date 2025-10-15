@@ -412,7 +412,7 @@
 			"caption": "Optionally override the targets for running the event."
 		},
 		"fe_wfde_targets": {
-			"title": "Select targets for the event",
+			"title": "Select targets for event",
 			"placeholder": "(Use event defaults)"
 		},
 		"d_wfde_algo": {
@@ -421,6 +421,14 @@
 		},
 		"fe_wfde_algo": {
 			"title": "Select algorithm for targets"
+		},
+		"d_wfde_tags": {
+			"label": "Tags:",
+			"caption": "Optionally override the tags for running the event."
+		},
+		"fe_wfde_tags": {
+			"title": "Select tags for event",
+			"placeholder": "(Use event defaults)"
 		},
 		"d_wfde_user_params": {
 			"label": "User Parameters:",
@@ -449,11 +457,11 @@
 		},
 		"d_wfdj_targets": {
 			"label": "Targets:",
-			"caption": "Select groups and/or servers to run the plugin job."
+			"caption": "Select groups and/or servers to run plugin jobs."
 		},
 		"fe_wfdj_targets": {
-			"title": "Select targets for job",
-			"placeholder": "Select targets for job..."
+			"title": "Select targets for jobs",
+			"placeholder": "Select targets for jobs..."
 		},
 		"d_wfdj_algo": {
 			"label": "Algorithm:",
@@ -462,6 +470,14 @@
 		"fe_wfdj_algo": {
 			"title": "Select algorithm for targets",
 			"placeholder": "Select algorithm for targets..."
+		},
+		"d_wfdj_tags": {
+			"label": "Tags:",
+			"caption": "Optionally select tags to apply to all plugin jobs."
+		},
+		"fe_wfdj_tags": {
+			"title": "Select tags for jobs",
+			"placeholder": "Select tags for jobs..."
 		},
 		"d_wfdj_user_params": {
 			"label": "Plugin Parameters:",

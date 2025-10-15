@@ -2695,11 +2695,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		html += '<div class="info_value">' + this.getNiceTargetList(event_targets, false) + '</div>';
 		html += '</div>'; // grid unit
 		
-		// algo
-		var event_algo = node.data.algo || event.algo;
+		// tags
 		html += '<div>'; // grid unit
-		html += '<div class="info_label">Algorithm</div>';
-		html += '<div class="info_value">' + this.getNiceAlgo(event_algo) + '</div>';
+		html += '<div class="info_label">Tags</div>';
+		html += '<div class="info_value">' + this.getNiceTagList(node.data.tags || []) + '</div>';
 		html += '</div>'; // grid unit
 		
 		if (event.fields && event.fields.filter( function(param) { return param.type != 'hidden'; } ).length) {
@@ -2806,10 +2805,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		html += '<div class="info_value">' + this.getNiceTargetList(node.data.targets, false) + '</div>';
 		html += '</div>'; // grid unit
 		
-		// algo
+		// tags
 		html += '<div>'; // grid unit
-		html += '<div class="info_label">Algorithm</div>';
-		html += '<div class="info_value">' + this.getNiceAlgo(node.data.algo) + '</div>';
+		html += '<div class="info_label">Tags</div>';
+		html += '<div class="info_value">' + this.getNiceTagList(node.data.tags || []) + '</div>';
 		html += '</div>'; // grid unit
 		
 		if (plugin.params && plugin.params.filter( function(param) { return param.type != 'hidden'; } ).length) {
