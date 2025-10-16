@@ -219,6 +219,9 @@ body.reduced .flash, body.reduced .iflash, body.reduced .rflash {
 body.reduced .wf_event, body.reduced .wf_entity > div {
 	animation: none !important;
 }
+body.reduced .button.pulse {
+	animation: none !important;
+}
 
 /* Filter Overlay */
 
