@@ -1084,7 +1084,7 @@
 		{ "id": "wait", "title": "Wait", "icon": "watch" },
 		{ "id": "repeat", "title": "Repeat", "icon": "rotate-360" },
 		{ "id": "split", "title": "Split", "icon": "call-split" },
-		{ "id": "join", "title": "Join", "icon": "set-center" },
+		{ "id": "join", "title": "Join", "icon": "arrow-collapse-vertical" },
 		{ "id": "decision", "title": "Decision", "icon": "boom-gate-up" }
 	],
 	
