@@ -6,7 +6,7 @@ See the LICENSE.md file in this repository. */
 
 .wf_container {
 	position: relative;
-	overflow: hidden;
+	/* overflow: hidden; */
 	
 	user-select: none;
 	-moz-user-select: none;

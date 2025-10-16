@@ -249,11 +249,11 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		// render workflow editor
 		html += this.get_wf_editor_html(`
-			<div class="button primary right tablet_collapse" onClick="$P().do_save_workflow()"><i class="mdi mdi-floppy">&nbsp;</i><span>${config.ui.buttons.save_changes}</span></div>
+			<div class="button save right tablet_collapse" onClick="$P().do_save_workflow()"><i class="mdi mdi-floppy">&nbsp;</i><span>${config.ui.buttons.save_changes}</span></div>
 			<div class="button secondary right mobile_collapse sm_hide" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>${config.ui.buttons.history}</span></div>
 			<div class="button secondary right mobile_collapse sm_hide" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>${config.ui.buttons.export}</span></div>
 			<div class="button danger right mobile_collapse" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>${config.ui.buttons.delete}</span></div>
-			<div class="button right mobile_collapse sm_hide" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>${config.ui.buttons.cancel}</span></div>
+			<div class="button cancel right mobile_collapse sm_hide" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>${config.ui.buttons.close}</span></div>
 		`);
 		
 		this.div.html( html );
@@ -265,8 +265,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		// this.updateAddRemoveMe('#fe_wf_email');
 		// $('#fe_wf_title').focus();
 		// this.setupBoxButtonFloater();
-		
 		this.setupWorkflowEditor();
+		this.setupEditTriggers();
 		
 		if (do_snap) this.savePageSnapshot( this.get_event_form_json(true) );
 		if (this.args.scroll == 'bottom') app.scrollToBottom();
@@ -301,7 +301,8 @@ Page.Workflows = class Workflows extends Page.Events {
 			merge_hash_into( app.events[idx], this.event );
 		}
 		
-		Nav.go( 'Events?sub=view&id=' + this.event.id );
+		// Nav.go( 'Events?sub=view&id=' + this.event.id );
+		this.triggerSaveComplete();
 		app.showMessage('success', config.ui.messages.wf_edit_save);
 	}
 	
@@ -2267,6 +2268,9 @@ Page.Workflows = class Workflows extends Page.Events {
 		// update undo/redo button classes
 		$cont.find('#d_btn_wf_undo').toggleClass('disabled', (this.wfSnapIdx <= 0));
 		$cont.find('#d_btn_wf_redo').toggleClass('disabled', (this.wfSnapIdx >= this.wfSnapshots.length - 1));
+		
+		// trigger edit change, but only if the user actually made a change
+		if (this.wfSnapshots.length > 1) this.triggerEditChange();
 	}
 	
 	setCurrentState() {
@@ -2286,6 +2290,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		// update undo/redo button classes
 		$cont.find('#d_btn_wf_undo').toggleClass('disabled', (this.wfSnapIdx <= 0));
 		$cont.find('#d_btn_wf_redo').toggleClass('disabled', (this.wfSnapIdx >= this.wfSnapshots.length - 1));
+		
+		this.triggerEditChange();
 	}
 	
 	doUndo() {
