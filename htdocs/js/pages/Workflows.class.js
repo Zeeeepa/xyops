@@ -2111,7 +2111,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		});
 		
 		// job search
-		app.api.get( 'app/search_jobs', { query: 'source:workflow tags:_success _last', limit: config.alt_items_per_page }, function(resp) {
+		app.api.get( 'app/search_jobs', { query: 'source:workflow tags:_success', limit: config.alt_items_per_page }, function(resp) {
 			var items = (resp.rows || []).map( function(job) {
 				var args = self.getJobDisplayArgs(job);
 				return { id: job.id, title: args.title, icon: args.icon };

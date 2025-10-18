@@ -2487,7 +2487,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		});
 		
 		// job search
-		var squery = (this.workflow ? 'source:workflow' : '') + ' tags:_success _last';
+		var squery = (this.workflow ? 'source:workflow' : '') + ' tags:_success';
 		
 		app.api.get( 'app/search_jobs', { query: squery, limit: config.alt_items_per_page }, function(resp) {
 			var items = (resp.rows || []).map( function(job) {

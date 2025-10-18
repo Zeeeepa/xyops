@@ -2149,7 +2149,7 @@ Page.Events = class Events extends Page.PageUtils {
 		});
 		
 		// job search
-		var squery = (this.workflow ? 'source:workflow' : 'event:' + this.event.id) + ' tags:_success _last';
+		var squery = (this.workflow ? 'source:workflow' : 'event:' + this.event.id) + ' tags:_success';
 		
 		app.api.get( 'app/search_jobs', { query: squery, limit: config.alt_items_per_page }, function(resp) {
 			var items = (resp.rows || []).map( function(job) {
