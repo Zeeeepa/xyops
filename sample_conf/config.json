@@ -303,7 +303,8 @@
 			"horizTicks": 6,
 			"vertTicks": 6,
 			"smoothingMaxSamples": 100,
-			"smoothingMaxTotalSamples": 1000
+			"smoothingMaxTotalSamples": 1000,
+			"hoverSort": -1
 		},
 		
 		"editor_defaults": {
