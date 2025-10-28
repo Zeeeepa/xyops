@@ -1583,7 +1583,9 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		};
 		
 		html += this.getBasicGrid( grid_args, function(job, idx) {
-			if (!job.completed) return [
+			var tds = [];
+			
+			if (!job.completed) tds = [
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				// self.getNiceJobSource(job),
 				// self.getShortDateTime( job.started ),
@@ -1597,7 +1599,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				
 				'<span class="link danger" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
 			];
-			else return [
+			else tds = [
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				self.getNiceJobEvent(job, true),
 				self.getNiceCategory(job.category, true),
@@ -1611,6 +1613,13 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				].join(' | ')
 				// `<a href="#Job?id=${job.id}"><b>View Details...</b></a>`
 			];
+			
+			if (job.category) {
+				var category = find_object( app.categories, { id: job.category } );
+				if (category && category.color) tds.className = 'clr_' + category.color;
+			}
+			
+			return tds;
 		} );
 		
 		this.div.find('#d_ticket_jobs > .box_content').html(html);

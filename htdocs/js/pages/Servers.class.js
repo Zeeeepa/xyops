@@ -1336,7 +1336,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		};
 		
 		html += this.getPaginatedGrid( grid_args, function(job, idx) {
-			return [
+			var tds = [
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				self.getNiceJobEvent(job, true),
 				self.getNiceCategory(job.category, true),
@@ -1350,6 +1350,13 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				
 				'<span class="link danger" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
 			];
+			
+			if (job.category) {
+				var category = find_object( app.categories, { id: job.category } );
+				if (category && category.color) tds.className = 'clr_' + category.color;
+			}
+			
+			return tds;
 		} );
 		
 		this.div.find('#d_vs_jobs > .box_content').removeClass('loading').html(html);

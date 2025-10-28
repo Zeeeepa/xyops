@@ -281,7 +281,7 @@ Page.Dashboard = class Dashboard extends Page.PageUtils {
 		};
 		
 		html += this.getPaginatedGrid( grid_args, function(job, idx) {
-			return [
+			var tds = [
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				self.getNiceJobEvent(job, true),
 				self.getNiceCategory(job.category, true),
@@ -295,6 +295,13 @@ Page.Dashboard = class Dashboard extends Page.PageUtils {
 				
 				'<span class="link danger" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
 			];
+			
+			if (job.category) {
+				var category = find_object( app.categories, { id: job.category } );
+				if (category && category.color) tds.className = 'clr_' + category.color;
+			}
+			
+			return tds;
 		} );
 		
 		this.div.find('#d_dash_active > .box_content').removeClass('loading').html(html);

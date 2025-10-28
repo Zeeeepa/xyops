@@ -642,7 +642,7 @@ Page.Search = class Search extends Page.PageUtils {
 		html += '<div class="box_content table">';
 		
 		html += this.getPaginatedGrid( grid_args, function(job, idx) {
-			return [
+			var tds = [
 				'<b>' + self.getNiceJob(job, true) + '</b>',
 				self.getNiceJobEvent(job, true),
 				self.getNiceCategory(job.category, true),
@@ -652,6 +652,13 @@ Page.Search = class Search extends Page.PageUtils {
 				self.getNiceJobElapsedTime(job, true, false),
 				self.getNiceJobResult(job)
 			];
+			
+			if (job.category) {
+				var category = find_object( app.categories, { id: job.category } );
+				if (category && category.color) tds.className = 'clr_' + category.color;
+			}
+			
+			return tds;
 		} );
 		
 		if (this.jobs.length && app.hasPrivilege('delete_jobs')) {
