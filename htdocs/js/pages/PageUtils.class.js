@@ -1046,11 +1046,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			
 			callback: function(limit) {
 				// see if we need to add or replace
-				if (idx == -1) {
-					var dupe_idx = find_object_idx(self.limits, { type: limit.type });
-					if (dupe_idx > -1) self.limits[dupe_idx] = limit;
-					else self.limits.push(limit);
-				}
+				if (idx == -1) self.limits.push(limit);
 				
 				self.triggerEditChange();
 				self.renderResLimitEditor();
@@ -1063,7 +1059,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var self = this;
 		var { limit, title, btn, callback } = opts;
 		
-		var html = '<div class="dialog_box_content">';
+		var html = '<div class="dialog_box_content scroll maximize">';
 		
 		html += this.getFormRow({
 			label: 'Status:',
@@ -1145,6 +1141,96 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			caption: 'Optionally limit the accepted file types to a list of file extensions, separated by commas.  The extensions should all begin with a period, and they are case insensitive.'
 		});
 		
+		// tags
+		html += this.getFormRow({
+			id: 'd_erl_tags',
+			label: 'Apply Tags:',
+			content: this.getFormMenuMulti({
+				id: 'fe_erl_tags',
+				title: 'Select Tags',
+				placeholder: 'None',
+				options: app.tags,
+				values: limit.tags || [],
+				// 'data-shrinkwrap': 1
+			}),
+			caption: 'Select which tags should be applied to the job when the limit is triggered.'
+		});
+		
+		// email
+		html += this.getFormRow({
+			id: 'd_erl_users',
+			label: 'Email Users:',
+			content: this.getFormMenuMulti({
+				id: 'fe_erl_users',
+				title: 'Select Users',
+				placeholder: 'None',
+				options: app.users.map( function(user) {
+					return { id: user.username, title: user.full_name, icon: user.icon || '' };
+				} ),
+				values: limit.users || [],
+				default_icon: 'account',
+				'data-hold': 1,
+				'data-private': 1
+				// 'data-shrinkwrap': 1
+			}),
+			caption: 'Select which users should be emailed when the limit is triggered.'
+		});
+		html += this.getFormRow({
+			id: 'd_erl_email',
+			label: 'Extra Recipients:',
+			content: this.getFormText({
+				id: 'fe_erl_email',
+				// type: 'email',
+				// multiple: 'multiple',
+				spellcheck: 'false',
+				autocomplete: 'off',
+				maxlength: 8192,
+				placeholder: 'email@sample.com',
+				value: limit.email || '',
+				'data-private': ''
+			}),
+			caption: 'Optionally enter one or more additional email addresses for the limit.'
+		});
+		
+		// web hook
+		html += this.getFormRow({
+			id: 'd_erl_web_hook',
+			label: 'Web Hook:',
+			content: this.getFormMenuSingle({
+				id: 'fe_erl_web_hook',
+				title: 'Select Web Hook',
+				options: [ ['', '(None)'] ].concat( app.web_hooks ),
+				value: limit.web_hook || '',
+				default_icon: 'webhook'
+			}),
+			caption: 'Optionally select a Web Hook to fire when the limit is triggered.'
+		});
+		html += this.getFormRow({
+			id: 'd_erl_web_hook_text',
+			label: 'Custom Text:',
+			content: this.getFormTextarea({
+				id: 'fe_erl_web_hook_text',
+				rows: 3,
+				class: 'monospace',
+				autocomplete: 'off',
+				maxlength: 8192,
+				value: limit.text || ''
+			}),
+			caption: 'Optionally enter custom text to be appended to the end of the web hook system message.'
+		});
+		
+		// abort job (checkbox)
+		html += this.getFormRow({
+			id: 'd_erl_abort',
+			label: 'Action:',
+			content: this.getFormCheckbox({
+				id: 'fe_erl_abort',
+				label: 'Abort Job',
+				checked: !!limit.abort
+			}),
+			caption: 'Optionally abort the job when the limit is triggered.'
+		});
+		
 		html += '</div>';
 		Dialog.confirm( title, html, btn, function(result) {
 			if (!result) return;
@@ -1154,6 +1240,15 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			delete limit.amount;
 			delete limit.duration;
 			delete limit.accept;
+			
+			if (limit.type.match(/^(time|mem|cpu|log)$/)) {
+				limit.tags = $('#fe_erl_tags').val();
+				limit.users = $('#fe_erl_users').val();
+				limit.email = $('#fe_erl_email').val();
+				limit.web_hook = $('#fe_erl_web_hook').val();
+				limit.text = $('#fe_erl_web_hook_text').val().trim();
+				limit.abort = $('#fe_erl_abort').is(':checked');
+			}
 			
 			switch (limit.type) {
 				case 'time':
@@ -1199,7 +1294,11 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // Dialog.confirm
 		
 		var change_limit_type = function(new_type) {
-			$('#d_erl_byte_amount, #d_erl_raw_amount, #d_erl_duration, #d_erl_file_size, #d_erl_file_types').hide();
+			$('#d_erl_byte_amount, #d_erl_raw_amount, #d_erl_duration, #d_erl_file_size, #d_erl_file_types, #d_erl_tags, #d_erl_users, #d_erl_email, #d_erl_web_hook, #d_erl_web_hook_text, #d_erl_abort').hide();
+			
+			if (new_type.match(/^(time|mem|cpu|log)$/)) {
+				$('#d_erl_tags, #d_erl_users, #d_erl_email, #d_erl_web_hook, #d_erl_web_hook_text, #d_erl_abort').show();
+			}
 			
 			switch (new_type) {
 				case 'time':
@@ -1210,14 +1309,14 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'mem':
 					$('#d_erl_byte_amount').show();
 					$('#d_erl_duration').show();
-					$('#s_erl_duration_cap').html('Specify the amount of time the memory must stay over the limit before the job is aborted.');
+					$('#s_erl_duration_cap').html('Specify the amount of time the memory must stay over the limit before action is taken.');
 				break;
 				
 				case 'cpu':
 					$('#d_erl_raw_amount').show();
 					$('#s_erl_raw_amount_cap').html('Enter the maximum CPU precentage for the limit (100 = 1 core maxed).');
 					$('#d_erl_duration').show();
-					$('#s_erl_duration_cap').html('Specify the amount of time the CPU must stay over the limit before the job is aborted.');
+					$('#s_erl_duration_cap').html('Specify the amount of time the CPU must stay over the limit before action is taken.');
 				break;
 				
 				case 'log':
@@ -1261,7 +1360,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			$('#fe_erl_byte_amount_val').val(0);
 		}); // type change
 		
-		SingleSelect.init( $('#fe_erl_type') );
+		SingleSelect.init( $('#fe_erl_type, #fe_erl_web_hook') );
+		MultiSelect.init( $('#fe_erl_tags, #fe_erl_users') );
 		RelativeTime.init( $('#fe_erl_duration') );
 		RelativeBytes.init( $('#fe_erl_byte_amount, #fe_erl_file_size') );
 		
@@ -1588,7 +1688,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		});
 		html += this.getFormRow({
 			id: 'd_eja_web_hook_text',
-			label: 'Custom Text Content:',
+			label: 'Custom Text:',
 			content: this.getFormTextarea({
 				id: 'fe_eja_web_hook_text',
 				rows: 3,
