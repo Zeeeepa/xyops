@@ -186,7 +186,6 @@ Page.Channels = class Channels extends Page.PageUtils {
 			"users": [],
 			"run_event": "",
 			"sound": "",
-			"shell_exec": "",
 			"max_per_day": 0,
 			"notes": ""
 		};
@@ -506,18 +505,6 @@ Page.Channels = class Channels extends Page.PageUtils {
 			caption: 'Optionally select a sound effect to play for all channel users.'
 		});
 		
-		// shell exec
-		html += this.getFormRow({
-			label: 'Shell Exec:',
-			content: this.getFormText({
-				id: 'fe_ech_shell_exec',
-				class: 'monospace',
-				spellcheck: 'false',
-				value: channel.shell_exec
-			}),
-			caption: 'Optionally enter a shell command to execute for this action.  This will always run on the primary server.'
-		});
-		
 		// max per day
 		html += this.getFormRow({
 			label: 'Max Per Day:',
@@ -560,7 +547,6 @@ Page.Channels = class Channels extends Page.PageUtils {
 		channel.web_hook = $('#fe_ech_web_hook').val();
 		channel.run_event = $('#fe_ech_run_event').val();
 		channel.sound = $('#fe_ech_sound').val();
-		channel.shell_exec = $('#fe_ech_shell_exec').val();
 		channel.max_per_day = parseInt( $('#fe_ech_max_per_day').val() );
 		channel.notes = $('#fe_ech_notes').val();
 		
