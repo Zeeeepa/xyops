@@ -366,6 +366,16 @@ Page.Job = class Job extends Page.PageUtils {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
+		// limits (hidden unless needed)
+		html += '<div class="box toggle" id="d_job_limits" style="display:none">';
+			html += '<div class="box_title" style="color:var(--red);">';
+				html += '<i></i><span>Job Limits Exceeded</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		// alerts (hidden unless needed)
 		html += '<div class="box toggle" id="d_job_alerts" style="display:none">';
 			html += '<div class="box_title">';
@@ -541,6 +551,7 @@ Page.Job = class Job extends Page.PageUtils {
 		this.updateUserContent();
 		this.getJobAlerts();
 		this.setupToggleBoxes();
+		this.renderJobLimits();
 		
 		if (is_workflow) {
 			this.setupActiveWorkflow();
@@ -1368,6 +1379,81 @@ Page.Job = class Job extends Page.PageUtils {
 		} ); // api.post
 	}
 	
+	renderJobLimits() {
+		// render details on triggered job limits
+		var self = this;
+		var job = this.job;
+		if (!this.active) return; // sanity
+		
+		// we're only interested in limits that actually triggered
+		var limits = this.limits = (job.limits || []).filter( function(limit) { return !!(limit.date && !limit.hidden); } );
+		
+		// decorate limits with idx, for linking
+		limits.forEach( function(limit, idx) { limit.idx = idx; } );
+		
+		if (!limits.length) {
+			$('#d_job_limits').hide();
+			return;
+		}
+		
+		var cols = ["Limit Type", "Source", "Description", "Date/Time", "Result", "Actions"];
+		var html = '';
+		
+		var grid_args = {
+			rows: limits,
+			cols: cols,
+			data_type: 'limit'
+		};
+		
+		html += this.getBasicGrid( grid_args, function(item, idx) {
+			// limit: { type, amount, duration, tags, users, email, web_hook, text, abort, code, date, elapsed_ms, msg }
+			var limit_def = find_object( config.ui.limit_type_menu, { id: item.type } );
+			
+			var link = '';
+			if (item.loc) link = `Nav.go('${item.loc}')`;
+			else if (item.description || item.details) link = `$P().viewJobLimitDetails(${idx})`;
+			
+			var view_details = 'n/a';
+			if (link) view_details = '<span class="link" onClick="' + link + '">View Details...</span>';
+			
+			return [
+				'<span class="link nowrap" onClick="' + link + '"><b><i class="mdi mdi-' + limit_def.icon + '"></i>' + limit_def.title + '</b></span>',
+				self.getNiceLimitSource(item.source || 'event'),
+				item.msg,
+				self.getRelativeDateTime(item.date, true),
+				// '<i class="mdi mdi-clock-check-outline">&nbsp;</i>' + get_text_from_ms_round( Math.floor(item.elapsed_ms), true),
+				item.code ? self.getNiceActionResult(item) : `<span class="nowrap"><i class="mdi mdi-check-circle-outline"></i>OK</span>`,
+				'<b>' + view_details + '</b>'
+			];
+		}); // grid
+		
+		$('#d_job_limits > div.box_content').html( html );
+		$('#d_job_limits').show();
+	}
+	
+	viewJobLimitDetails(idx) {
+		// popup dialog to show limit results
+		var self = this;
+		var limit = this.limits[idx];
+		var limit_def = find_object( config.ui.limit_type_menu, { id: limit.type } );
+		var details = limit.details || "";
+		var nice_date = this.getRelativeDateTime(limit.date).replace(/\&nbsp;<\/i>/g, '</i>');
+		
+		var header = "";
+		header += `- **Limit Type:** ${limit_def.title}\n`;
+		header += `- **Source:** ${ucfirst(limit.source || 'event')}\n`;
+		header += `- **Date/Time:** ${nice_date}\n`;
+		header += `- **Result:** ${limit.description || 'OK'}\n`;
+		// header += `\n`;
+		
+		details = header + details;
+		
+		var title = "Job Limit Details: " + limit_def.title;
+		if (limit.code) title = '<span style="color:var(--red);">' + title + '</span>';
+		
+		this.viewMarkdownAuto( title, details.trim() );
+	}
+	
 	renderJobActions() {
 		// render details on executed job actions
 		var self = this;
@@ -1386,7 +1472,7 @@ Page.Job = class Job extends Page.PageUtils {
 			return;
 		}
 		
-		var cols = ["Condition", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions"];
+		var cols = ["Condition", "Type", "Source", "Description", "Date/Time", "Elapsed", "Result", "Actions"];
 		var html = '';
 		
 		var grid_args = {
@@ -1406,10 +1492,9 @@ Page.Job = class Job extends Page.PageUtils {
 			if (link) view_details = '<span class="link" onClick="' + link + '">View Details...</span>';
 			
 			return [
-				// '<b><i class="mdi mdi-' + disp.condition.icon + '">&nbsp;</i>' + disp.condition.title + '</b>',
 				'<span class="link nowrap" onClick="' + link + '"><b><i class="mdi mdi-' + disp.condition.icon + '"></i>' + disp.condition.title + '</b></span>',
-				
 				'<i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type,
+				self.getNiceActionSource(item.source || 'event'),
 				disp.desc,
 				self.getRelativeDateTime(item.date, true),
 				'<i class="mdi mdi-clock-check-outline">&nbsp;</i>' + get_text_from_ms_round( Math.floor(item.elapsed_ms), true),
@@ -1428,10 +1513,17 @@ Page.Job = class Job extends Page.PageUtils {
 		var action = this.actions[idx];
 		var disp = self.getJobActionDisplayArgs(action); // condition, type, text, desc, icon
 		var details = action.details || "";
+		var nice_date = this.getRelativeDateTime(action.date).replace(/\&nbsp;<\/i>/g, '</i>');
 		
-		if (action.description) {
-			details = "**Result:** " + action.description + "\n\n" + details;
-		}
+		var header = "";
+		header += `- **Action Type:** ${disp.type}\n`;
+		header += `- **Condition:** ${disp.condition.title}\n`;
+		header += `- **Source:** ${ucfirst(action.source || 'event')}\n`;
+		header += `- **Date/Time:** ${nice_date}\n`;
+		header += `- **Result:** ${action.description || 'OK'}\n`;
+		// header += `\n`;
+		
+		details = header + details;
 		
 		var title = "Job Action Details: " + disp.type;
 		if (action.code) title = '<span style="color:var(--red);">' + title + '</span>';
@@ -3026,6 +3118,12 @@ Page.Job = class Job extends Page.PageUtils {
 			case 'meta_row':
 				this.appendLiveMetaLog(pdata);
 			break;
+			
+			case 'limit_triggered':
+				app.showMessage('warning', pdata.msg);
+				this.job.limits = pdata.limits;
+				this.renderJobLimits();
+			break;
 		} // switch
 	}
 	
@@ -3062,6 +3160,7 @@ Page.Job = class Job extends Page.PageUtils {
 		delete this.wfSelection;
 		delete this.isWorkflow;
 		delete this.lastSuspendedCount;
+		delete this.limits;
 		
 		// destroy charts if applicable
 		if (this.charts) {
