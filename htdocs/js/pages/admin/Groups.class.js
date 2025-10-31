@@ -813,6 +813,16 @@ Page.Groups = class Groups extends Page.ServerUtils {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
+		// alert day graph
+		html += '<div class="box" id="d_alert_day_graph" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<span>Alert History Day Graph</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		this.div.html(html);
 		
 		SingleSelect.init( this.div.find('select.sel_chart_size, select.sel_cpu_mem_merge') );
@@ -824,6 +834,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		this.setupMonitors();
 		
 		this.setupUpcomingJobs();
+		this.setupAlertHistoryDayGraph();
 		
 		var animate_max_servers = config.animate_max_servers || 100;
 		if (!app.reducedMotion() && this.quickmonEnabled && (this.servers.length <= animate_max_servers)) this.animate();

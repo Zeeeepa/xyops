@@ -1031,6 +1031,16 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
+		// alert day graph
+		html += '<div class="box" id="d_alert_day_graph" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<span>Alert History Day Graph</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		this.div.html(html);
 		
 		SingleSelect.init( this.div.find('select.sel_chart_size') );
@@ -1041,6 +1051,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		this.renderCPUDetails();
 		this.setupMonitors();
 		this.setupUpcomingJobs();
+		this.setupAlertHistoryDayGraph();
 		
 		if (online) {
 			// some components are online-only

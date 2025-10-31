@@ -462,6 +462,16 @@ Page.Alerts = class Alerts extends Page.PageUtils {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
+		// day graph
+		html += '<div class="box toggle" id="d_alert_day_graph" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<i></i><span>Alert History Day Graph</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		this.div.html(html);
 		
 		this.getAlertSnapshots();
@@ -469,6 +479,7 @@ Page.Alerts = class Alerts extends Page.PageUtils {
 		this.getAlertJobs();
 		this.renderAlertActions();
 		this.getAlertHistory();
+		this.setupAlertHistoryDayGraph();
 		this.setupToggleBoxes();
 	}
 	

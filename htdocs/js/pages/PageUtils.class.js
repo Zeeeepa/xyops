@@ -861,6 +861,104 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		$swatch.replaceWith(html);
 	}
 	
+	// Alert History Day Graph
+	
+	setupAlertHistoryDayGraph() {
+		// fetch historical alert stats and render as heatmap grid
+		var self = this;
+		var opts = {
+			offset: -365,
+			limit: 365,
+			path: 'currentDay',
+			key_prefix: 'alert_',
+			current_day: 1
+		};
+		
+		if (this.alert) opts.path += '.alerts.' + this.alert.id;
+		else if (this.server) opts.path += '.servers.' + this.server.id;
+		else if (this.group) opts.path += '.groups.' + this.group.id;
+		else opts.path += '.transactions';
+		
+		app.api.get( 'app/search_stat_history', opts, this.receiveAlertHistoryDayGraph.bind(this) );
+	}
+	
+	getAlertHistoryDaySwatch(day, epoch) {
+		// get HTML for single day history swatch (grid unit)
+		var html = '';
+		var day_code = yyyy_mm_dd(epoch);
+		var nice_date = this.formatDate(epoch, { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' });
+		
+		if (day && day.data) {
+			var data = day.data;
+			var num_alerts = data.alert_new || 0;
+			var tooltip = nice_date + ": " + commify(num_alerts) + " " + pluralize('alert', num_alerts);
+			
+			var color = '';
+			if (num_alerts > 8) color = 'purple';
+			else if (num_alerts > 4) color = 'red';
+			else if (num_alerts > 2) color = 'orange';
+			else if (num_alerts > 0) color = 'yellow';
+			else color = 'green';
+			
+			// search link
+			var alt_code = day_code.replace(/\//g, '-');
+			var url = `#Alerts?date=custom&start=${alt_code}&end=${alt_code}`;
+			if (this.alert) url += '&alert=' + this.alert.id;
+			else if (this.server) url += '&server=' + this.server.id;
+			else if (this.group) url += '&groups=' + this.group.id;
+			
+			html += `<div style="background:var(--${color});" data-date="${day_code}" onClick="Nav.go('${url}')" title="${tooltip}"></div>`;
+		}
+		else {
+			html += `<div class="empty" data-date="${day_code}" data-epoch="${epoch}" title="No data for ${nice_date}"></div>`;
+		}
+		
+		return html;
+	}
+	
+	receiveAlertHistoryDayGraph(resp) {
+		// receive stats to render into heatmap
+		// resp: { code, items, list }
+		// items: { epoch, date, data }
+		var self = this;
+		var days = {};
+		var html = '';
+		
+		if (!this.active) return; // sanity
+		
+		// index all days by YYYY-MM-DD
+		resp.items.forEach( function(item) {
+			days[ item.date ] = item;
+		} );
+		
+		// find start date, which must be a sunday
+		var noon_today = normalize_time( time_now(), { hour:12, min:0, sec:0 } );
+		var last_year = noon_today - (86400 * 365);
+		var wday = (new Date(last_year * 1000)).getDay();
+		var epoch = last_year - (wday * 86400);
+		
+		// header
+		html += '<div class="data_grid_pagination">';
+			html += '<div style="text-align:left">' + this.formatDate(epoch, { year: 'numeric', month: 'short' }) + '</div>';
+			html += '<div style="text-align:center">' + this.formatDate(epoch + Math.floor(((noon_today - epoch) / 2)), { year: 'numeric', month: 'short' }) + '</div>';
+			html += '<div style="text-align:right">' + this.formatDate(noon_today, { year: 'numeric', month: 'short' }) + '</div>';
+		html += '</div>';
+		
+		// grid
+		html += '<div class="job_day_graph">';
+		
+		while (epoch <= noon_today) {
+			var day_code = yyyy_mm_dd(epoch);
+			var day = days[ day_code ];
+			html += this.getAlertHistoryDaySwatch(day, epoch);
+			epoch += 86400;
+		} // foreach day
+		
+		html += '</div>';
+		
+		this.div.find('#d_alert_day_graph').show().find('> .box_content').removeClass('loading').html(html);
+	}
+	
 	// Resource Limit Editor and Table:
 	
 	renderResLimitEditor() {
