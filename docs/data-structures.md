@@ -81,11 +81,11 @@ The user or API Key who created the alert.
 	
 ## Alert.modified
 
-The Epoch timestamp when the alert was last modified.
+The Unix timestamp when the alert was last modified.
 
 ## Alert.created
 
-The Epoch timestamp when the alert was created.
+The Unix timestamp when the alert was created.
 
 ## Alert.revision
 
@@ -143,11 +143,11 @@ The user or API Key who created the API Key.
 
 ## APIKey.modified
 
-The Epoch timestamp when the API Key was last modified.
+The Unix timestamp when the API Key was last modified.
 
 ## APIKey.created
 
-The Epoch timestamp when the API Key was created.
+The Unix timestamp when the API Key was created.
 
 ## APIKey.revision
 
@@ -207,11 +207,11 @@ The user or API Key who created the bucket.
 
 ## Bucket.modified
 
-The Epoch timestamp when the bucket was last modified.
+The Unix timestamp when the bucket was last modified.
 
 ## Bucket.created
 
-The Epoch timestamp when the bucket was created.
+The Unix timestamp when the bucket was created.
 
 ## Bucket.revision
 
@@ -219,7 +219,11 @@ An internal revision number for the bucket, incremented with each change.
 
 ## Bucket.data
 
-The user data stored in the bucket.
+The user data stored in the bucket.  This is stored separately from the bucket object.
+
+## Bucket.files
+
+An array of [File](#file) objects in the bucket.  This is stored separately from the bucket object.
 
 # Category
 
@@ -273,11 +277,11 @@ The user or API Key who created the category.
 
 ## Category.modified
 
-The Epoch timestamp when the category was last modified.
+The Unix timestamp when the category was last modified.
 
 ## Category.created
 
-The Epoch timestamp when the category was created.
+The Unix timestamp when the category was created.
 
 ## Category.revision
 
@@ -462,6 +466,12 @@ The [Plugin.id](#plugin-id) of the plugin which will handle running jobs.
 
 An object containing key/value pairs which is passed to the job process.  These are typically defined by the [Plugin](#plugin) and populated in the UI.
 
+## Event.fields
+
+An optional array of user-defined parameter definitions that are collected when a job is started manually in the UI, and then the values are merged into the [Event.params](#event-params) object.
+
+See [Plugin.params](#plugin-params) for details on the format of the objects in this array.
+
 ## Event.tags
 
 An array of [Tag](#tag) IDs which can be used to search for historical jobs.  The running job may also modify this list.
@@ -633,15 +643,15 @@ Specifies which state the job is currently in.  Here is a list of all the possib
 
 ## Job.started
 
-The timestamp at which the job was started (Epoch seconds).  Specifically this is when the job was moved to a `ready` state.
+The timestamp at which the job was started (Unix seconds).  Specifically this is when the job was moved to a `ready` state.
 
 ## Job.updated
 
-The timestamp at which the job was last updated (Epoch seconds).
+The timestamp at which the job was last updated (Unix seconds).
 
 ## Job.completed
 
-The timestamp at which the job was completed (Epoch seconds).
+The timestamp at which the job was completed (Unix seconds).
 
 ## Job.elapsed
 
@@ -649,7 +659,7 @@ The duration of the job run in seconds (calculated as the difference between [Jo
 
 ## Job.now
 
-The job's "now" time, as an Epoch timestamp, which is the time at which the job was originally scheduled to launch.  This timestamp may be in the past if the job is running as part of a catch-up operation.
+The job's "now" time, as an Unix timestamp, which is the time at which the job was originally scheduled to launch.  This timestamp may be in the past if the job is running as part of a catch-up operation.
 
 ## Job.code
 
@@ -679,7 +689,7 @@ User-populated progress indicator, should be a floating point number between `0.
 
 ## Job.reconnected
 
-An Epoch timestamp of when the primary server socket was reconnected, during a job run.  The presence of this property indicates that the worker server lost its connection to the primary during the job, and then reconnected later.
+A Unix timestamp of when the primary server socket was reconnected, during a job run.  The presence of this property indicates that the worker server lost its connection to the primary during the job, and then reconnected later.
 
 ## Job.log_file
 
@@ -709,7 +719,14 @@ A string ID indicating what spawned the job.  This will be one of:
 
 ## Job.parent
 
-When the job was launched from another job (custom action or workflow step), this will be a reference to the parent job which spawned the current job.
+When the job was launched from another job (custom action or workflow step), this will contain information about the parent job which spawned the current job.  It will be an object with the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `job` | String | The [Job.id](#job-id) of the job which launched the current job. |
+| `event` | String | The [Event.id](#event-id) of the job which launched the current job. |
+| `code` | Mixed | The [Job.code](#job-code) of the job which launched the current job. |
+| `description` | String | The [Job.description](#job-description) of the job which launched the current job. |
 
 ## Job.input
 
@@ -768,14 +785,7 @@ This will contain information about all uploaded files for the job.  While the j
 | `filename` | Custom destination filename to use when uploading.  Do not combine with a glob path. |
 | `delete` | Set this to `true` to delete the file(s) after uploading. |
 
-Once the job is complete, the files will be uploaded and the array will be recreated as an array of objects, one per file, with each object containing the following properties:
-
-| Property Name | Description |
-|---------------|-------------|
-| `path` | The partial path to the file in storage.  Combine this with the xyOps master server hostname and port number (if applicable) to construct a full URL to the file. |
-| `size` | The size of the file in bytes. |
-| `job` | The [Job.id](#job-id) associated with the file. |
-| `server` | The server ID of the server which uploaded the file. |
+Once the job is complete, the files will be uploaded and the array will be recreated as an array of objects, one per file, with each object following the [File](#file) structure.
 
 ## Job.update_event
 
@@ -836,6 +846,10 @@ User writable property for providing a visual label for the Job.  Should be spec
 ## Job.test
 
 This is set to `true` when the job was fired from an event test.  This is used to override the event enabled check, and add hints to the UI.
+
+## Job.workflow
+
+When the job is itself a workflow, or a sub-job inside a workflow, this object will contain additional information.  See [JobWorkflow](#jobworkflow) for details.
 
 # Monitor
 
@@ -994,7 +1008,19 @@ The script to execute for the plugin. This can be a shell command, a Python scri
 
 ## Plugin.params
 
-A set of custom parameters to pass to the plugin when it is executed (for non-monitor Plugins only).  These are passed to the Plugin as JSON via STDIN, as well as upper-case environment variables.
+A set of custom parameters to pass to the plugin when it is executed (for non-monitor Plugins only).  These are the parameter definitions, which users then populate in the UI when setting up events / workflows.  Each item in the `params` array should be an object with the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | A lower-case alphanumeric ID for the parameter (can also contain underscores). |
+| `title` | String | A visual title for the parameter, displayed in the UI. |
+| `type` | String | The parameter type ID, which should be one of: `text`, `textarea`, `code`, `checkbox`, `select`, `hidden`, or `toolset`. |
+| `variant` | String | For `text` type controls, you can optionally set a UI input variant: `color`, `date`, `datetime-local`, `email`, `number`, `password`, `text`, `time`, `tel` or `url`. |
+| `value` | Mixed | The default value for the parameter. |
+| `data` | Object | Specifically for the `toolset` type, this contains all the tool details. |
+| `caption` | String | Optionally display a caption under the UI control. |
+| `required` | Boolean | Set this to `true` to require a value to be entered for the parameter. |
+| `locked` | Boolean | Set this to `true` to lock editing to administrators only. |
 
 ## Plugin.groups
 
@@ -1077,6 +1103,120 @@ A list of groups that the role is allowed to access.
 ## Role.notes
 
 Optional notes or comments about the role's purpose or configuration.
+
+## Role.username
+
+The user or API Key who created the role.
+
+## Role.modified
+
+The Unix timestamp when the role was last modified.
+
+## Role.created
+
+The Unix timestamp when the role was created.
+
+## Role.revision
+
+An internal revision number for the role, incremented with each change.
+
+# Secret
+
+A secret is a collection of key/value pairs which are all stored using strong encryption.  See [Secrets](secrets.md) for more details.  Here is an example secret in JSON format:
+
+```json
+{
+	"id": "zmeejkeb8nu",
+	"title": "Dev Database Creds",
+	"enabled": true,
+	"icon": "",
+	"notes": "This secret provides access to the dev database.",
+	"names": [
+		"DB_HOST",
+		"DB_PASS",
+		"DB_USER"
+	],
+	"events": [
+		"emeekm2ablu"
+	],
+	"categories": [],
+	"plugins": [],
+	"username": "admin",
+	"modified": 1757204132,
+	"created": 1755365953,
+	"revision": 8,
+	"web_hooks": [
+		"example_hook"
+	]
+}
+```
+
+## Secret.id
+
+A unique alphanumeric ID for the secret.
+
+## Secret.title
+
+A visual title for the secret, displayed in the UI.
+
+## Secret.enabled
+
+A boolean flag indicating if the secret is enabled or not.
+
+## Secret.icon
+
+An optional icon ID for the role, displayed in the UI.  Icons are sourced from [Material Design Icons](https://materialdesignicons.com/).
+
+## Secret.fields
+
+An array of secret fields.  These are stored encrypted.  Each element of the array must be an object with the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `name` | String | The name of the variable, e.g. `DB_PASSWORD`.  Use standard POSIX environment variable naming rules. |
+| `value` | String | The value of the variable, e.g. `CorrectHorseBatteryStaple`. |
+
+Secret values are always stored as strings (as they are delivered via environment variables).  If you need to store binary data in a secret, you can encode it with [Base64](https://en.wikipedia.org/wiki/Base64).
+
+## Secret.names
+
+An auto-generated list of field names, stored in plaintext (for display purposes).
+
+## Secret.events
+
+An array of [Event.id](#event.id) strings, specifying which events' jobs will receive the secret as environment variables.
+
+## Secret.categories
+
+An array of [Category.id](#category.id) strings, specifying which categories' events' jobs will receive the secret as environment variables.
+
+## Secret.plugins
+
+An array of [Plugin.id](#plugin.id) strings, specifying which plugins' jobs will receive the secret as environment variables.
+
+## Secret.web_hooks
+
+An array of [WebHook.id](#webhook-id) strings, specifying which web hooks will have access to the secret.
+
+## Secret.notes
+
+Optional notes or comments about the secret (stored in plaintext).
+
+## Secret.username
+
+The user or API Key who created the secret.
+
+## Secret.modified
+
+The Unix timestamp when the secret was last modified.
+
+## Secret.created
+
+The Unix timestamp when the secret was created.
+
+## Secret.revision
+
+An internal revision number for the secret, incremented with each change.
 
 # Server
 
@@ -1197,11 +1337,11 @@ A boolean flag indicating if the server should be automatically assigned to grou
 
 ## Server.created
 
-The UNIX timestamp (in seconds) when the server first joined the cluster.
+The Unix timestamp (in seconds) when the server first joined the cluster.
 
 ## Server.modified
 
-The UNIX timestamp (in seconds) when the server was last modified.
+The Unix timestamp (in seconds) when the server was last modified.
 
 ## Server.groups
 
@@ -1240,7 +1380,7 @@ A tag is a user-defined label that can be assigned to jobs for the purpose of or
 
 ## Tag.id
 
-A unique identifier for the tag.
+A unique alphanumeric identifier for the tag.
 
 ## Tag.title
 
@@ -1256,11 +1396,154 @@ The username of the user who created the tag.
 
 ## Tag.created
 
-The UNIX timestamp (in seconds) when the tag was created.
+The Unix timestamp (in seconds) when the tag was created.
 
 ## Tag.modified
 
-The UNIX timestamp (in seconds) when the tag was last modified.
+The Unix timestamp (in seconds) when the tag was last modified.
+
+# Ticket
+
+A ticket can be an issue, feature, change, or other record for tracking changes or incidents.  See [Tickets](tickets.md) for more details.  Here is an example ticket in JSON format:
+
+```json
+{
+	"subject": "Job #jmgn8f6ib7p failed with code: 1 (BlueSky Test)",
+	"type": "issue",
+	"status": "open",
+	"category": "general",
+	"assignees": [
+		"admin"
+	],
+	"cc": [],
+	"notify": [],
+	"events": [
+		{
+			"id": "emgn8evze7b",
+			"params": {},
+			"targets": [],
+			"algo": "",
+			"tags": [
+				"important"
+			]
+		}
+	],
+	"tags": [
+		"flag"
+	],
+	"due": 0,
+	"server": "",
+	"id": "tmgpmoorz6p",
+	"num": 24,
+	"modified": 1760554137,
+	"created": 1760389885,
+	"changes": [
+		{
+			"type": "change",
+			"username": "admin",
+			"date": 1760389885,
+			"key": "created"
+		}
+	],
+	"username": "admin",
+	"body": "The following xyOps job has failed with code: *1**\n\n- **Job ID:** `jmgn8f6ib7p`\n- **Error Code:** `1` -- Stripped remainder of body for brevity."
+}
+```
+
+## Ticket.id
+
+A unique alphanumeric identifier for the ticket.
+
+## Ticket.num
+
+An auto-assigned ticket number.
+
+## Ticket.subject
+
+A short summary of the ticket.
+
+## Ticket.body
+
+The full body content of the ticket, in Markdown source format.
+
+## Ticket.type
+
+The ticket type identifier, which should be one of: `issue`, `feature`, `change`, `maintenance`, `question` or `other`.
+
+## Ticket.status
+
+The ticket status identifier, which should be one of: `open`, `closed` or `draft`.
+
+## Ticket.category
+
+An optional [Category.id](#category-id) to associate the ticket with.
+
+## Ticket.server
+
+An optional [Server.id](#server-id) to associate the ticket with.
+
+## Ticket.assignees
+
+An array of [User.username](#user-username)s which are responsible for the ticket (updates and overdue reminders are sent to them).
+
+## Ticket.cc
+
+An array of [User.username](#user-username)s which are Cc'ed for ticket updates via email.
+
+## Ticket.notify
+
+An array of email addresses to also receive ticket updates.
+
+## Ticket.due
+
+An optional due date for the ticket, in Unix seconds.  Daily reminders will be sent out to all assignees after this date.
+
+## Ticket.tags
+
+An array of [Tag.id](#tag-id)s to associate with the ticket.
+
+## Ticket.events
+
+An array of objects representing [Event](#event)s attached to the ticket.  Each event can be customized to run jobs from the ticket, and contain the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | The [Event.id](#event-id) of the event. |
+| `targets` | Array | An optional array of targets ([Group.id](#group-id)s or [Server.id](#server-id)s) overriding the event defaults. |
+| `algo` | String | An optional server selection algorithm, overriding the default [Event.algo](#event-algo) from the event. |
+| `tags` | Array | An optional array of [Tag.id](#tag-id)s to apply to jobs that run from the ticket event, overriding the event defaults. |
+| `params` | Object | If the event has [Event.fields](#event-fields) defined, this object will override the defaults and be merged into [Event.params](#event-params) when jobs run. |
+
+## Ticket.files
+
+An array of [File](#file) objects uploaded to the ticket.
+
+## Ticket.changes
+
+This array contains a list of all the changes made to the ticket, including things like changing status, assignees, and also comments added.  Each element in the array should be an object with the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | A unique alphanumeric ID for the change. |
+| `type` | String | The change type, which should be one of: `change` or `comment`. |
+| `username` | String | The username of the user who made the change. |
+| `date` | Number | The Unix timestamp of the change. |
+| `key` | String | This identifies which ticket property was changed, or one of two special values: `created` (ticket created) or `delete` (comment deleted). |
+| `value` | Mixed | When `key` is present, this is the new value that the property was changed to. |
+| `body` | String | For `comment` types, this is the comment body in Markdown source format. |
+| `edited` | Number | When comments are edited, this is present and set to the last modified date, in Unix seconds. |
+
+## Ticket.username
+
+The username of the user who created the ticket.
+
+## Ticket.created
+
+The Unix timestamp (in seconds) when the ticket was created.
+
+## Ticket.modified
+
+The Unix timestamp (in seconds) when the ticket was last modified.
 
 # User
 
@@ -1362,11 +1645,11 @@ A boolean flag indicating if the user account is active or disabled.
 
 ## User.created
 
-The UNIX timestamp (in seconds) when the user was created.
+The Unix timestamp (in seconds) when the user was created.
 
 ## User.modified
 
-The UNIX timestamp (in seconds) when the user was last modified.
+The Unix timestamp (in seconds) when the user was last modified.
 
 ## User.language
 
@@ -2033,18 +2316,130 @@ Contains information about current network throughput on the server.  Example:
 
 The uptime of the server in seconds.
 
-
-
 # Snapshot
 
-TODO: this
+A snapshot is a record of everything happening on a server for a specific instant in time, including all monitoring data, processes, network connections, and more.  See [Snapshots](snapshots.md) for more details.  Here is an example snapshot in JSON format, with the larger sections omitted for brevity:
+
+```json
+{
+    "alerts": [],
+    "data": {},
+    "date": 1754793721,
+    "groups": [
+        "main"
+    ],
+    "hostname": "centos-9-arm",
+    "id": "snme52vvah17",
+    "ip": "::ffff:10.1.10.241",
+    "jobs": [],
+    "quickmon": [],
+    "server": "sorbstack01",
+    "source": "user",
+    "type": "server",
+    "username": "admin",
+    "version": "1.0"
+}
+```
+
+## Snapshot.id
+
+A unique alphanumeric ID automatically generated for the snapshot.
+
+## Snapshot.type
+
+The type of snapshot, which will be `server` for a single server, or `group` for a multi-server group snapshot.
+
+## Snapshot.server
+
+The [Server.id](#server-id) of the server that the snapshot was produced from.
+
+## Snapshot.version
+
+The version of the snapshot data format.
+
+## Snapshot.date
+
+The date/time when the snapshot was taken, in Unix seconds.
+
+## Snapshot.groups
+
+An array of [Group.id](#group-id)s that the server belongs to.
+
+## Snapshot.hostname
+
+The hostname of the server which produced the snapshot.
+
+## Snapshot.ip
+
+The IP address of the server which produced the snapshot.
 
 ## Snapshot.source
 
-alert, watch, user (username), job
+A string denoting how the snapshot was taken, which will be one of: `alert`, `watch`, `user`, or `job`.
 
+## Snapshot.username
 
+If the [Snapshot.source](#snapshot-source) is `user`, this is the [User.username](#user-username) of the user who snapped.
 
+## Snapshot.quickmon
+
+An array of [QuickmonData](#quickmondata) samples for the server, representing the last 60 seconds leading up to the snapshot being taken.
+
+## Snapshot.jobs
+
+An array of [Job.id](#job-id)s representing active jobs on the server at the time of the snapshot.
+
+## Snapshot.alerts
+
+An array of [AlertInvocation.id](#alertinvocation-id)s representing active alerts on the server at the time of the snapshot.
+
+## Snapshot.data
+
+A copy of the [ServerMonitorData](#servermonitordata) for the server taken at the time of the snapshot.
+
+# GroupSnapshot
+
+Snapshots may be taken of entire server groups, which uses the following structure to store the data.
+
+## GroupSnapshot.id
+
+A unique alphanumeric ID automatically generated for the snapshot.
+
+## GroupSnapshot.type
+
+The type of snapshot, which will be set to `group` in this case.
+
+## GroupSnapshot.date
+
+The date/time when the snapshot was taken, in Unix seconds.
+
+## GroupSnapshot.groups
+
+Will be an array with exactly one element, the [Group.id](#group-id) for the group.
+
+## GroupSnapshot.group_def
+
+A copy of the [Group](#group) object for the group, taken at the time of the snapshot.
+
+## GroupSnapshot.servers
+
+An array of [Server](#server) objects for the group.
+
+## GroupSnapshot.snapshots
+
+An array of [ServerMonitorData](#servermonitordata)s for the group, with indices matching up with [GroupSnapshot.servers](#groupsnapshot-servers).
+
+## GroupSnapshot.alerts
+
+An array of [AlertInvocation.id](#alertinvocation-id)s representing active alerts in the group at the time of the snapshot.
+
+## GroupSnapshot.jobs
+
+An array of [Job.id](#job-id)s representing active jobs in the group at the time of the snapshot.
+
+## GroupSnapshot.quickmons
+
+An array of [QuickmonData](#quickmondata) samples for the group, with indices matching up with [GroupSnapshot.servers](#groupsnapshot-servers).
 
 # Sub-Objects
 
@@ -2173,10 +2568,10 @@ Each trigger has a `type` property which describes its behavior.  The different 
 |---------|-------------|
 | `schedule` | Set a repeating schedule to run the event (hourly, daily, etc.).  See [Schedule Rules](#schedule-rules) below. |
 | `interval` | Run the event on a repeating interval, given a starting date/time. |
-| `single` | Set a single future exact date/time to run.  Requires an additional `epoch` property, set to the [Epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) at which to run. |
+| `single` | Set a single future exact date/time to run.  Requires an additional `epoch` property, set to the [Unix timestamp](https://en.wikipedia.org/wiki/Unix_time) at which to run. |
 | `catchup` | Ensure that *every* scheduled job runs, even if it has to run late. |
-| `range` | Set a starting and/or ending date for a repeating event.  Requires additional `start` and/or `end` properties, set to [Epoch timestamps](https://en.wikipedia.org/wiki/Unix_time). |
-| `blackout` | Set a blackout date/time range when the event *cannot* run.  Requires additional `start` and `end` properties, set to [Epoch timestamps](https://en.wikipedia.org/wiki/Unix_time). |
+| `range` | Set a starting and/or ending date for a repeating event.  Requires additional `start` and/or `end` properties, set to [Unix timestamps](https://en.wikipedia.org/wiki/Unix_time). |
+| `blackout` | Set a blackout date/time range when the event *cannot* run.  Requires additional `start` and `end` properties, set to [Unix timestamps](https://en.wikipedia.org/wiki/Unix_time). |
 | `delay` | Set an optional starting delay for all scheduled jobs.  Requires an additional `duration` property, set to the number of seconds to delay each job by. |
 | `precision` | Set an optional list of exact seconds to fire jobs within the current scheduled minute. |
 | `plugin` | Custom scheduler Plugin (user-defined).  Requires an additional `plugin_id` property, as well as a `params` object, for Plugin-defined configuration. |
@@ -2235,21 +2630,347 @@ Here is a list of all the `schedule` type trigger object properties and their de
 | `minutes` | 0 - 59 | One or more minutes, from 0 to 59. |
 | `timezone` | n/a | Optional timezone to evaluate the schedule entry in.  Defaults to the master server timezone. |
 
-
-
 ## Workflow
 
-TODO: this
+Workflows are really just [Event](#event)s with an extra `workflow` property, which describes the flow.  See [Workflows](workflows.md) for more details about workflows.  Here is an example workflow object in JSON format:
 
+```json
+{
+	"nodes": [
+		{
+			"id": "nufslsj6",
+			"type": "trigger",
+			"x": 100,
+			"y": 340
+		},
+		{
+			"id": "n05zzi1i",
+			"type": "event",
+			"data": {
+				"event": "emdzenjw3hz",
+				"params": {},
+				"targets": [],
+				"algo": "",
+				"tags": []
+			},
+			"x": 306,
+			"y": 235
+		},
+		{
+			"id": "nx7qqkld",
+			"type": "action",
+			"data": {
+				"enabled": true,
+				"type": "suspend",
+				"users": [],
+				"email": "",
+				"web_hook": "example_hook",
+				"text": ""
+			},
+			"x": 660,
+			"y": 87
+		},
+		{
+			"id": "nyywkijs",
+			"type": "job",
+			"data": {
+				"params": {
+					"duration": "10",
+					"action": "Success",
+					"burn": false,
+					"network": false,
+					"upload": true
+				},
+				"targets": [
+					"main"
+				],
+				"algo": "random",
+				"label": "",
+				"category": "general",
+				"plugin": "testplug",
+				"tags": []
+			},
+			"x": 699,
+			"y": 249
+		}
+	],
+	"connections": [
+		{
+			"id": "ctfb86vr",
+			"source": "nufslsj6",
+			"dest": "n05zzi1i"
+		},
+		{
+			"id": "ce47saf7",
+			"source": "n05zzi1i",
+			"dest": "nx7qqkld",
+			"condition": "start"
+		},
+		{
+			"id": "cnns5qvj",
+			"source": "n05zzi1i",
+			"dest": "nyywkijs",
+			"condition": "success"
+		}
+	]
+}
+```
 
+### Workflow.nodes
+
+An array of [WorkflowNode](#workflownode)s in the workflow.
+
+### Workflow.connections
+
+An array of [WorkflowConnection](#workflowconnection)s in the workflow.
+
+## WorkflowNode
+
+A workflow node is an object which represents an event, an ad-hoc job, a trigger, a limit, an action, or a controller.  Here is an example node in JSON format:
+
+```json
+{
+	"id": "n05zzi1i",
+	"type": "event",
+	"data": {
+		"event": "emdzenjw3hz",
+		"params": {},
+		"targets": [],
+		"algo": "",
+		"tags": []
+	},
+	"x": 306,
+	"y": 235
+}
+```
+
+### WorkflowNode.id
+
+A unique alphanumeric ID for the node, which is automatically assigned when created.  Workflow Node IDs will always start with `n`.
+
+### WorkflowNode.type
+
+A string constant representing the node type, which will be one of: `event`, `job`, `trigger`, `limit`, `action`, or `controller`.
+
+### WorkflowNode.data
+
+Nodes may have a `data` property which contains information specific to the node type.  Here is a summary of how this property is used:
+
+| Node Type | Data Description |
+|-----------|------------------|
+| `event` | Will contain an `event` property, which refers to the [Event](#event), as well as properties that override defaults set in the event. |
+| `job` | Will contain most of the properties from the [Event](#event) object, to run an ad-hoc job without an explicit event definition. |
+| `trigger` | Not used.  Trigger nodes use their [WorkflowNode.id](#workflownode-id) property to link to the [Event.trigger](#event-trigger), which is the source of truth for the trigger. |
+| `limit` | Will contain properties from the [Limit](#limit) object. |
+| `action` | Will contain properties from the [Action](#action) object. |
+| `controller` | Will contain properties specific to the controller type.  See below. |
+
+For controller nodes, see the following table for details on how the `data` property is used:
+
+| Controller Type | Data Description |
+|-----------------|------------------|
+| `multiplex` | Will contain `stagger` (delay in seconds) for staggering jobs across servers, and `continue` (percentage) for gating success. |
+| `wait` | Will contain `wait` (delay in seconds). |
+| `repeat` | Will contain `repeat` (iteration count), and `continue` (percentage) for gating success. |
+| `split` | Will contain `split` (expression to split on), and `continue` (percentage) for gating success. |
+| `join` | Not used. |
+| `decision` | Will contain `label` (custom title), `icon` (custom icon), and `decision` (expression to evaluate). |
+
+### WorkflowNode.x
+
+The horizontal position of the top-left corner of the node in the UI, measured in CSS pixels at 1X zoom.
+
+### WorkflowNode.y
+
+The vertical position of the top-left corner of the node in the UI, measured in CSS pixels at 1X zoom.
+
+## WorkflowConnection
+
+A workflow connection object represents a connection between two nodes (rendered as a curved line in the UI).  Here is an example connection in JSON format:
+
+```json
+{
+	"id": "cnns5qvj",
+	"source": "n05zzi1i",
+	"dest": "nyywkijs",
+	"condition": "success"
+}
+```
+
+### WorkflowConnection.id
+
+A unique alphanumeric ID for the connection, which is automatically assigned when created.  Workflow Connection IDs will always start with `c`.
+
+### WorkflowConnection.source
+
+The [WorkflowNode.id](#workflownode-id) of the source node.
+
+### WorkflowConnection.dest
+
+The [WorkflowNode.id](#workflownode-id) of the destination node.
+
+### WorkflowConnection.condition
+
+Some connections have a `condition` which dictates when control will flow through to the destination node (namely from a job or event to another node).  See [Action Conditions](#action-conditions) for a list of possible conditions.
+
+## JobWorkflow
+
+When a job starts, if the job is itself a workflow, or a sub-job inside a workflow, it will be given a `workflow` object, which is described below.  Here is an example object in JSON format, for a workflow job, but with some properties removed for brevity:
+
+```json
+{
+	"nodes": [],
+	"connections": [],
+	"start": "n1b47xt7",
+	"state": {
+		"n1b47xt7": {
+			"started": 1762288805.097,
+			"completed": 1762288805.102
+		},
+		"n24wos41": {
+			"started": 1762288805.097
+		},
+		"ns3n5uyn": {
+			"started": 1762288811.225
+		}
+	},
+	"jobs": {
+		"n24wos41": [
+			{
+				"id": "jmhl194oawj",
+				"code": 0,
+				"description": "Success!",
+				"server": "smf4j79snhe",
+				"completed": 1762288811.194,
+				"elapsed": 6.0929999351501465,
+				"tags": [
+					"_success",
+					"_last"
+				],
+				"files": [
+					{
+						"id": "fmhl199ehrw",
+						"date": 1762288811,
+						"filename": "sample-report-jmhl194oawj.txt",
+						"path": "files/jobs/jmhl194oawj/OqTsdjeTWM8cn8PlxaYrow/sample-report-jmhl194oawj.txt",
+						"size": 745,
+						"server": "smf4j79snhe",
+						"job": "jmhl194oawj"
+					}
+				]
+			}
+		],
+		"ns3n5uyn": [
+			{
+				"id": "jmhl199ehxh",
+				"code": 503,
+				"description": "HTTP 503 Service Temporarily Unavailable",
+				"server": "smf4j79snhe",
+				"completed": 1762288812.95,
+				"elapsed": 1.7220001220703125,
+				"tags": [
+					"_error",
+					"_last"
+				],
+				"files": []
+			}
+		]
+	}
+}
+```
+
+## JobWorkflow.nodes
+
+An array of [WorkflowNode](#workflownode)s in the workflow.
+
+## JobWorkflow.connections
+
+An array of [WorkflowConnection](#workflowconnection)s in the workflow.
+
+## JobWorkflow.start
+
+The [WorkflowNode.id](#workflownode-id) of the starting node (typically a trigger node).
+
+## JobWorkflow.state
+
+Contains state information for each node in the workflow.  Typically this is used to track which nodes executed, and to track performance.  The object is keyed by the [WorkflowNode.id](#workflownode-id)s of the nodes, with values being specific to each node.  Example in JSON format:
+
+```json
+{
+	"n1b47xt7": {
+		"started": 1762288805.097,
+		"completed": 1762288805.102
+	},
+	"n24wos41": {
+		"started": 1762288805.097
+	},
+	"ns3n5uyn": {
+		"started": 1762288811.225
+	}
+}
+```
+
+## JobWorkflow.jobs
+
+Contains information about all completed jobs inside the workflow.  The `jobs` object is keyed by the [WorkflowNode.id](#workflownode-id)s of the nodes which spawned the jobs, and the value is an array of objects (because each node may spawn multiple jobs inside one workflow).  Here is an example:
+
+```json
+{
+	"ns3n5uyn": [
+		{
+			"id": "jmhl199ehxh",
+			"code": 503,
+			"description": "HTTP 503 Service Temporarily Unavailable",
+			"server": "smf4j79snhe",
+			"completed": 1762288812.95,
+			"elapsed": 1.7220001220703125,
+			"tags": [
+				"_error",
+				"_last"
+			],
+			"files": []
+		}
+	]
+}
+```
+
+Each element of the array is a subset of properties copied from the [Job](#job) object.
+
+## JobWorkflow.job
+
+If the job is a sub-job inside of a parent workflow, the `workflow.job` property will point to the [Job.id](#job-id) of the parent workflow job.
+
+## JobWorkflow.event
+
+If the job is a sub-job inside of a parent workflow, the `workflow.event` property will point to the [Event.id](#event-id) of the parent workflow.
+
+## JobWorkflow.node
+
+If the job is a sub-job inside of a parent workflow, the `workflow.node` property will point to the [WorkflowNode.id](#workflownode-id) of the event or job node which started the job.
+
+## JobWorkflow.launcher
+
+If the job is a sub-job inside of a parent workflow, the `workflow.launcher` property will point to the [WorkflowNode.id](#workflownode-id) of the controller node which is governing the job.
 
 ## Privileges
 
-TODO: this
+The Privileges object describes which actions are allowed for a [User](#user), a [Role](#role), or an [API Key](#api-key).  For more details, see [Privileges](privileges.md).  Here is an example set of privileges in JSON format:
 
+```json
+{
+	"create_events": true,
+	"edit_events": true,
+	"run_jobs": true,
+	"tag_jobs": true,
+	"comment_jobs": true,
+	"create_tickets": true,
+	"edit_tickets": true
+}
+```
 
+Note that the `admin` privilege, when present, implicitly enables all other privileges.
 
-## Job Hook Data
+## JobHookData
 
 When job actions are executed, including firing web hooks and sending emails, the following data structure is used to expand macros in the web hook text and email body content.  It is also passed to custom action Plugins.
 
@@ -2275,7 +2996,7 @@ When job actions are executed, including firing web hooks and sending emails, th
 | `display.cpu` | String | A human-readable string representing the average CPU usage of the job, if available. |
 | `text` | String | A short summary of the action, using [hook_text_templates](configuration.md#hook_text_templates) as the template, and all macros expanded. |
 
-## Alert Hook Data
+## AlertHookData
 
 When alerts fire and clear, the following data structure is used to expand macros in the web hook text and email body content:
 
@@ -2303,3 +3024,36 @@ When alerts fire and clear, the following data structure is used to expand macro
 | `links.server_url` | String | A fully-qualified URL to the job details page (requires login). |
 | `links.alert_url` | String | A fully-qualified URL to the job details page (requires login). |
 | `text` | String | A short summary of the action, using [hook_text_templates](configuration.md#hook_text_templates) as the template, and all macros expanded. |
+
+## QuickmonData
+
+xyOps captures "quick" monitoring data every second on every server, in a few key areas (CPU / mem / net / disk).  This data is used to render the real-time server monitors, and is used in server snapshots as well.  Here is an example Quickmon data sample in JSON format:
+
+```json
+{
+	"_qm_cpu_load": 0,
+	"_qm_cpu_usage": 0,
+	"_qm_disk_read_sec": 7317065728,
+	"_qm_disk_write_sec": 104329216,
+	"_qm_mem_avail": 16180023296,
+	"_qm_mem_used": 630362112,
+	"_qm_net_in_sec": 1168348,
+	"_qm_net_out_sec": 24974039,
+	"date": 1754793680
+}
+```
+
+The `date` is the sample time in Unix seconds.  The other properties correspond to the Quickmon monitor definitions in [quick_monitors](configuration.md#quick_monitors), and the values should all be raw numbers.
+
+## File
+
+A file object is used to represent a file in storage.  It is used for [Job.files](#job-files), [Ticket.files](#ticket-files), and [Bucket.files](#bucket-files).  The object consists of the following properties:
+
+| Property Path | Type | Description |
+|---------------|------|-------------|
+| `path` | String | A normalized path to the file in storage, which can also be used as a URI path for viewing / downloading. |
+| `filename` | String | The filename of the file. |
+| `size` | Number | The size of the file in bytes. |
+| `date` | Number | The file's creation date as Unix seconds. |
+| `job` | String | If the file was created from a job, this will contain the [Job.id](#job-id). |
+| `server` | String | If the file was created on a server, this will contain the [Server.id](#server-id). |
