@@ -286,7 +286,7 @@ A storage bucket is a logical container for storing files, for use in events and
 GET /api/app/get_buckets/v1
 ```
 
-This fetches all the current storage bucket defintions (sans actual data and files).  No input parameters are defined.  No specific privilege is required, besides a valid user session or API Key.
+This fetches all the current storage bucket definitions (sans actual data and files).  No input parameters are defined.  No specific privilege is required, besides a valid user session or API Key.
 
 In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing all buckets, and a `list` object containing list metadata (e.g. `length` for total rows without pagination). Example response:
 
@@ -583,7 +583,7 @@ Example response:
 }
 ```
 
-In addition to the [Standard Response Format](#standard-response-format), this will include a `category` property containing the requested category defintion.  See [Category](data-structures.md#category) for details on category properties.
+In addition to the [Standard Response Format](#standard-response-format), this will include a `category` property containing the requested category definition.  See [Category](data-structures.md#category) for details on category properties.
 
 ### create_category
 
@@ -1727,33 +1727,392 @@ See [Snapshots](snapshots.md) for more details.
 
 ### get_active_jobs
 
+```
+GET /api/app/get_active_jobs/v1
+```
+
+Fetch active jobs with optional filters, pagination and sorting. Active jobs include states such as `queued`, `ready`, `active`, and `finishing`. Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `offset` | Number | Optional row offset. Defaults to `0`. |
+| `limit` | Number | Optional row limit. Defaults to all matching rows. |
+| `sort_by` | String | Optional sort field. Defaults to `started`. |
+| `sort_dir` | Number | Optional sort direction. Use `-1` for descending (default) or `1` for ascending. |
+| other filters | Various | Optional job property filters (e.g., `state`, `event`, `server`, `workflow.job`). |
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing the matching active jobs, and a `list` object containing list metadata (e.g. `length` for total rows without pagination).
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ { /* Job */ } ],
+    "list": { "length": 1 }
+}
+```
+
+See [Job](data-structures.md#job) for job properties.
+
 ### get_active_job_summary
+
+```
+GET /api/app/get_active_job_summary/v1
+```
+
+Summarize active jobs by event, grouped by state, source, and targets. Accepts the same optional filters as [get_active_jobs](#get_active_jobs). Requires a valid user session or API Key.
+
+In addition to the [Standard Response Format](#standard-response-format), this will include an `events` object keyed by [Event.id](data-structures.md#event-id), each containing `states`, `sources`, and `targets` counters.
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "events": {
+        "event100": {
+            "id": "event100",
+            "states": { "queued": 2, "active": 1 },
+            "sources": { "user": 1, "scheduler": 2 },
+            "targets": { "main": 3 }
+        }
+    }
+}
+```
 
 ### get_workflow_job_summary
 
+```
+GET /api/app/get_workflow_job_summary/v1
+```
+
+Summarize workflow jobs by node for a given workflow context (e.g., a particular top-level workflow job). Accepts the same optional filters as [get_active_jobs](#get_active_jobs). Requires a valid user session or API Key.
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `nodes` object keyed by workflow node ID with counts of matching active jobs per node.
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "nodes": { "nmhr8zbgjiv": 3, "nmhr8zjdtiw": 1 }
+}
+```
+
+This API is used in the UI to summarize (count) queued jobs per workflow node.
+
 ### get_job
+
+```
+GET /api/app/get_job/v1
+```
+
+Fetch a single job’s details, running or completed. Requires a valid user session or API Key, and category/target access to the job’s event. Both HTTP GET with query string parameters and HTTP POST with JSON are accepted.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id) to fetch. |
+| `remove` | Array | Optional array of property names to exclude from the returned job object (e.g., heavy fields). |
+
+Example request:
+
+```json
+{ "id": "jabc123def" }
+```
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "token": "Zy8...",
+    "job": { /* Job object */ }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `job` object containing the requested job, and a `token` string used for viewing/downloading the job log (see [view_job_log](#view_job_log) and [download_job_log](#download_job_log)).
+
+See [Job](data-structures.md#job) for details on the job object.
 
 ### get_jobs
 
+```
+POST /api/app/get_jobs/v1
+```
+
+Fetch multiple jobs (running or completed) by IDs. Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `ids` | Array<String> | **(Required)** Array of [Job.id](data-structures.md#job-id) values. |
+| `verbose` | Boolean | Optional. If `true`, includes heavy fields; otherwise they are pruned. |
+
+Example request:
+
+```json
+{
+    "ids": ["jabc123def", "jdef456ghi"],
+    "verbose": false
+}
+```
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "jobs": [
+        { /* Job 1 (pruned by default) */ },
+        { /* Job 2 (pruned by default) */ }
+    ]
+}
+```
+
+Notes:
+
+- When `verbose` is not set, the following heavy fields are removed: `actions`, `activity`, `html`, `limits`, `procs`, `conns`, `table`, `timelines`, `input`, `data`, `files`.
+- See [Job](data-structures.md#job) for details on the job object.
+
 ### get_job_log
+
+```
+GET /api/app/get_job_log/v1
+```
+
+Stream a job’s log as plain text. Requires a valid user session (session auth).
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+
+Response:
+
+- Returns HTTP `200 OK` with `Content-Type: text/plain; charset=utf-8`. For archived logs it may include `Content-Encoding: gzip`.
+- Returns `204 No Content` if no log is available.
 
 ### view_job_log
 
+```
+GET /api/app/view_job_log/v1?id=JOB_ID&t=TOKEN
+```
+
+View a job’s log (plain text) via token authentication. This is useful for shareable links. Obtain the `t` token from [get_job](#get_job) response.
+
+Parameters (query):
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+| `t` | String | **(Required)** The download token from [get_job](#get_job). |
+
+Response:
+
+- Returns HTTP `200 OK` with `Content-Type: text/plain; charset=utf-8`. For archived logs it may include `Content-Encoding: gzip`.
+- Returns `404 Not Found` if no log is available, or `403 Forbidden` if the token is invalid.
+
 ### download_job_log
+
+```
+GET /api/app/download_job_log/v1?id=JOB_ID&t=TOKEN
+```
+
+Download a job’s log as a file via token authentication. Obtain the `t` token from [get_job](#get_job) response.
+
+Parameters (query):
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+| `t` | String | **(Required)** The download token from [get_job](#get_job). |
+
+Response:
+
+- Returns HTTP `200 OK` with `Content-Type: text/plain; charset=utf-8` and a `Content-Disposition` suggesting a filename. For archived logs it may include `Content-Encoding: gzip`.
+- Returns `404 Not Found` if no log is available, or `403 Forbidden` if the token is invalid.
 
 ### tail_live_job_log
 
+```
+GET /api/app/tail_live_job_log/v1
+```
+
+Return a tail chunk of a live job’s log (end-aligned ~32KB) to prime the real-time log viewer. Requires a valid user session or API Key, and the job must be active.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+| `bytes` | Number | Optional. Approximate number of bytes to return from the end. Defaults to `32678` (32K). |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "text": "...last lines of log..."
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `text` string containing the tail of the live log. If the job is not active, `text` will be empty.
+
 ### update_job
+
+```
+POST /api/app/update_job/v1
+```
+
+Admin-only. Update a running or completed job. This is a powerful API intended for administrative corrections and metadata updates. Requires the [admin](privileges.md#admin) privilege.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+| other fields | Various | Any writable job fields to update. Running jobs are updated in-memory; completed jobs are updated in storage. |
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
+Use with care. This can alter persisted job history.
 
 ### job_toggle_notify_me
 
+```
+POST /api/app/job_toggle_notify_me/v1
+```
+
+Toggle a completion notification e-mail for the current user on an active job. Requires a valid user session (with an email address set).
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "enabled": true
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include an `enabled` boolean indicating the new toggle state.
+
 ### manage_job_tags
+
+```
+POST /api/app/manage_job_tags/v1
+```
+
+Replace the tags on a completed job. Requires the [tag_jobs](privileges.md#tag_jobs) privilege and a valid session or API Key. Cannot be used on running jobs.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+| `tags` | Array<String> | **(Required)** Full replacement list of tags for the job. |
+
+Example request:
+
+```json
+{
+    "id": "jabc123def",
+    "tags": ["ops", "nightly"]
+}
+```
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
+Notes:
+
+- The job’s activity log is appended to with a summary of tag changes.
 
 ### abort_job
 
+```
+POST /api/app/abort_job/v1
+```
+
+Abort a running job. Requires the [abort_jobs](privileges.md#abort_jobs) privilege and a valid session or API Key, plus category/target access to the job’s event.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
 ### delete_job
 
+```
+POST /api/app/delete_job/v1
+```
+
+Delete a completed job, including logs and files. Requires the [delete_jobs](privileges.md#delete_jobs) privilege and a valid session or API Key, plus category/target access. Cannot delete active jobs.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data-structures.md#job-id). |
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
+Deletions are permanent and cannot be undone.
+
 ### flush_event_queue
+
+```
+POST /api/app/flush_event_queue/v1
+```
+
+Flush all queued jobs for an event without triggering completion actions. Requires the [abort_jobs](privileges.md#abort_jobs) privilege and a valid session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Event.id](data-structures.md#event-id) whose queue to flush. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "count": 3
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `count` property indicating how many queued jobs were removed.
 
 
 
