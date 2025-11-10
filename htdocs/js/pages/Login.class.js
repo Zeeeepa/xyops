@@ -161,10 +161,8 @@ Page.Login = class Login extends Page.Base {
 						id: 'fe_ca_username',
 						class: 'monospace',
 						spellcheck: 'false',
-						autocomplete: 'off',
-						onChange: '$P().checkUserExists(this)'
+						autocomplete: 'off'
 					}),
-					suffix: '<div class="checker"></div>',
 					caption: 'Enter a unique alphanumeric username for your account.'
 				});
 				
