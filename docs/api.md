@@ -4297,8 +4297,6 @@ Notes:
 
 ## Web Hooks
 
-### Usage
-
 Web Hook APIs manage outbound HTTP callbacks used by alerts, job actions and workflows. Use them to list, fetch, create, update, and delete web hook definitions, which can include headers, authentication and templated payloads (including secret expansion). Executions are logged with job activity; editing requires specific privileges.
 
 ### get_web_hooks
@@ -4316,8 +4314,6 @@ Web Hook APIs manage outbound HTTP callbacks used by alerts, job actions and wor
 
 
 ## Administrative
-
-### Usage
 
 Administrative APIs provide system-wide maintenance and export/import utilities intended for administrators. Use them to bulk import/export data, manage configuration, and perform maintenance tasks. These endpoints are admin-only and all operations are audited in the activity log.
 
@@ -4351,13 +4347,7 @@ Administrative APIs provide system-wide maintenance and export/import utilities 
 
 ### admin_logout_all
 
-### get_api_keys
-
-```
-GET /api/app/get_api_keys/v1
-```
-
-This retrieves a list of all registered API Keys.  
+### get_api_keys 
 
 ### get_api_key
 
