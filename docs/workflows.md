@@ -6,6 +6,10 @@ TODO
 - if split path is "files", then the files are split instead of data
 
 
+### Join Controller
+
+- Works with multi-node-input AND works for any of the multi-job controllers via continue action!
+
 
 ### Multiplex Controller
 
