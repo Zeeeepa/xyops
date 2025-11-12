@@ -2744,13 +2744,13 @@ Each action has a `condition` property which specifies when it should fire.  The
 
 | Condition ID | Description |
 |------------|-------------|
-| `job_start` | Fires on job start. |
-| `job_complete` | Fires on job completion, regardless of the outcome. |
-| `job_success` | Fires on job success, i.e. when the `code` property is `0` or `false`. |
-| `job_error` | Fires on job errors, i.e. when the `code` property is any true value or string. |
-| `job_warning` | Fires on job warnings, i.e. when the `code` property is set to `"warning"`. |
-| `job_critical` | Fires on critical errors, i.e. when the `code` property is set to `"critical"`. |
-| `job_abort` | Fires when the job is aborted, either by user or special event (e.g. lost server). |
+| `start` | Fires on job start. |
+| `complete` | Fires on job completion, regardless of the outcome. |
+| `success` | Fires on job success, i.e. when the `code` property is `0` or `false`. |
+| `error` | Fires on job errors, i.e. when the `code` property is any true value or string. |
+| `warning` | Fires on job warnings, i.e. when the `code` property is set to `"warning"`. |
+| `critical` | Fires on critical errors, i.e. when the `code` property is set to `"critical"`. |
+| `abort` | Fires when the job is aborted, either by user or special event (e.g. lost server). |
 | `tag:TAGID` | Fires on job completion only when a specific tag is present on the job. |
 | `alert_new` | Fires when a new alert is triggered on a server. |
 | `alert_cleared` | Fires when an active alert has cleared. |
