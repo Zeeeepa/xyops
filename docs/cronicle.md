@@ -6,6 +6,10 @@ This chapter is for users of [Cronicle](https://github.com/jhuckaby/cronicle), t
 
 Before you import your Cronicle data, please make sure you [add all your worker servers](usage.md#adding-servres) to your xyOps installation.  The reason is, Cronicle events can target servers directly by their hostname, but xyOps does this differently.  It is important to have all your servers in your xyOps cluster before importing, so the code can properly match up your Cronicle server targets to your new xyOps servers.
 
+## Data Export
+
+Follow the [Cronicle Data Export](https://github.com/jhuckaby/Cronicle/blob/master/docs/CommandLine.md#data-import-and-export) guide for exporting all your data from Cronicle.
+
 ## Data Import
 
 To import your Cronicle data into xyOps, follow these steps:
@@ -25,10 +29,10 @@ Before you reenable the scheduler, please ensure all your Events, Categories, Se
 
 ## Plugin Compatibility Mode
 
-While both xyOps and Cronicle communicate with Plugins via JSON over STDIO, the API itself is a little different.  xyOps requires that each JSON message have a top-level `xy` property set to `true`, alongside any other properties.  Example:
+While both xyOps and Cronicle communicate with Plugins via JSON over STDIO, the API itself is a little different.  xyOps requires that each JSON message have a top-level `xy` property set to `1`, alongside any other job properties.  Example:
 
 ```json
-{ "xy": true, "progress": 0.5 }
+{ "xy": 1, "progress": 0.5 }
 ```
 
 This is how xyOps differentiates its own API versus other random JSON that may be emitted by your Plugin or a sub-process.  Cronicle, on the other hand, basically accepts any JSON message it finds, if it has one or more properties it recognizes:
@@ -37,7 +41,7 @@ This is how xyOps differentiates its own API versus other random JSON that may b
 { "progress": 0.5 }
 ```
 
-If you have written existing Cronicle Plugins that you want to migrate to xyOps *without having to make any code changes*, you can enable a special compatibility mode.  Once turned on, it drops the `xy` property requirement, and also recognizes several other Cronicle-specific Plugin APIs like `chain`, `chain_error`, `chain_data`, `notify_success` and `notify_fail`.  To enable compatibility mode, set the [satellite.config.cronicle](configuration.md#satellite-config-cronicle) property to `true`.
+If you have written existing Cronicle Plugins that you want to migrate to xyOps *without having to make any code changes*, you can enable a special compatibility mode.  Once turned on, it drops the `xy` property requirement, and also recognizes and converts several other Cronicle-specific Plugin APIs like `chain`, `chain_error`, `chain_data`, `notify_success` and `notify_fail`.  To enable compatibility mode, add a `cronicle` property set to `true` inside the [satellite.config](configuration.md#satellite-config) object.
 
 You can also set it via environment variable if you like:
 
@@ -50,14 +54,14 @@ XYOPS_satellite__config__cronicle="true"
 
 ## White-Label UI
 
-If you want to white-label the UI so it resembles Cronicle, you can change both the app "name" (used in a variety of places) and the logo image shown in the top-left corner.  To do this, modify these two configuration properties: [client.name](configuration.md#client-name) and [client.logo_url](configuration.md#client-logo_url) with the following overridden values:
+If you want to white-label the xyOps UI so it resembles Cronicle, you can change both the app "name" (used in a variety of places) and the logo image shown in the top-left corner.  To do this, modify these two configuration properties: [client.name](configuration.md#client-name) and [client.logo_url](configuration.md#client-logo_url) with the following overridden values:
 
 ```json
 "name": "Cronicle",
 "logo_url": "images/cronicle-logo.png"
 ```
 
-Note that these properties are *inside* the `client` object.
+Note that these properties are *inside* the `client` object, in your `config.json` file.
 
 You can also override them via environment variables if you like:
 
