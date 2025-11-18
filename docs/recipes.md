@@ -1,6 +1,6 @@
 # Overview
 
-This document provides a set of useful recipes you can use in Ops Rocket.
+This document provides a set of useful recipes you can use in xyOps.
 
 ## Continuous Jobs
 
