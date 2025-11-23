@@ -70,6 +70,23 @@ Harden your web entry point and xyOps config before going live:
 - Access control: Use [WebServer.default_acl](https://github.com/jhuckaby/pixl-server-web#default_acl) for private handlers and verify API keys/SSO policies. Lock down admin endpoints behind SSO where applicable.
 - Rotate your secret key every few months.  See [Secret Key Rotation](hosting.md#secret-key-rotation) for details.
 
+## Rate Limiting
+
+If you are using our [Multi-Master with Nginx](hosting.md#multi-master-with-nginx) or [Multi-Master with OAuth2-Proxy and TLS with Nginx](sso.md#multi-master-with-oauth2-proxy-and-tls-with-nginx) setups, consider adding on a rate limiting configuration.  To do this, add a new volume bind to the Nginx Docker container:
+
+```
+-v ./limits.conf:/etc/nginx/conf.d/limits.conf:ro
+```
+
+And in the `limits.conf` file on the host side, add a Nginx configuration like this:
+
+```
+limit_req_zone $binary_remote_addr zone=req_per_ip:20m rate=100r/s;
+limit_req_status 429;
+```
+
+This would limit traffic to 100 requests/sec per IP, utilizing up to 20MB of IP cache (around 300K IPs).  For more details see the [ngx_http_limit_req_module](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html).
+
 ## Additional Tuning Ideas
 
 - Job throughput: Increase [max_jobs_per_min](config.md#max_jobs_per_min) prudently and monitor worker CPU/RAM. Align with your per‑category limits and workflow constraints.
