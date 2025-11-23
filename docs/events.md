@@ -6,7 +6,7 @@ Events are the core building block of xyOps. An event describes what to run (a P
 
 - An event is a saved configuration for launching jobs. It has an `id`, `title`, `category`, `plugin`, `params`, optional `fields`, `tags`, `targets`, `algo`, `triggers`, `limits`, and `actions`.
 - When a trigger fires (schedule, interval, single-shot, plugin, or manual), the scheduler creates a job from the event and launches it on a chosen target server.
-- Category defaults apply automatically: category-defined actions and limits are merged into the job in addition to any defined on the event. System “universal” defaults may also apply.
+- Category defaults apply automatically: category-defined actions and limits are merged into the job in addition to any defined on the event. System "universal" defaults may also apply.
 - Jobs run code provided by an Event Plugin on the selected server, stream logs back to the UI, update metrics, and honor configured limits and actions.
 - Workflows are a special kind of event that launch a graph of nodes; they use a special workflow pseudo-plugin. See [Workflows](workflows.md).
 
@@ -35,7 +35,7 @@ Running an event produces a job. Here is the lifecycle from trigger to execution
 	- Manual runs from the UI/API also count as launches. 
 2. **Job object is created**
 	- The job starts as a copy of the event plus trigger context and any user/API overrides. 
-	- It is assigned a unique `job.id`, and `job.event` is set to the event’s ID. 
+	- It is assigned a unique `job.id`, and `job.event` is set to the event's ID. 
 	- Category-defined actions/limits and system defaults are merged in. 
 3. **Parameters resolved**
 	- `event.params` and any prompted `fields` are merged and can use `{{ macros }}` that resolve against the job context (including `input.data` and `input.files` if present).
@@ -44,7 +44,7 @@ Running an event produces a job. Here is the lifecycle from trigger to execution
 	- If no servers are available, a queue limit (if configured) may place the job in a queue; otherwise the job aborts and may be eligible for retry. 
 	- Details on server algorithms appear below.
 5. **Plugin execution**
-	- Once a server is chosen, the job is dispatched to that server’s xySat agent and the Event Plugin runs with the final parameters and environment. 
+	- Once a server is chosen, the job is dispatched to that server's xySat agent and the Event Plugin runs with the final parameters and environment. 
 	- Output streams into the job log; CPU/memory/IO metrics are sampled for limits and history. 
 	- See [Event Plugins](plugins.md#event-plugins) for plugin anatomy and execution details.
 6. **Limits and actions**
@@ -84,7 +84,7 @@ Selection among remaining candidates is controlled by `algo`:
 - `prefer_first` / `prefer_last`: Prefer first/last by hostname sort for stability.
 - `monitor:<id>`: Choose the server with the smallest current value of a specific monitor.
 
-The chosen server ID is stored on the job as `server` and the server’s group memberships are copied into `groups` for analytics.
+The chosen server ID is stored on the job as `server` and the server's group memberships are copied into `groups` for analytics.
 
 ## Plugins
 
@@ -92,7 +92,7 @@ Every non‑workflow event references an Event Plugin via `plugin`, which define
 
 - **Parameters**: `params` are passed to the plugin. Locked/required attributes can be set by admins or categories. Optional `fields` collected at manual run time are merged into `params`.
 - **Environment**: Jobs inherit configured `job_env` plus any event‑specific `env` overrides.  Additionally, all Plugin params are passed as environment variables as well.
-- **Input**: Jobs may include structured `input.data` and uploaded `input.files` when launched from the UI/API. Actions like “Bucket Fetch” can also populate inputs before your code runs.
+- **Input**: Jobs may include structured `input.data` and uploaded `input.files` when launched from the UI/API. Actions like "Bucket Fetch" can also populate inputs before your code runs.
 
 See [Event Plugins](plugins.md#event-plugins) for plugin parameters, and lifecycle details.
 

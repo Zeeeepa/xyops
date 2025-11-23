@@ -57,7 +57,7 @@ Categories can carry default job actions and resource limits that apply to all e
 ## Managing
 
 - UI: Admin → Categories. Create/edit title, enabled, icon, color, notes, default actions and limits. Drag to reorder. Delete only when no events reference it. Import/Export JSON supported.
-- API: list, fetch, create, update, reorder, delete — see [API: Categories](api.md#categories).
+- API: list, fetch, create, update, reorder, delete -- see [API: Categories](api.md#categories).
 - Privileges: [create_categories](privileges.md#create_categories), [edit_categories](privileges.md#edit_categories), [delete_categories](privileges.md#delete_categories).
 
 ## API Quick Reference
@@ -116,4 +116,4 @@ Two categories with different defaults, and an event that overrides concurrency 
 }
 ```
 
-At launch, `deploy_app` gets the event’s `job` limit, plus prod’s `retry` and `time` limits, and prod’s actions. Universal defaults (if configured) append after category defaults.
+At launch, `deploy_app` gets the event's `job` limit, plus prod's `retry` and `time` limits, and prod's actions. Universal defaults (if configured) append after category defaults.

@@ -52,7 +52,7 @@ xyOps is designed not only to be open source forever, but to *endure*.  PixlCore
 #### 6d. Sustainability
 - Commercial offerings (such as xyOps Cloud) are operated independently of the open-source project and will never influence licensing or feature access.
 - Funding and sponsorship opportunities will be used solely to support ongoing development, maintenance, and community growth.
-- PixlCore’s future products and services will always complement, not compete with, xyOps.  We will never develop or promote a closed-source or proprietary alternative to the xyOps platform.
+- PixlCore's future products and services will always complement, not compete with, xyOps.  We will never develop or promote a closed-source or proprietary alternative to the xyOps platform.
 
 ### 7. Closing Words
 This pledge is not a marketing statement. It is a permanent promise of trust between PixlCore and the developer community.

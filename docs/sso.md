@@ -510,7 +510,7 @@ If you require [SAML](https://en.wikipedia.org/wiki/Security_Assertion_Markup_La
 2. **Create your Organization**
 	- In the SSOReady portal, create an Organization.
 	- Set or note its `organization_external_id` (e.g., `acme`).
-	- You’ll pass this value on the authorization request so SSOReady knows *which* SAML connection to use.
+	- You'll pass this value on the authorization request so SSOReady knows *which* SAML connection to use.
 3. **Create a "SAML OAuth Client"**
 	- Go to "API Keys", then "Create SAML OAuth Client".
 	- Copy these values:
@@ -552,7 +552,7 @@ Note that all of these configuration properties can be specified as environment 
 
 **Why we disable discovery**: OAuth2-Proxy doesn't let us add arbitrary login URL parameters, but we need to include `?organization_external_id=_YOUR_ORG_ID_` for SSOReady. So we are disabling discovery and setting endpoints explicitly, with our Org ID param passed in `login_url`.  Specifically, this is your SSOReady *external* Organization ID, which you get to type in when first creating the org.  Example: `acme`.
 
-**Why we map the email claim:** OAuth2-Proxy needs an email to create a session. If your ID token’s email lives in `sub` (common with SAML providers), set `oidc_email_claim=sub` as shown.  However, this may differ for your SAML identity provider.  The default value of this setting in OAuth2-Proxy is `email`, so make sure to test that if `sub` doesn't work for you.
+**Why we map the email claim:** OAuth2-Proxy needs an email to create a session. If your ID token's email lives in `sub` (common with SAML providers), set `oidc_email_claim=sub` as shown.  However, this may differ for your SAML identity provider.  The default value of this setting in OAuth2-Proxy is `email`, so make sure to test that if `sub` doesn't work for you.
 
 See the [Setup](#setup) section above to run a local test of OAuth2-Proxy using the [echo-server](https://hub.docker.com/r/ealen/echo-server) echoing web server, to test everything before you integrate xyOps.
 

@@ -18,7 +18,7 @@ A tag definition consists of:
 
 Create, edit, and delete tag definitions in the UI, or use the [Tag APIs](api.md#tags). Once defined, tags appear in selection menus (e.g., action condition pickers) and are available for searches.
 
-**Important**: Tag IDs are the reference key used everywhere (including in job action conditions and plugin runtime updates). When in doubt, copy the tag’s ID from the UI. Avoid creating tag IDs that start with an underscore; these are reserved for system tags added by xyOps.
+**Important**: Tag IDs are the reference key used everywhere (including in job action conditions and plugin runtime updates). When in doubt, copy the tag's ID from the UI. Avoid creating tag IDs that start with an underscore; these are reserved for system tags added by xyOps.
 
 
 ## Where Tags Apply
@@ -49,7 +49,7 @@ For details on plugin I/O, see [Plugins → Tags](plugins.md#tags).
 
 ## Tag-Driven Actions
 
-Actions can be conditioned on the presence of a tag at job completion. When the job completes and contains that tag, the action runs. This allows targeted routing such as “if production then page on-call; if dev then just log.”
+Actions can be conditioned on the presence of a tag at job completion. When the job completes and contains that tag, the action runs. This allows targeted routing such as "if production then page on-call; if dev then just log."
 
 - **Timing**: Fires only on job completion.
 - **Retry behavior**: Completion actions (including tag-based) run only when a job is not retried.

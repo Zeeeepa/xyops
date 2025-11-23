@@ -15,7 +15,7 @@ See the [Bucket](data.md#bucket) data structure and the [Bucket APIs](api.md#buc
 ## When To Use
 
 - Cross‑job handoff: Pass artifacts from build to deploy, or output from data prep to analysis.
-- Workflows: Share state and files between workflow nodes, even ones that don’t have a direct connection.
+- Workflows: Share state and files between workflow nodes, even ones that don't have a direct connection.
 - Checkpointing: Persist intermediate results for retries or manual inspection.
 - Shared state: Maintain small JSON documents that multiple jobs can read/update over time.
 
@@ -24,7 +24,7 @@ See the [Bucket](data.md#bucket) data structure and the [Bucket APIs](api.md#buc
 Users with the appropriate privileges can create, edit and delete buckets from the Buckets section of the UI.
 
 - Create: Provide a title, optional icon/notes; the ID is generated.
-- Edit data: Buckets have a JSON “Data” pane you can edit directly. This is arbitrary user‑defined data.
+- Edit data: Buckets have a JSON "Data" pane you can edit directly. This is arbitrary user‑defined data.
 - Upload files: Drag‑and‑drop or select multiple files. Existing files with the same normalized name are replaced.
 - Delete files: Remove individual files from the list; deletions are permanent.
 - Download files: Click a file to download via a direct URL. Links use the `files/bucket/...` path.
@@ -45,10 +45,10 @@ Buckets integrate with jobs through two action types: Fetch Bucket and Store Buc
 
 ### Fetch At Job Start
 
-Use Fetch Bucket with the `start` condition to pull bucket content into the job’s input context before launch:
+Use Fetch Bucket with the `start` condition to pull bucket content into the job's input context before launch:
 
-- **Data**: Shallow‑merged into the job’s `input.data`. Avoid key collisions or namespace your keys deliberately.
-- **Files**: Selected files are added to the job’s input file list and staged into the job’s temp directory on the remote server before the Plugin starts.
+- **Data**: Shallow‑merged into the job's `input.data`. Avoid key collisions or namespace your keys deliberately.
+- **Files**: Selected files are added to the job's input file list and staged into the job's temp directory on the remote server before the Plugin starts.
 
 Example (JSON):
 
@@ -68,7 +68,7 @@ Example (JSON):
 Use Store Bucket with a completion condition (e.g., `success`, `error`, `complete`) to persist job outputs:
 
 - **Data**: The job can emit output data which is written into the bucket when `bucket_sync` includes `data`.
-- **Files**: The job’s output files can be filtered by `bucket_glob` and stored in the bucket when `bucket_sync` includes `files`.
+- **Files**: The job's output files can be filtered by `bucket_glob` and stored in the bucket when `bucket_sync` includes `files`.
 
 Example (JSON):
 
@@ -102,7 +102,7 @@ This pattern is useful for fan‑out/fan‑in designs, optional branches, and lo
 
 ## Downloading Files By URL
 
-Every bucket file includes a `path` (e.g., `files/bucket/<bucket_id>/<hash>/<filename>`). Prepend the app’s base URL and a leading slash to download directly from the browser or via HTTP clients. Example:
+Every bucket file includes a `path` (e.g., `files/bucket/<bucket_id>/<hash>/<filename>`). Prepend the app's base URL and a leading slash to download directly from the browser or via HTTP clients. Example:
 
 ```
 GET https://your.xyops.example.com/files/bucket/bme4wi6pg35/bdY8zZ9nKynfFUb4xH6fA/report.csv

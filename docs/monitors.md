@@ -18,10 +18,10 @@ See also:
 
 Every minute each satellite sends a fresh [ServerMonitorData](data.md#servermonitordata) snapshot to the master. For every monitor whose group scope matches the server:
 
-1. xyOps evaluates the monitor’s source expression against the current server monitor data sample.
-2. The value is type‑cast using the monitor’s data type and optional match regex.
+1. xyOps evaluates the monitor's source expression against the current server monitor data sample.
+2. The value is type‑cast using the monitor's data type and optional match regex.
 3. If the monitor is configured as a delta monitor, its rate is computed from the previous absolute value (and optionally divided by elapsed seconds).
-4. The value is inserted into the server’s time‑series for all resolutions.
+4. The value is inserted into the server's time‑series for all resolutions.
 
 Notes:
 
@@ -47,7 +47,7 @@ Go to Admin → Monitors.
 
 Tips:
 
-- Use the “Test…” button to evaluate your expression on a live server before saving.
+- Use the "Test…" button to evaluate your expression on a live server before saving.
 - Click the search icon to open the Server Data Explorer and browse live ServerMonitorData paths.
 - You can import/export monitors as JSON (see the stock examples below).
 
@@ -56,7 +56,7 @@ Tips:
 
 - **Sampling cadence**: Once per minute per server.
 - **Storage**: Samples are down‑sampled into four systems: hourly, daily, monthly, yearly.
-- **Deltas**: For counter‑style metrics (e.g., OS network bytes, disk bytes read/written), enable “Calc as Delta” and “Divide by Time” to graph rates per second.
+- **Deltas**: For counter‑style metrics (e.g., OS network bytes, disk bytes read/written), enable "Calc as Delta" and "Divide by Time" to graph rates per second.
 - **Alert context**: After monitors are computed, xyOps evaluates alert triggers against the same data.
 
 
@@ -82,7 +82,7 @@ Guidelines:
 
 If your expression yields a string and the number is embedded within it, set `Data Match` to a regular expression to extract exactly one numeric value. If the regex includes a capture group, the first group is used; otherwise the entire match is used.
 
-Example (default “Open Files” monitor):
+Example (default "Open Files" monitor):
 
 - Expression: `commands.open_files`
 - Data Match: `(\d+)`
@@ -104,28 +104,28 @@ Alerts can also reference delta values via the `deltas` object. See [Alert Expre
 
 xyOps ships with a set of standard monitors. Here is what each tracks:
 
-- **Load Average**: `load[0]` — 1‑minute load average (float).
-- **CPU Usage**: `cpu.currentLoad` — CPU usage percentage (float), suffix `%`, min range `100`.
-- **Memory in Use**: `memory.used` — Total memory in use (bytes).
-- **Memory Available**: `memory.available` — Available memory (bytes).
-- **Network Connections**: `stats.network.conns` — Active socket connections (integer).
-- **Disk Usage**: `mounts.root.use` — Root filesystem usage percentage (float), suffix `%`, min range `100`.
-- **Disk Read**: `stats.fs.rx` — Disk bytes read, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Disk Write**: `stats.fs.wx` — Disk bytes written, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Disk I/O**: `stats.io.tIO` — Total disk I/O ops per second (integer). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **I/O Wait**: `cpu.totals.iowait` — CPU I/O wait percentage (float, Linux only), suffix `%`, min range `100`.
-- **Open Files**: `commands.open_files` with `Data Match` `(\d+)` — Number of open files (integer, Linux only).
-- **Network In**: `stats.network.rx_bytes` — Network bytes in per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Network Out**: `stats.network.tx_bytes` — Network bytes out per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Processes**: `processes.all` — Total number of processes (integer).
-- **Active Jobs**: `jobs` — Number of active xyOps jobs on the server (integer).
+- **Load Average**: `load[0]` -- 1‑minute load average (float).
+- **CPU Usage**: `cpu.currentLoad` -- CPU usage percentage (float), suffix `%`, min range `100`.
+- **Memory in Use**: `memory.used` -- Total memory in use (bytes).
+- **Memory Available**: `memory.available` -- Available memory (bytes).
+- **Network Connections**: `stats.network.conns` -- Active socket connections (integer).
+- **Disk Usage**: `mounts.root.use` -- Root filesystem usage percentage (float), suffix `%`, min range `100`.
+- **Disk Read**: `stats.fs.rx` -- Disk bytes read, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
+- **Disk Write**: `stats.fs.wx` -- Disk bytes written, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
+- **Disk I/O**: `stats.io.tIO` -- Total disk I/O ops per second (integer). Enable: Calc as Delta, Divide by Time, Zero Minimum.
+- **I/O Wait**: `cpu.totals.iowait` -- CPU I/O wait percentage (float, Linux only), suffix `%`, min range `100`.
+- **Open Files**: `commands.open_files` with `Data Match` `(\d+)` -- Number of open files (integer, Linux only).
+- **Network In**: `stats.network.rx_bytes` -- Network bytes in per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
+- **Network Out**: `stats.network.tx_bytes` -- Network bytes out per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
+- **Processes**: `processes.all` -- Total number of processes (integer).
+- **Active Jobs**: `jobs` -- Number of active xyOps jobs on the server (integer).
 
 Use these as templates for your own monitors, or create more from scratch. You can also import/export monitors as JSON files.
 
 
 ## QuickMon
 
-QuickMon (Quick Monitors) are lightweight, predefined real‑time monitors sampled every second on each server. They are meant for “right now” visibility and short‑term trend lines on server and group pages.
+QuickMon (Quick Monitors) are lightweight, predefined real‑time monitors sampled every second on each server. They are meant for "right now" visibility and short‑term trend lines on server and group pages.
 
 - **Presets**: CPU load/usage, memory used/available, disk read/write bytes/sec, network in/out bytes/sec.
 - **Retention**: The last 60 seconds per server is stored in memory.
@@ -153,4 +153,4 @@ QuickMon complements minute‑level monitors: use QuickMon for immediate visibil
   - Or alternatively: `stats.network.states.listen`
   - Type: `integer`.
 
-If your expression returns a string (e.g., a custom command output), use “Data Match” to extract the number. For advanced metrics, write a [Monitor Plugin](plugins.md#monitor-plugins) that emits structured data, then point a monitor expression at it.
+If your expression returns a string (e.g., a custom command output), use "Data Match" to extract the number. For advanced metrics, write a [Monitor Plugin](plugins.md#monitor-plugins) that emits structured data, then point a monitor expression at it.

@@ -2,16 +2,16 @@
 
 ## Overview
 
-Workflows in xyOps are visual graphs of nodes connected by wires that control job execution. Conceptually, a workflow is an event with an embedded graph and some special runtime behavior. When a workflow runs, it becomes a “workflow job” which may spawn any number of sub‑jobs on connected nodes. The system manages their lifecycle, collects results, applies actions and limits, and tracks everything in the parent job record.
+Workflows in xyOps are visual graphs of nodes connected by wires that control job execution. Conceptually, a workflow is an event with an embedded graph and some special runtime behavior. When a workflow runs, it becomes a "workflow job" which may spawn any number of sub‑jobs on connected nodes. The system manages their lifecycle, collects results, applies actions and limits, and tracks everything in the parent job record.
 
 How a workflow runs, at a glance:
 
-- A trigger node fires (e.g. manual trigger, schedule trigger, etc.). That starts the workflow job and “lights” the trigger node.
+- A trigger node fires (e.g. manual trigger, schedule trigger, etc.). That starts the workflow job and "lights" the trigger node.
 - All nodes wired from that trigger activate. Multiple outputs run in parallel unless constrained by limits.
 - Event or job nodes launch sub‑jobs. Their completion result determines which outgoing wires fire next.
 - Controller nodes implement fan‑out/fan‑in, loops, conditionals, delays and multiplexing.
 - Action and limit nodes visually attach to event/job nodes and are merged into the launched sub‑jobs.
-- The workflow completes when no nodes are active and all sub‑jobs are finished or aborted. The parent job’s result summarizes overall success/warnings/failures.
+- The workflow completes when no nodes are active and all sub‑jobs are finished or aborted. The parent job's result summarizes overall success/warnings/failures.
 
 Workflows are powerful because they combine reusable events, ad‑hoc jobs, resource limits, job actions, and flow control on one graph. They run everything in parallel by default, with concurrency governed by resource limits.
 
@@ -30,7 +30,7 @@ Workflows are powerful because they combine reusable events, ad‑hoc jobs, reso
 The workflow editor provides:
 
 - **Connect Nodes**: Click pole buttons to solder connections. Invalid pairs are suppressed by the UI. Conditions appear inline on wires; click to change.
-- **Add Node**: Click “Add Node” or solder from a pole and click the background to insert a new node in place.
+- **Add Node**: Click "Add Node" or solder from a pole and click the background to insert a new node in place.
 - **Duplicate**: Select one or more nodes (shift‑click) and duplicate; connections between selected nodes are preserved.
 - **Detach**: Detach all connections to/from selected nodes.
 - **Delete**: Delete selected nodes and any connected wires. Deleting a trigger node also removes the underlying trigger.
@@ -42,7 +42,7 @@ The workflow editor provides:
 
 ## Node Types
 
-Nodes have connection “poles” on their sides: an input pole on the left (incoming flow), an output pole on the right (outgoing flow), and for event/job nodes a special limit pole on the bottom used to attach limit nodes. Poles can connect to multiple nodes unless the controller type restricts its output as noted below.
+Nodes have connection "poles" on their sides: an input pole on the left (incoming flow), an output pole on the right (outgoing flow), and for event/job nodes a special limit pole on the bottom used to attach limit nodes. Poles can connect to multiple nodes unless the controller type restricts its output as noted below.
 
 ### Trigger Nodes
 
@@ -52,7 +52,7 @@ Special trigger option bubbles (Catch‑Up, Range, Blackout, Delay, Precision) h
 
 ### Event Nodes
 
-Event nodes place a pre‑created event on the graph. You can override targets, algo, tags and user parameters for that use. When the node runs, the sub‑job inherits the event’s configuration plus the node’s overrides. If the referenced event is a workflow, it must include an enabled manual trigger so the engine knows where to start the sub‑workflow. 
+Event nodes place a pre‑created event on the graph. You can override targets, algo, tags and user parameters for that use. When the node runs, the sub‑job inherits the event's configuration plus the node's overrides. If the referenced event is a workflow, it must include an enabled manual trigger so the engine knows where to start the sub‑workflow. 
 
 Event nodes present input, output and limit poles and can accept flow from triggers, other event/job nodes or controllers, and can send flow to other event/job nodes, actions, or controllers.
 
@@ -70,7 +70,7 @@ Action nodes have a single input and connect from event/job nodes.
 
 ### Limit Nodes
 
-Limit nodes attach resource controls to event/job nodes and are merged into the launched sub‑job’s limits (see [Limits](limits.md)). Examples include Max Concurrent Jobs, Max Queue Size, CPU/Memory/Time and File inputs. 
+Limit nodes attach resource controls to event/job nodes and are merged into the launched sub‑job's limits (see [Limits](limits.md)). Examples include Max Concurrent Jobs, Max Queue Size, CPU/Memory/Time and File inputs. 
 
 A limit node connects via the bottom limit pole on an event/job node.
 
@@ -84,7 +84,7 @@ The Split controller fans out work by taking an input list and launching one sub
 
 In the UI, the split controller configuration dialog provides an "Expression Builder" button, which allows you to explore output data from recently completed jobs, and pick out a specific JSON key path to use for the expression string.
 
-Split requires exactly one output connection to the Event or Job node it will run per item. Concurrency and queuing are governed by the limits attached to that node. After all items complete, you can continue the flow using a `continue` wire from the controlled node. The controller includes a “continue percentage” setting so you can require that at least N% of the sub‑jobs succeed before continuing.
+Split requires exactly one output connection to the Event or Job node it will run per item. Concurrency and queuing are governed by the limits attached to that node. After all items complete, you can continue the flow using a `continue` wire from the controlled node. The controller includes a "continue percentage" setting so you can require that at least N% of the sub‑jobs succeed before continuing.
 
 #### Join Controller
 
@@ -125,7 +125,7 @@ The multiplex controller also offers a "continue percentage" text field, where t
 
 #### Decision Controller
 
-The Decision controller evaluates a JEXL expression (with [xyOps extensions](xyexp.md)) against the previous job context, for example `data.random > 0.5`. If the expression evaluates to true, the controller passes control to all of its connected outputs; when false, no outputs fire. There is no explicit “false” pole. For multi‑branch logic, create multiple Decision nodes with different expressions and optional titles/icons to make branches visually clear.
+The Decision controller evaluates a JEXL expression (with [xyOps extensions](xyexp.md)) against the previous job context, for example `data.random > 0.5`. If the expression evaluates to true, the controller passes control to all of its connected outputs; when false, no outputs fire. There is no explicit "false" pole. For multi‑branch logic, create multiple Decision nodes with different expressions and optional titles/icons to make branches visually clear.
 
 In the UI, the decision controller configuration dialog provides an "Expression Builder" button, which allows you to explore output data from recently completed jobs, and pick out a specific JSON key path to use for the expression string.
 
@@ -159,9 +159,9 @@ The editor defaults new wires from Event/Job outputs to success, and you can cha
 
 ## Continue After Controllers
 
-Repeat, Multiplex and Split support a “continue after controller” flow:
+Repeat, Multiplex and Split support a "continue after controller" flow:
 
-- Configure the controller’s “continue percentage” (0–100). This is the minimum percentage of successful sub‑jobs required to proceed.
+- Configure the controller's "continue percentage" (0-100). This is the minimum percentage of successful sub‑jobs required to proceed.
 - Solder wires out of the controlled Event/Job node with the `continue` condition to define what happens next.
 - When all iterations complete, if successes meet or exceed the threshold, all `continue` wires from that Event/Job fire. Otherwise nothing continues and the workflow may finish if no other nodes are active.
 
@@ -172,15 +172,15 @@ Example: Event A → Repeat (x10) → Event A has a `continue` wire → Event B.
 
 Inputs and outputs are automatically passed along:
 
-- At workflow start, the engine blends the workflow job’s `params` with any inbound `input.data` and passes `input.files` to the trigger node.  The trigger nodes passes these on to any soldered nodes.
+- At workflow start, the engine blends the workflow job's `params` with any inbound `input.data` and passes `input.files` to the trigger node.  The trigger nodes passes these on to any soldered nodes.
 - When an Event/Job finishes, its output `data` and `files` are passed to downstream nodes as `input.data` and `input.files`.
 - Tags: user tags from sub‑jobs bubble up to the workflow job and can drive `tag:...` conditions.
 - HTML and table content: if a sub‑job emits `html` or `table`, it bubbles up to the parent for display.  If multiple jobs emit content The latter prevails.
-- Retries: if a sub‑job was retried, its data/files are not bubbled and it doesn’t count toward tag/condition firing.
+- Retries: if a sub‑job was retried, its data/files are not bubbled and it doesn't count toward tag/condition firing.
 
 Join specifics:
 
-- The next node after a Join receives `input.data` with two properties: `items` (array of each upstream job’s data) and `combined` (shallow merge of all data).
+- The next node after a Join receives `input.data` with two properties: `items` (array of each upstream job's data) and `combined` (shallow merge of all data).
 - Any files are concatenated onto the `input.files` array.
 
 Split specifics:
@@ -194,7 +194,7 @@ Split specifics:
 When should you use an Event vs a Job Node:
 
 - **Event node**: References a pre‑created event. Use this when you want reusable configuration: plugin params, targets, algo, actions, limits, and optional user fields. The node can override targets, algo, tags, and user params per use.
-- **Job node**: Ad‑hoc job without an event. You pick the plugin and fill plugin parameters right in the workflow editor (e.g. write inline shell script with the Shell plugin). This is faster for one‑offs or when you don’t want a separate event.
+- **Job node**: Ad‑hoc job without an event. You pick the plugin and fill plugin parameters right in the workflow editor (e.g. write inline shell script with the Shell plugin). This is faster for one‑offs or when you don't want a separate event.
 
 
 ## Sub‑Workflows
@@ -202,7 +202,7 @@ When should you use an Event vs a Job Node:
 Event nodes can reference events of type `workflow`. To run as a sub‑workflow:
 
 - The sub‑workflow must have an enabled manual trigger. The engine uses this to determine the start node.
-- Parent workflow input (data/files) is passed into the sub‑workflow’s trigger node.
+- Parent workflow input (data/files) is passed into the sub‑workflow's trigger node.
 - Limits and actions on the parent workflow do not automatically apply to the sub‑workflow unless explicitly attached to the node.
 
 
@@ -210,7 +210,7 @@ Event nodes can reference events of type `workflow`. To run as a sub‑workflow:
 
 - **Reuse vs. ad‑hoc**: Use Event nodes to encapsulate stable configuration and user fields, and Job nodes for quick one‑offs or inline scripts.
 - **Concurrency control**: Everything runs in parallel by default; attach [Max Concurrent Jobs](limits.md#max-concurrent-jobs) and [Max Queue Limit](limits.md#max-queue-limit) limits to throttle fan‑out.
-- **Post‑controller flow**: For Repeat/Multiplex/Split, use `continue` wires from the controlled node to handle “after all done” steps, optionally with a success threshold.
+- **Post‑controller flow**: For Repeat/Multiplex/Split, use `continue` wires from the controlled node to handle "after all done" steps, optionally with a success threshold.
 - **Fan‑in**: Use Join to aggregate multiple upstream results; the next node sees both `items` and a `combined` object.
 - **Condition routing**: Prefer `success`/`error` wires for the main paths and add `warning`, `critical`, `abort`, or `tag:NAME` for special handling.
 - **Conditional logic**: Use Decision for branching; duplicate the node for multi‑branch flows and give each a clear title/icon.
@@ -259,7 +259,7 @@ See [API → Events](api.md#events) for details.
 - Controller single‑output requirement: Split, Join, Repeat, and Multiplex controllers must have exactly one output.
 - Sub‑workflow manual trigger: A sub‑workflow must have an enabled manual trigger or it cannot be launched from a workflow node.
 - Action/Limit nodes: These do not forward flow; they are merged into the launched sub‑job and executed/checked there.
-- Modifier triggers: Catch‑Up, Range, Blackout, Delay, Precision are visual modifiers only and are “lit” when their associated schedule fires; they do not connect to other nodes.
+- Modifier triggers: Catch‑Up, Range, Blackout, Delay, Precision are visual modifiers only and are "lit" when their associated schedule fires; they do not connect to other nodes.
 
 
 ## See Also

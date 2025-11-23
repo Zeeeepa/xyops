@@ -2,14 +2,14 @@
 
 Servers are the worker nodes in a xyOps cluster. Each server runs our lightweight satellite agent (xySat), maintains a persistent WebSocket connection to the master, collects monitoring metrics, and executes jobs on demand. A server may be a physical host, virtual machine, or container, and can run Linux, macOS, or Windows.
 
-This document explains how servers fit into xyOps, how to add and organize them, how events target servers, what you can see on each server’s UI page, and how the system scales to large fleets.
+This document explains how servers fit into xyOps, how to add and organize them, how events target servers, what you can see on each server's UI page, and how the system scales to large fleets.
 
 ## Overview
 
 - Servers run xySat and act as job runners and metrics collectors.
 - Masters run the full xyOps stack and coordinate scheduling, routing, storage, and UI.
 - You can add any number of servers and masters to a cluster; agents maintain live connections and auto-failover across masters.
-- Servers collect “quick” metrics every second (CPU/Mem/Disk/Net) and minute-level metrics via user-defined monitor plugins. Some metrics are not available on Windows.
+- Servers collect "quick" metrics every second (CPU/Mem/Disk/Net) and minute-level metrics via user-defined monitor plugins. Some metrics are not available on Windows.
 
 ## Servers vs. Masters
 
@@ -23,7 +23,7 @@ xySat keeps an up-to-date list of all masters. If a server loses its master conn
 You can add servers in three ways:
 
 1. **Via the UI** (one-line installer)
-	- Go to the Servers tab and click “Add Server…”.
+	- Go to the Servers tab and click "Add Server…".
 	- Optionally set a label, icon, enabled state, and pick groups (or leave automatic grouping on).
 	- Copy the pre-configured one-line install command for Linux/macOS or Windows and run it on the target host.
 	- The installer authenticates, installs xySat as a startup service (systemd/launchd/Windows Service), writes the config, and starts the agent.
@@ -46,13 +46,13 @@ Servers can belong to one or more groups. Groups are used for organizing the fle
 - **Auto‑assignment**: Groups can declare a hostname regular expression. When a server comes online (or when its hostname changes), matching groups are applied automatically.
 - **Multiple groups**: Servers can match and join multiple groups.
 - **Manual assignment**: If you manually assign groups to a server, automatic hostname-based matching is disabled for that server. You can re-enable auto‑assignment by clearing the manual groups.
-- **Re‑evaluation**: Group matches are re-evaluated if a server’s hostname changes.
+- **Re‑evaluation**: Group matches are re-evaluated if a server's hostname changes.
 
 See [Server Groups](groups.md) for more details on server groups.
 
 ## Targeting Events at Servers
 
-Events specify targets as a list containing server IDs and/or group IDs. At run time, the scheduler resolves these into the set of currently online, enabled servers, then picks one using the event’s selection algorithm (random, round_robin, least_cpu, least_mem, or a monitor-based policy). See [Event.targets](data.md#event-targets) and [Event.algo](data.md#event-algo).
+Events specify targets as a list containing server IDs and/or group IDs. At run time, the scheduler resolves these into the set of currently online, enabled servers, then picks one using the event's selection algorithm (random, round_robin, least_cpu, least_mem, or a monitor-based policy). See [Event.targets](data.md#event-targets) and [Event.algo](data.md#event-algo).
 
 Behavior when servers are offline:
 
@@ -79,18 +79,18 @@ Search the fleet and history from Servers → Search. You can filter by group, O
 
 ## Snapshots and Watches
 
-Snapshots capture the current state of a server and save it for later inspection and comparison. They’re available on the Snapshots area, and when linked from actions or alerts.
+Snapshots capture the current state of a server and save it for later inspection and comparison. They're available on the Snapshots area, and when linked from actions or alerts.
 
 What a snapshot contains:
 
 - Full process list (ps -ef equivalent), network connections (including listeners), disk mounts, network devices.
 - Host facts: CPU type, core count, max RAM, OS platform/distro/release, uptime, load, etc.
-- The last 60 seconds of “quick” metrics (per-second CPU/Mem/Disk/Net).
+- The last 60 seconds of "quick" metrics (per-second CPU/Mem/Disk/Net).
 - References to active jobs and relevant alerts at capture time.
 
 How snapshots are created:
 
-- Manually: Click “Create Snapshot” on a server page.
+- Manually: Click "Create Snapshot" on a server page.
 - Actions: Add a Snapshot action to a job or alert; the system can take snapshots when conditions are met.
 - Watch: Start a watch on a server to take a snapshot every minute for a duration (default 5 minutes).
 
@@ -102,7 +102,7 @@ See [Snapshots](snapshots.md) for more details.
 
 ## Metrics and Sampling
 
-- Per second (“quick”): CPU, memory, disk, and network; retained in a rolling 60-second in-memory buffer for UI.
+- Per second ("quick"): CPU, memory, disk, and network; retained in a rolling 60-second in-memory buffer for UI.
 - Per minute (monitors): User-defined monitor plugins run each minute on servers to produce numeric values (or deltas). These feed charts, alerts, and dashboards. See [Monitors](monitors.md).
 - OS differences: Some metrics are not available on Windows.
 

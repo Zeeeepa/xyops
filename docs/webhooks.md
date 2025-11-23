@@ -9,7 +9,7 @@ Web hooks in xyOps are outbound HTTP requests that fire in response to job and a
 
 ## When Hooks Fire
 
-Attach a “Web Hook” action to jobs (events/workflows) or alerts. Hooks can fire on:
+Attach a "Web Hook" action to jobs (events/workflows) or alerts. Hooks can fire on:
 
 - **Job start**: `start` (before remote launch).
 - **Job completion**: `complete`, or specific outcomes `success`, `error`, `warning`, `critical`, `abort`.
@@ -66,7 +66,7 @@ Content-Type: application/json
 Key behavior:
 
 - URL placeholders are URL‑encoded automatically.
-- Secrets are available as `{{ secrets.VAR_NAME }}` when the secret is assigned to the hook (see “Secrets” below).
+- Secrets are available as `{{ secrets.VAR_NAME }}` when the secret is assigned to the hook (see "Secrets" below).
 - Helpers include `float()`, `integer()`, `bytes()`, `number()`, `pct()`, `encode()`, `stringify()`, `count()`, `min()`, `max()`, `round()`, `ceil()`, `floor()`, `clamp()`. See [xyOps Expression Format](xyexp.md) for the full helper list.
 - Job context: [JobHookData](data.md#jobhookdata) including `text`, `event`, `job`, `server`, `display` (CPU/mem summaries), `links`, etc.
 - Alert context: [AlertHookData](data.md#alerthookdata) including `text`, `def`, `alert`, `server`, `links`, and other niceties.
@@ -87,7 +87,7 @@ See [Secrets](secrets.md) for model, assignment and auditing details.
 
 ## Default Text Templates
 
-When a hook is used by an action, xyOps generates a context‑aware `{{text}}` value from configurable templates ([hook_text_templates](config.md#hook_text_templates)). You can append your own text in the action’s “Custom Text” field.
+When a hook is used by an action, xyOps generates a context‑aware `{{text}}` value from configurable templates ([hook_text_templates](config.md#hook_text_templates)). You can append your own text in the action's "Custom Text" field.
 
 Default templates include:
 
@@ -138,7 +138,7 @@ These recipes show common integrations. Replace IDs and secrets with your own.
 }
 ```
 
-If you use Slack’s newer Bot Token + chat.postMessage, set `Authorization: Bearer {{ secrets.SLACK_TOKEN }}` and include `channel` in the body.
+If you use Slack's newer Bot Token + chat.postMessage, set `Authorization: Bearer {{ secrets.SLACK_TOKEN }}` and include `channel` in the body.
 
 ### Discord Webhook
 
@@ -188,10 +188,10 @@ token={{ encode(secrets.PUSHOVER_TOKEN) }}&user={{ encode(secrets.PUSHOVER_USER)
 
 ## Troubleshooting
 
-- Hook not firing: Confirm the action condition matches and the hook is enabled. For jobs, ensure the run wasn’t retried; completion actions skip retried runs.
+- Hook not firing: Confirm the action condition matches and the hook is enabled. For jobs, ensure the run wasn't retried; completion actions skip retried runs.
 - Daily cap: If `max_per_day` is set and reached, xyOps skips execution and records a failure (visible on job details page).
 - Templating errors: Invalid `{{ ... }}` expressions in the body are rejected on save/update. For URL/headers/body, use the Test feature to validate expansions.
-- TLS issues: For development endpoints with self‑signed certificates, enable “SSL Cert Bypass”. Prefer valid certificates in production.
+- TLS issues: For development endpoints with self‑signed certificates, enable "SSL Cert Bypass". Prefer valid certificates in production.
 - Secrets not expanding: Ensure the secret is assigned to the hook and variable names match. Avoid using secrets in the URL when possible.
 
 
@@ -199,12 +199,12 @@ token={{ encode(secrets.PUSHOVER_TOKEN) }}&user={{ encode(secrets.PUSHOVER_USER)
 
 Programmatic management and live testing:
 
-- [get_web_hooks](api.md#get_web_hooks) — list hooks
-- [get_web_hook](api.md#get_web_hook) — fetch one
-- [create_web_hook](api.md#create_web_hook) — create hook
-- [update_web_hook](api.md#update_web_hook) — update, shallow merge
-- [delete_web_hook](api.md#delete_web_hook) — delete hook
-- [test_web_hook](api.md#test_web_hook) — live test, returns markdown report
+- [get_web_hooks](api.md#get_web_hooks) -- list hooks
+- [get_web_hook](api.md#get_web_hook) -- fetch one
+- [create_web_hook](api.md#create_web_hook) -- create hook
+- [update_web_hook](api.md#update_web_hook) -- update, shallow merge
+- [delete_web_hook](api.md#delete_web_hook) -- delete hook
+- [test_web_hook](api.md#test_web_hook) -- live test, returns markdown report
 
 See [Web Hook APIs](api.md#web-hooks) for full request/response examples.
 

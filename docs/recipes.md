@@ -114,7 +114,7 @@ Launch jobs at local sunrise and sunset with optional offsets. Useful for energy
 
 ### How It Works
 
-- Trigger Plugin: Implement a scheduler plugin that calculates today’s sunrise and sunset for a configured latitude and longitude. The plugin runs once per minute, compares the current time in a configured timezone, and indicates a launch when a window is hit.
+- Trigger Plugin: Implement a scheduler plugin that calculates today's sunrise and sunset for a configured latitude and longitude. The plugin runs once per minute, compares the current time in a configured timezone, and indicates a launch when a window is hit.
   - Recommended module for Node.js: [SunCalc](https://www.npmjs.com/package/suncalc)
 - Parameters: `lat`, `lon`, `timezone`, `sunrise_offset_sec`, `sunset_offset_sec`, and optional `launch` selector `sunrise` or `sunset` or `both`.
 - Workflow: Wire the plugin trigger node into a workflow that branches on which event fired. For example:

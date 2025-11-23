@@ -392,7 +392,7 @@ If a worker server missed the rotation, you can recover it by deriving a new aut
 What you need:
 
 - The current secret key from the primary master. This is only available on-disk via SSH to the master: `/opt/xyops/conf/overrides.json` (`secret_key`). It is not retrievable via API.
-- The offline server’s alphanumeric ID (e.g. `smf4j79snhe`). You can find this in the UI on the server history page, or on the server itself in `/opt/xyops/satellite/config.json`.
+- The offline server's alphanumeric ID (e.g. `smf4j79snhe`). You can find this in the UI on the server history page, or on the server itself in `/opt/xyops/satellite/config.json`.
 
 Compute the SHA‑256 of the concatenation: `SERVER_ID + SECRET_KEY`, and use the hex digest as the new auth token. Example:
 
@@ -407,7 +407,7 @@ Then edit the satellite config on the worker:
 /opt/xyops/satellite/config.json
 ```
 
-Set the `auth_token` property to the computed SHA‑256 hex string. Save the file — the satellite will auto‑reload and attempt to reconnect within ~30 seconds. Check the satellite logs for troubleshooting.
+Set the `auth_token` property to the computed SHA‑256 hex string. Save the file -- the satellite will auto‑reload and attempt to reconnect within ~30 seconds. Check the satellite logs for troubleshooting.
 
 ### Update an Offline Master
 

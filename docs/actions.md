@@ -57,7 +57,7 @@ Notes:
 
 - **Execution**: All matched actions for a given trigger run in parallel.
 - **Deduplication**: Actions are deduped by a composite of type and target (e.g., email recipients, web hook ID, event ID, channel ID, plugin ID, bucket ID). This prevents sending duplicates when multiple sources contribute the same action.
-- **Recording**: For jobs, action activity and details appear in the job’s Activity log and metadata. For alerts, the invocation stores action results and details.
+- **Recording**: For jobs, action activity and details appear in the job's Activity log and metadata. For alerts, the invocation stores action results and details.
 
 ## Compatibility
 
@@ -153,7 +153,7 @@ See [Web Hooks](webhooks.md) for more details on web hooks.
 
 ### Run Event
 
-Launch another event as a follow-up action. The new job inherits context, and for job actions you can override the child event’s params.
+Launch another event as a follow-up action. The new job inherits context, and for job actions you can override the child event's params.
 
 Parameters:
 
@@ -223,7 +223,7 @@ See [Channels](channels.md) for more details on channels.
 
 ### Snapshot
 
-Capture a server snapshot. For jobs, the job must target a specific server. For alerts, the snapshot is taken for the alert’s server. Links to the snapshot are included in results.
+Capture a server snapshot. For jobs, the job must target a specific server. For alerts, the snapshot is taken for the alert's server. Links to the snapshot are included in results.
 
 Parameters: None
 
@@ -251,7 +251,7 @@ See [Snapshots](snapshots.md) for more details on snapshots.
 
 ### Ticket
 
-Create a ticket with a generated body based on context (job or alert). The ticket is inserted into xyOps’s ticket system and linked back to the job or alert.
+Create a ticket with a generated body based on context (job or alert). The ticket is inserted into xyOps's ticket system and linked back to the job or alert.
 
 Parameters:
 
@@ -414,7 +414,7 @@ See [Buckets](buckets.md) for more details on storage buckets.
 
 ### Fetch Bucket
 
-Fetch bucket data and/or files and attach them to the job’s input context. Files matched by the glob are added to the job input file list; data is shallow-merged into job input data.
+Fetch bucket data and/or files and attach them to the job's input context. Files matched by the glob are added to the job input file list; data is shallow-merged into job input data.
 
 Parameters:
 

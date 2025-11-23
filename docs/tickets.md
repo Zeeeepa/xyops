@@ -17,13 +17,13 @@ Tickets are simple JSON records with a few core and optional fields. The full sc
 - `assignees`: Array of usernames responsible for the ticket. Receive update emails and overdue notices.
 - `cc`: Array of usernames to also receive update emails (no overdue notices).
 - `notify`: Array of custom email addresses for updates (no overdue notices). Useful for team lists like `ops-team@company.com`.
-- `category`: Optional [Category.id](data.md#category-id). Auto‑set when tickets are created from jobs to match the job’s category.
-- `tags`: Array of [Tag.id](data.md#tag-id)s. Auto‑set from the source job’s tags when auto‑created.
+- `category`: Optional [Category.id](data.md#category-id). Auto‑set when tickets are created from jobs to match the job's category.
+- `tags`: Array of [Tag.id](data.md#tag-id)s. Auto‑set from the source job's tags when auto‑created.
 - `server`: Optional [Server.id](data.md#server-id). Auto‑set when created from jobs/alerts that reference a server.
 - `due`: Optional due date (Unix seconds). After the date passes, daily overdue notices are emailed to assignees.
-- `files`: Array of uploaded files attached to the ticket. Files are listed on the ticket page and passed as inputs to jobs launched from the ticket’s events.
+- `files`: Array of uploaded files attached to the ticket. Files are listed on the ticket page and passed as inputs to jobs launched from the ticket's events.
 - `events`: A list of event stubs that can run jobs from the ticket. Each event may override targets, selection algorithm, tags, and parameter defaults.
-- `changes`: The change and comment history. Includes structured “change” entries and “comment” entries.
+- `changes`: The change and comment history. Includes structured "change" entries and "comment" entries.
 
 
 ## Creating Tickets
@@ -88,7 +88,7 @@ This makes tickets a powerful control plane for CI/CD: create a ticket for a rel
 ## Ticket Files
 
 - Attach files in the UI or upload via API when creating a ticket. Files are stored server‑side and listed on the ticket.
-- Files attached to a ticket are automatically provided to jobs launched from the ticket’s events.
+- Files attached to a ticket are automatically provided to jobs launched from the ticket's events.
 - Files can be removed from the ticket; deletion removes the record and the stored object.
 - File expiration is governed by configuration (see [file_expiration](config.md#file_expiration)). Expired files are cleaned up automatically.
 
@@ -104,7 +104,7 @@ Any user with the [edit_tickets](privileges.md#edit_tickets) privilege can add c
 
 ## Searching and Presets
 
-The Tickets page includes a search interface with query filters (text, type, status, assignees, tags, date ranges) and sorting. You can save frequent searches as presets in the UI (e.g., “My Inbox”, “Overdue Tickets”, “Severity 1”). Presets appear in the sidebar for quick access.
+The Tickets page includes a search interface with query filters (text, type, status, assignees, tags, date ranges) and sorting. You can save frequent searches as presets in the UI (e.g., "My Inbox", "Overdue Tickets", "Severity 1"). Presets appear in the sidebar for quick access.
 
 Programmatic searches are available via [search_tickets](api.md#search_tickets) (supports pagination and compact responses).
 

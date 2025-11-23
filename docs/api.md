@@ -1304,8 +1304,8 @@ Upload a file and associate it with a running job. This endpoint is primarily us
 Authentication methods:
 
 - API Key: Provide a valid API key via standard mechanisms (e.g., `X-API-Key` header or `api_key` param). For convenience, you may also pass it in an `auth` parameter.
-- Server token: Provide `server` (Server ID) and `auth` (a server token). The satellite computes this token; it’s verified by the primary.
-- Job token: Provide `auth` computed for the job. The satellite computes this token; it’s verified by the primary.
+- Server token: Provide `server` (Server ID) and `auth` (a server token). The satellite computes this token; it's verified by the primary.
+- Job token: Provide `auth` computed for the job. The satellite computes this token; it's verified by the primary.
 
 Parameters (form + query):
 
@@ -1348,7 +1348,7 @@ In addition to the [Standard Response Format](#standard-response-format), this w
 POST /api/app/delete_job_file/v1
 ```
 
-Delete a file previously attached to a job. Requires a valid session or API Key with the [delete_jobs](privileges.md#delete_jobs) privilege, and category/target access to the job’s event. Supports HTTP POST with JSON, or HTTP GET with query parameters.
+Delete a file previously attached to a job. Requires a valid session or API Key with the [delete_jobs](privileges.md#delete_jobs) privilege, and category/target access to the job's event. Supports HTTP POST with JSON, or HTTP GET with query parameters.
 
 Parameters:
 
@@ -1374,7 +1374,7 @@ Example response:
 }
 ```
 
-The file is removed from storage and the job’s `files` list.  To be clear, this API does not allow file deletion given any arbitrary storage path.  The specified `path` must be registered as a file inside the given job object, or else the API returns an error.
+The file is removed from storage and the job's `files` list.  To be clear, this API does not allow file deletion given any arbitrary storage path.  The specified `path` must be registered as a file inside the given job object, or else the API returns an error.
 
 ### upload_job_input_files
 
@@ -1826,7 +1826,7 @@ This API is used in the UI to summarize (count) queued jobs per workflow node.
 GET /api/app/get_job/v1
 ```
 
-Fetch a single job’s details, running or completed. Requires a valid user session or API Key, and category/target access to the job’s event. Both HTTP GET with query string parameters and HTTP POST with JSON are accepted.
+Fetch a single job's details, running or completed. Requires a valid user session or API Key, and category/target access to the job's event. Both HTTP GET with query string parameters and HTTP POST with JSON are accepted.
 
 Parameters:
 
@@ -1902,7 +1902,7 @@ Notes:
 GET /api/app/get_job_log/v1
 ```
 
-Stream a job’s log as plain text. Requires a valid user session (session auth).
+Stream a job's log as plain text. Requires a valid user session (session auth).
 
 Parameters:
 
@@ -1921,7 +1921,7 @@ Response:
 GET /api/app/view_job_log/v1?id=JOB_ID&t=TOKEN
 ```
 
-View a job’s log (plain text) via token authentication. This is useful for shareable links. Obtain the `t` token from [get_job](#get_job) response.
+View a job's log (plain text) via token authentication. This is useful for shareable links. Obtain the `t` token from [get_job](#get_job) response.
 
 Parameters (query):
 
@@ -1941,7 +1941,7 @@ Response:
 GET /api/app/download_job_log/v1?id=JOB_ID&t=TOKEN
 ```
 
-Download a job’s log as a file via token authentication. Obtain the `t` token from [get_job](#get_job) response.
+Download a job's log as a file via token authentication. Obtain the `t` token from [get_job](#get_job) response.
 
 Parameters (query):
 
@@ -1961,7 +1961,7 @@ Response:
 GET /api/app/tail_live_job_log/v1
 ```
 
-Return a tail chunk of a live job’s log (end-aligned ~32KB) to prime the real-time log viewer. Requires a valid user session or API Key, and the job must be active.
+Return a tail chunk of a live job's log (end-aligned ~32KB) to prime the real-time log viewer. Requires a valid user session or API Key, and the job must be active.
 
 Parameters:
 
@@ -2010,19 +2010,19 @@ Use with care. This can alter persisted job history.
 POST /api/app/resume_job/v1
 ```
 
-Resume a suspended active job. Requires the [run_jobs](privileges.md#run_jobs) privilege and a valid session or API Key, plus category/target access to the job’s event. The job must be active and currently suspended.
+Resume a suspended active job. Requires the [run_jobs](privileges.md#run_jobs) privilege and a valid session or API Key, plus category/target access to the job's event. The job must be active and currently suspended.
 
 Parameters:
 
 | Property Name | Type | Description |
 |---------------|------|-------------|
 | `id` | String | **(Required)** The [Job.id](data.md#job-id). |
-| `params` | Object | Optional. User parameters to merge into the job’s `params` when resuming. |
+| `params` | Object | Optional. User parameters to merge into the job's `params` when resuming. |
 
 Behavior:
 
 - Fails if the job is not active or not suspended.
-- Records suspension metadata (duration, resumed at/by, IPs, user agent) in the job’s suspend action details for audit.
+- Records suspension metadata (duration, resumed at/by, IPs, user agent) in the job's suspend action details for audit.
 - If provided, merges `params` into current job parameters upon resume.  This is used to collect user parameters in the UI at resume time.
 
 Example request:
@@ -2097,7 +2097,7 @@ Example response:
 
 Notes:
 
-- The job’s activity log is appended to with a summary of tag changes.
+- The job's activity log is appended to with a summary of tag changes.
 
 ### abort_job
 
@@ -2105,7 +2105,7 @@ Notes:
 POST /api/app/abort_job/v1
 ```
 
-Abort a running job. Requires the [abort_jobs](privileges.md#abort_jobs) privilege and a valid session or API Key, plus category/target access to the job’s event.
+Abort a running job. Requires the [abort_jobs](privileges.md#abort_jobs) privilege and a valid session or API Key, plus category/target access to the job's event.
 
 Parameters:
 
@@ -2323,7 +2323,7 @@ Example response:
 POST /api/app/test_monitor/v1
 ```
 
-Test a monitor configuration (expression and optional `data_match`) against a specific server’s current data. Requires the [edit_monitors](privileges.md#edit_monitors) privilege and a valid user session or API Key. Send as HTTP POST with JSON.
+Test a monitor configuration (expression and optional `data_match`) against a specific server's current data. Requires the [edit_monitors](privileges.md#edit_monitors) privilege and a valid user session or API Key. Send as HTTP POST with JSON.
 
 Parameters:
 
@@ -2450,7 +2450,7 @@ See [QuickMon](monitors.md#quickmon) for more details on these types of real-tim
 GET /api/app/get_latest_monitor_data/v1
 ```
 
-Fetch the latest timeline entries for a specific system on a server, along with the server’s current data snapshot. Requires a valid user session or API Key.
+Fetch the latest timeline entries for a specific system on a server, along with the server's current data snapshot. Requires a valid user session or API Key.
 
 Parameters:
 
@@ -2470,7 +2470,7 @@ Example response:
 }
 ```
 
-In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [ServerTimelineData](data.md#servertimelinedata) entries, and a `data` object containing the server’s current [ServerMonitorData](data.md#servermonitordata).
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [ServerTimelineData](data.md#servertimelinedata) entries, and a `data` object containing the server's current [ServerMonitorData](data.md#servermonitordata).
 
 See [Monitors](monitors.md) for more details on the monitoring subsystem.
 
@@ -2897,7 +2897,7 @@ Example response:
 
 ## Search
 
-Search APIs provide read-only querying over indexed datasets (jobs, servers, alerts, snapshots, activity, and stats). Use them to paginate through results, retrieve summaries, and filter by fields. Results are automatically scoped by the caller’s category/group access. Some endpoints (e.g., activity) are admin-only; others require only a valid session or API Key.
+Search APIs provide read-only querying over indexed datasets (jobs, servers, alerts, snapshots, activity, and stats). Use them to paginate through results, retrieve summaries, and filter by fields. Results are automatically scoped by the caller's category/group access. Some endpoints (e.g., activity) are admin-only; others require only a valid session or API Key.
 
 ### search_jobs
 
@@ -2905,7 +2905,7 @@ Search APIs provide read-only querying over indexed datasets (jobs, servers, ale
 GET /api/app/search_jobs/v1
 ```
 
-Search completed jobs. Requires a valid user session or API Key. Results are automatically filtered by the caller’s category and group access rights.
+Search completed jobs. Requires a valid user session or API Key. Results are automatically filtered by the caller's category and group access rights.
 
 Parameters:
 
@@ -3217,7 +3217,7 @@ See [Secret](data.md#secret) for details on the secret object and its properties
 GET /api/app/get_secret/v1
 ```
 
-Fetch a single secret’s metadata by ID. No specific privilege is required, besides a valid user session or API Key. Both a HTTP GET with query string parameters and a HTTP POST with JSON are allowed. This returns only metadata; not the encrypted variable values.
+Fetch a single secret's metadata by ID. No specific privilege is required, besides a valid user session or API Key. Both a HTTP GET with query string parameters and a HTTP POST with JSON are allowed. This returns only metadata; not the encrypted variable values.
 
 Parameters:
 
@@ -3265,7 +3265,7 @@ See [Secret](data.md#secret) for details on the metadata fields.
 GET /api/app/decrypt_secret/v1
 ```
 
-Decrypt and return a secret’s variable data. Admin only. Requires a valid administrator session or API Key. Both a HTTP GET with query string parameters and a HTTP POST with JSON are allowed.
+Decrypt and return a secret's variable data. Admin only. Requires a valid administrator session or API Key. Both a HTTP GET with query string parameters and a HTTP POST with JSON are allowed.
 
 Access to this API is logged as a transaction in the activity log (action type `secret_access`), tagged with the requesting username.
 
@@ -3343,7 +3343,7 @@ In addition to the [Standard Response Format](#standard-response-format), this w
 POST /api/app/update_secret/v1
 ```
 
-Update an existing secret’s metadata and/or encrypted variable data. Admin only. Requires a valid administrator session or API Key. The request must be sent as an HTTP POST with a JSON body.
+Update an existing secret's metadata and/or encrypted variable data. Admin only. Requires a valid administrator session or API Key. The request must be sent as an HTTP POST with a JSON body.
 
 See [Secret](data.md#secret) for details on the metadata properties. The request is shallow-merged into the existing secret, so you can provide a sparse set of properties to update. If you include [Secret.fields](data.md#secret-fields), the variables will be re-encrypted and stored; the `names` list will be regenerated from the provided field names. The `modified` timestamp is updated automatically, and the `revision` is incremented.
 
@@ -3944,7 +3944,7 @@ In addition to the [Standard Response Format](#standard-response-format), this i
 GET /api/app/search_tickets/v1
 ```
 
-Search tickets using the Unbase query syntax. Requires a valid user session or API Key. Results are automatically filtered by the caller’s access rights.
+Search tickets using the Unbase query syntax. Requires a valid user session or API Key. Results are automatically filtered by the caller's access rights.
 
 Parameters:
 
@@ -3995,7 +3995,7 @@ Parameters (JSON):
 
 When using `multipart/form-data`, attach one or more file fields (any field names). Files are saved and added to [Ticket.files](data.md#ticket-files) with metadata. Files auto-expire per [file_expiration](config.md#file_expiration) configuration setting.
 
-Defaults: If not provided, the server sets `status` to `open`, `body` to an empty string, `due` to `0`, and initializes `changes` with an initial “created” entry.
+Defaults: If not provided, the server sets `status` to `open`, `body` to an empty string, `due` to `0`, and initializes `changes` with an initial "created" entry.
 
 Example request (JSON):
 
@@ -4093,7 +4093,7 @@ In addition to the [Standard Response Format](#standard-response-format), this i
 POST /api/app/update_ticket_change/v1
 ```
 
-Edit or delete an existing ticket [change](data.md#ticket-changes) (e.g., a comment). Requires the [edit_tickets](privileges.md#edit_tickets) privilege and a valid user session or API Key. A user may edit/delete their own comments; editing/deleting others’ comments requires administrator privileges.
+Edit or delete an existing ticket [change](data.md#ticket-changes) (e.g., a comment). Requires the [edit_tickets](privileges.md#edit_tickets) privilege and a valid user session or API Key. A user may edit/delete their own comments; editing/deleting others' comments requires administrator privileges.
 
 Parameters:
 
@@ -4198,7 +4198,7 @@ Example response:
 { "code": 0, "files": [ /* remaining File objects */ ] }
 ```
 
-In addition to the [Standard Response Format](#standard-response-format), this includes a `files` array with the ticket’s remaining [File](data.md#file) objects.
+In addition to the [Standard Response Format](#standard-response-format), this includes a `files` array with the ticket's remaining [File](data.md#file) objects.
 
 ### delete_ticket
 
@@ -4270,7 +4270,7 @@ Example response:
 }
 ```
 
-In addition to the [Standard Response Format](#standard-response-format), this includes a `rows` array with the user’s activity entries (most recent first), and a `list` object with pagination metadata. A `useragent` string is included for each row when available.
+In addition to the [Standard Response Format](#standard-response-format), this includes a `rows` array with the user's activity entries (most recent first), and a `list` object with pagination metadata. A `useragent` string is included for each row when available.
 
 ### user_settings
 
@@ -4314,7 +4314,7 @@ In addition to the [Standard Response Format](#standard-response-format), this i
 POST /api/app/logout_all/v1
 ```
 
-Log out all sessions associated with the current user, except the current session. Requires a valid user session and the user’s current password.
+Log out all sessions associated with the current user, except the current session. Requires a valid user session and the user's current password.
 
 Parameters:
 
@@ -4683,7 +4683,7 @@ See [State](data.md#state) for more details.
 POST /api/app/update_master_state/v1
 ```
 
-Update one or more master state values using “dot” property paths in the [State](data.md#state) object. Admin only. Useful for toggling system features without a restart (e.g., pausing the scheduler).
+Update one or more master state values using "dot" property paths in the [State](data.md#state) object. Admin only. Useful for toggling system features without a restart (e.g., pausing the scheduler).
 
 Parameters:
 

@@ -109,7 +109,7 @@ Parameters:
 
 Notes:
 
-- Scope for workflows matches the workflow’s event; for ad‑hoc workflow node jobs, the queue scope includes the node ID.
+- Scope for workflows matches the workflow's event; for ad‑hoc workflow node jobs, the queue scope includes the node ID.
 - Works in tandem with `queue`: without a queue, jobs are aborted when the limit is reached.
 
 Example:
@@ -124,7 +124,7 @@ Example:
 
 ### Max Output Size
 
-Cap the job’s output/log size (bytes). When exceeded, optional actions can be taken and the job can be aborted.
+Cap the job's output/log size (bytes). When exceeded, optional actions can be taken and the job can be aborted.
 
 Parameters:
 
@@ -307,7 +307,7 @@ Example:
 
 - Start‑time enforcement: `job`, `queue`, and `file` limits are evaluated before launch. `job`/`queue` determine whether a job runs now, queues, or aborts. `file` prunes input.
 - Runtime enforcement: `time`, `log`, `mem`, `cpu` are checked while the job runs. `mem` and `cpu` require sustained overages for their `duration` before triggering.
-- Triggered actions: For `time`, `log`, `mem`, `cpu`, when exceeded xyOps can apply tags, send emails, fire a web hook (with optional extra text), take a snapshot, and abort the job. All actions are recorded in the job’s Activity log with details.
+- Triggered actions: For `time`, `log`, `mem`, `cpu`, when exceeded xyOps can apply tags, send emails, fire a web hook (with optional extra text), take a snapshot, and abort the job. All actions are recorded in the job's Activity log with details.
 - Multiple similar limits: If multiple sources define the same type, the event/workflow definition takes precedence for start‑time checks.
 - Queues and scope: Queues are per event. For ad‑hoc workflow node runs, the queue scope includes the node identifier to avoid cross‑contending unrelated nodes. Queues are used both when `job` concurrency is saturated and when no matching servers are currently available.
 

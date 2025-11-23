@@ -16,7 +16,7 @@ This string is the sender email address for all outbound messages (default: `adm
 
 ## secret_key
 
-This string is a shared secret used to sign tokens (e.g., download links), authenticate multi-master messages, and encrypt/decrypt stored secrets — set this to a long random value in production.
+This string is a shared secret used to sign tokens (e.g., download links), authenticate multi-master messages, and encrypt/decrypt stored secrets -- set this to a long random value in production.
 
 ## mail_settings
 

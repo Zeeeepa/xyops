@@ -1,6 +1,6 @@
 # Scaling xyOps
 
-Running xyOps in live production with lots of servers and/or lots of running jobs? Please read these best practices for scaling your deployment. This guide complements Self‑Hosting — start there first: see [Self‑Hosting](hosting.md).
+Running xyOps in live production with lots of servers and/or lots of running jobs? Please read these best practices for scaling your deployment. This guide complements Self‑Hosting -- start there first: see [Self‑Hosting](hosting.md).
 
 ## Upgrade Hardware
 
@@ -12,10 +12,10 @@ Running xyOps in live production with lots of servers and/or lots of running job
 
 ## Increase Node.js Memory
 
-xyOps honors the `NODE_MAX_MEMORY` environment variable to set Node’s old‑space heap size (default 4096 MB).
+xyOps honors the `NODE_MAX_MEMORY` environment variable to set Node's old‑space heap size (default 4096 MB).
 
 - Example: `export NODE_MAX_MEMORY=8192` before starting xyOps (or `-e NODE_MAX_MEMORY=8192` for Docker).
-- Leave headroom for the OS, filesystem cache, and any external daemons. On an instance with 16 GB RAM, an 8–12 GB heap is typical depending on other workloads.
+- Leave headroom for the OS, filesystem cache, and any external daemons. On an instance with 16 GB RAM, an 8-12 GB heap is typical depending on other workloads.
 - Monitor RSS vs. heap usage over time and adjust conservatively to avoid swapping.
 
 ## Increase Storage RAM Cache
@@ -23,7 +23,7 @@ xyOps honors the `NODE_MAX_MEMORY` environment variable to set Node’s old‑sp
 xyOps uses [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) and most engines support an in‑memory cache for JSON records. Larger caches reduce round‑trips to disk or network backends.
 
 - Defaults: The sample config enables caches with `maxBytes` ≈ 100 MB and `maxItems` ≈ 100k for Filesystem and SQLite.
-- Recommendation: For large production installs, consider increasing 5–10× if you have RAM available, and then tune based on hit ratio and latency.
+- Recommendation: For large production installs, consider increasing 5-10× if you have RAM available, and then tune based on hit ratio and latency.
 - Where to set:
   - SQLite: `Storage.SQLite.cache.enabled`, `Storage.SQLite.cache.maxBytes`, `Storage.SQLite.cache.maxItems`.
   - Filesystem: `Storage.Filesystem.cache.enabled`, `...maxBytes`, `...maxItems`.

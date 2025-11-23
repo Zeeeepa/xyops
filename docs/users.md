@@ -3,7 +3,7 @@
 This document explains how user accounts, roles, and permissions work in xyOps. The platform includes account management (creation, login, sessions, password reset) and extends it with roles, resource restrictions, security logging, avatars, and admin tooling.
 
 - Core account system: built-in authentication, session management, and password workflows.
-- Extensions: roles and effective privileges, category/group restrictions, user security log, “Logout All Sessions”, avatars, and rich UI preferences.
+- Extensions: roles and effective privileges, category/group restrictions, user security log, "Logout All Sessions", avatars, and rich UI preferences.
 - Admins manage users and roles in the Admin UI; all changes are enforced by the backend.
 
 See also:
@@ -34,16 +34,16 @@ Notes:
 
 A role bundles a set of privileges and optional resource restrictions. Assign roles to users to simplify permission management. For the full JSON schema, see [Role](data.md#role).
 
-- **Privileges**: A role’s `privileges` object contributes privileges to assigned users.
+- **Privileges**: A role's `privileges` object contributes privileges to assigned users.
 - **Category restrictions**: `categories` can limit access to specific event categories.
 - **Group restrictions**: `groups` can limit access to specific server groups.
-- **Enabled flag**: Only enabled roles contribute to a user’s effective permissions.
+- **Enabled flag**: Only enabled roles contribute to a user's effective permissions.
 
 Admins can create, edit, enable/disable, and delete roles in the Admin UI. When roles change, user sockets are updated so active sessions reflect new permissions right away.
 
 ## Effective Permissions
 
-xyOps computes a user’s effective authorization by combining direct assignments with role grants.  Privileges are additive when merged with assigned roles.
+xyOps computes a user's effective authorization by combining direct assignments with role grants.  Privileges are additive when merged with assigned roles.
 
 - Privilege union: Account and role privileges are merged.
 - Category and group limits: If not assigned, user has access to "all" categories or groups.
@@ -66,15 +66,15 @@ Users can be limited to specific event categories and/or server groups:
 
 Typical scenarios:
 
-- Department scoping: Assign users to roles that permit only the “Dev” or “Ops” categories.
-- Environment separation: Restrict specific users to the “Staging” group but not “Production”.
+- Department scoping: Assign users to roles that permit only the "Dev" or "Ops" categories.
+- Environment separation: Restrict specific users to the "Staging" group but not "Production".
 
 ## Sessions and Authentication
 
 xyOps handles account creation, login, session management, and password reset, and also adds activity logging and related features.
 
 - Expiration: Sessions expire per the [User.session_expire_days](config.md#user-session_expire_days) configuration setting.
-- Lockouts: Multiple failed logins per hour trigger a lockout requiring password reset (configurable). Admins can “Reset Lockouts” on a user.
+- Lockouts: Multiple failed logins per hour trigger a lockout requiring password reset (configurable). Admins can "Reset Lockouts" on a user.
 - Password management: Users can change their password (must provide current password). Forgot/reset flows are supported via email templates.
 - Single Sign-On: xyOps supports trusted-header SSO via a proxy (e.g., OAuth2-Proxy), can auto-assign roles/privileges based on IdP groups, and can redirect on logout. See [SSO](sso.md).
 
@@ -82,14 +82,14 @@ xyOps handles account creation, login, session management, and password reset, a
 
 xyOps records account-related activity in a per-user security log and a system-wide activity log.
 
-- User security log: Includes actions like login, profile updates, password changes, notices/warnings, and IP/user-agent metadata. Viewable in the UI under Security Log”.
+- User security log: Includes actions like login, profile updates, password changes, notices/warnings, and IP/user-agent metadata. Viewable in the UI under Security Log".
 - System activity log: A broader audit log for all system actions (admin-facing).
 - Parsed user agents: The UI shows friendly user agent strings when available.
 
 Logout All Sessions:
 
 - Users can invalidate all their other sessions after entering their current password. The current session remains active.
-- Admins can force a “Logout All Sessions” for any user. This also sends a summary email if sessions were terminated.
+- Admins can force a "Logout All Sessions" for any user. This also sends a summary email if sessions were terminated.
 
 ## Admin Tasks
 
@@ -98,6 +98,6 @@ Administrators can perform the following actions from the Admin UI or equivalent
 - **Create users**: Set username, display name, email, initial password, privileges/roles; optionally send welcome email.
 - **Edit users**: Update profile, change password, adjust privileges/roles, assign category/group restrictions, toggle active/suspended.
 - **Unlock accounts**: Reset lockouts and clear throttles if an account was locked due to failed logins.
-- **Delete users**: Removes the account and deletes the user’s security log; active sockets are closed.
+- **Delete users**: Removes the account and deletes the user's security log; active sockets are closed.
 - **Force logout**: Enqueue a background job to terminate all other sessions for a user.
 - **Manage roles**: Create/update roles with privileges and category/group limits; enable/disable roles.

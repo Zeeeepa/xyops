@@ -1,6 +1,6 @@
 # Alerts
 
-Alerts evaluate live server data and trigger actions when conditions are met. In xyOps, an alert is defined once (the “definition”) and may fire many times across servers (each firing is an “invocation”). Alerts are evaluated every minute on the master using the most recent [ServerMonitorData](data.md#servermonitordata) collected from each server.
+Alerts evaluate live server data and trigger actions when conditions are met. In xyOps, an alert is defined once (the "definition") and may fire many times across servers (each firing is an "invocation"). Alerts are evaluated every minute on the master using the most recent [ServerMonitorData](data.md#servermonitordata) collected from each server.
 
 Use alerts to detect system conditions (e.g., high CPU, low memory, disk full, job spikes), notify teams, attach context via snapshots, open tickets, run jobs, and optionally limit or abort jobs on affected servers.
 
@@ -19,8 +19,8 @@ Use alerts to detect system conditions (e.g., high CPU, low memory, disk full, j
 Per incoming minute of server data:
 
 1. xyOps evaluates each enabled alert definition whose group scope matches the server.
-2. The alert’s expression (JavaScript format) runs against the current [ServerMonitorData](data.md#servermonitordata) snapshot.
-3. If the expression returns true, the alert’s internal sample counter increments. If false and previously incremented, the counter decrements toward zero.
+2. The alert's expression (JavaScript format) runs against the current [ServerMonitorData](data.md#servermonitordata) snapshot.
+3. If the expression returns true, the alert's internal sample counter increments. If false and previously incremented, the counter decrements toward zero.
 4. When the counter first reaches the max samples, an invocation is created and actions run. When the counter subsequently returns to zero, the invocation is cleared and cleared actions run.
 
 Notes:
@@ -107,7 +107,7 @@ Click on "Alert Setup" in the sidebar. Creating and editing requires appropriate
 - **Alert Actions**: Optional actions to run on `alert_new` and/or `alert_cleared`.
 - **Notes**: Optional text included in emails and other notifications.
 
-Testing: Use the “Test…” button to evaluate the current Expression and Message against a selected live server. The dialog shows whether it would trigger right now and previews the computed message.
+Testing: Use the "Test…" button to evaluate the current Expression and Message against a selected live server. The dialog shows whether it would trigger right now and previews the computed message.
 
 ## Actions on Fire and Clear
 

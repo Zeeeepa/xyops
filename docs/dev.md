@@ -179,7 +179,7 @@ Then, follow the instructions below for your development platform.
 2. In the left panel, expand: **Trusted Root Certification Authorities** → **Certificates**.
 3. Right-click **Certificates**, then choose: **All Tasks → Import...**
 4. Browse to your `tls.crt` file.
-5. Choose "Place all certificates in the following store" → make sure it’s set to **Trusted Root Certification Authorities**.
+5. Choose "Place all certificates in the following store" → make sure it's set to **Trusted Root Certification Authorities**.
 6. Finish and confirm any security prompt.
 
 ### macOS Cert Trust
@@ -207,7 +207,7 @@ Then, follow the instructions below for your development platform.
 1. `sudo cp tls.crt /etc/pki/ca-trust/source/anchors/xyops.crt`
 2. `sudo update-ca-trust extract`
 
-**Note:** This does not affect Firefox unless it’s configured to use system trust (by default it has its own CA store).
+**Note:** This does not affect Firefox unless it's configured to use system trust (by default it has its own CA store).
 
 ### Move to xyOps
 

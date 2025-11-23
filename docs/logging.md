@@ -14,7 +14,7 @@ Each log row is bracket-delimited with the following columns, in order:
 | `pid` | Process ID (PID) of the writer process. |
 | `component` | Component name that generated the entry. |
 | `category` | One of `debug`, `transaction`, or `error`. |
-| `code` | Debug level (1–10), transaction code, or error code. |
+| `code` | Debug level (1-10), transaction code, or error code. |
 | `msg` | Message text. |
 | `data` | Optional JSON data payload (may be empty). |
 

@@ -78,25 +78,25 @@ Example:
 
 ### Schedule
 
-Define a repeating schedule similar to [Unix Cron](https://en.wikipedia.org/wiki/Cron) using arrays of years, months, days, weekdays, hours, and minutes. Omitted fields mean “all” in that category. Evaluation occurs in the selected timezone (or the server default if omitted).
+Define a repeating schedule similar to [Unix Cron](https://en.wikipedia.org/wiki/Cron) using arrays of years, months, days, weekdays, hours, and minutes. Omitted fields mean "all" in that category. Evaluation occurs in the selected timezone (or the server default if omitted).
 
 Parameters:
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `years` | Array<Number> | Optional | One or more years in YYYY format. |
-| `months` | Array<Number> | Optional | Months 1–12 (Jan=1 … Dec=12). |
-| `days` | Array<Number> | Optional | Month days 1–31, or reverse month days −1 to −7 (−1 = last day, −2 = second‑to‑last, etc.). |
-| `weekdays` | Array<Number> | Optional | Weekdays 0–6 (Sun=0 … Sat=6). |
-| `hours` | Array<Number> | Optional | Hours 0–23 (24‑hour clock). |
-| `minutes` | Array<Number> | Optional | Minutes 0–59. |
+| `months` | Array<Number> | Optional | Months 1-12 (Jan=1 … Dec=12). |
+| `days` | Array<Number> | Optional | Month days 1-31, or reverse month days −1 to −7 (−1 = last day, −2 = second‑to‑last, etc.). |
+| `weekdays` | Array<Number> | Optional | Weekdays 0-6 (Sun=0 … Sat=6). |
+| `hours` | Array<Number> | Optional | Hours 0-23 (24‑hour clock). |
+| `minutes` | Array<Number> | Optional | Minutes 0-59. |
 | `timezone` | String | Optional | IANA timezone for evaluating the schedule (defaults to server timezone). |
 
 Notes:
 
 - You may specify both `days` and `weekdays`. All criteria must match.
-- If any list is empty or omitted, it is treated as “all” (a.k.a `*` in cron parlance).
-- Reverse month days allow “last day of month” style expressions.
+- If any list is empty or omitted, it is treated as "all" (a.k.a `*` in cron parlance).
+- Reverse month days allow "last day of month" style expressions.
 
 Example: Twice daily at 4:30 AM and 4:30 PM in `America/New_York`:
 
@@ -194,9 +194,9 @@ Parameters: None
 Notes:
 
 - Applies to schedule/interval triggers on the same event.
-- On each scheduler tick, the event’s cursor advances one minute at a time, evaluating schedules for each minute until present time.
+- On each scheduler tick, the event's cursor advances one minute at a time, evaluating schedules for each minute until present time.
 - Long outages can produce a backlog of late jobs; ensure your event and infrastructure can handle catch‑up bursts.
-- Time Machine: In the UI you can set a custom cursor timestamp to re‑run a historical window (set cursor in the past) or skip a backlog (set cursor near “now”).
+- Time Machine: In the UI you can set a custom cursor timestamp to re‑run a historical window (set cursor in the past) or skip a backlog (set cursor near "now").
 
 Example:
 
@@ -289,7 +289,7 @@ Parameters:
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `seconds` | Array<Number> | Yes | One or more second offsets within 0–59. |
+| `seconds` | Array<Number> | Yes | One or more second offsets within 0-59. |
 
 Notes:
 

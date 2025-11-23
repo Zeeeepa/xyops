@@ -1,6 +1,6 @@
 # Channels
 
-Notification Channels in xyOps let you bundle multiple notification targets and follow‑up actions under a single reusable name. Instead of attaching individual emails, web hooks, or run‑event actions everywhere, you reference a channel from your event/workflow or alert action and xyOps executes the channel’s configured actions together.
+Notification Channels in xyOps let you bundle multiple notification targets and follow‑up actions under a single reusable name. Instead of attaching individual emails, web hooks, or run‑event actions everywhere, you reference a channel from your event/workflow or alert action and xyOps executes the channel's configured actions together.
 
 Typical use case: Create a channel named "Severity 1" that emails your on‑call team, sends a Slack/web hook, runs a remediation event, and plays an audible alert in the UI for connected users.
 
@@ -44,8 +44,8 @@ When a channel is invoked, xyOps executes these configured actions in parallel:
 Notes:
 
 - Email and web hook payloads are templated based on context. For jobs, payloads include job links, log excerpts, and metadata. For alerts, payloads include server and alert details with direct links.
-- Launched events inherit context: job actions include the parent job’s output data/files; alert actions include alert metadata in the child job’s input data.
-- Channel actions are executed in parallel, and their individual results are aggregated into the parent action’s details for auditing.
+- Launched events inherit context: job actions include the parent job's output data/files; alert actions include alert metadata in the child job's input data.
+- Channel actions are executed in parallel, and their individual results are aggregated into the parent action's details for auditing.
 - Disabled channels are skipped. If a referenced channel is disabled, the action records a message and does nothing.
 
 ## Rate Limiting
@@ -122,7 +122,7 @@ See [Actions → Channel](actions.md#channel) for action semantics and deduplica
 - Deduplication: xyOps dedupes actions by type and target at the job/alert level. Multiple references to the same channel within a single trigger run only once; their contained actions execute once as part of the channel.
 - In‑app notifications: All `users` receive a popup notification with an optional sound. Job actions link to the job; alert actions link to the alert.
 - Templates: Email/web hook messages use standard job/alert templates. Channel configuration does not add custom text; customize per‑action text by using direct email/web hook actions if needed.
-- Auditing: For jobs, sub‑action results are aggregated into the job’s Activity log under the channel action. For alerts, results are stored with the alert’s action history.
+- Auditing: For jobs, sub‑action results are aggregated into the job's Activity log under the channel action. For alerts, results are stored with the alert's action history.
 
 ## Managing Channels
 
