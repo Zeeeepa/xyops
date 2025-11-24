@@ -7,31 +7,28 @@ This guide covers self-hosting xyOps on your own infrastructure.  However, pleas
 To start quickly and just get xyOps up and running to test it out, you can use the following Docker command:
 
 ```sh
-docker run --init -v xy-data:/opt/xyops/data -p 5522:5522 -p 5523:5523 --name "xyops01" --hostname "xyops01" -e XYOPS_secret_key="MY_SECRET_KEY" -e TZ="America/Los_Angeles" ghcr.io/pixlcore/xyops:latest
+docker run \
+	--init \
+	-v xy-data:/opt/xyops/data \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	-p 5522:5522 \
+	-p 5523:5523 \
+	--name "xyops01" \
+	--hostname "xyops01" \
+	-e TZ="America/Los_Angeles" \
+	ghcr.io/pixlcore/xyops:latest
 ```
 
 Then hit http://localhost:5522/ in your browser for HTTP, or https://localhost:5523/ for HTTPS (note that this will have a self-signed cert -- see [TLS](#tls) below).  A default administrator account will be created with username `admin` and password `admin`.  This will create a Docker volume (`xy-data`) to persist the xyOps database, which by default is a hybrid of a SQLite DB and the filesystem itself for file storage.
 
-Note that in order to add worker servers so you can actually run jobs, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  Alternatively, you can add worker servers as a Docker containers on the same network.  To do this, we need a few extra commands:
+Note that in order to add worker servers so you can actually run jobs, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  If you only want to add workers as local containers, you can [create a network](https://docs.docker.com/reference/cli/docker/network/create/), and put everything in there.
 
-```sh
-# First create the bridge network
-docker network create xy-net
+A few notes:
 
-# Next, start xyOps in the newly created network
-docker run --init -v xy-data:/opt/xyops/data --network=xy-net -p 5522:5522 -p 5523:5523 --name "xyops01" --hostname "xyops01" -e XYOPS_secret_key="MY_SECRET_KEY" -e TZ="America/Los_Angeles" ghcr.io/pixlcore/xyops:latest
-
-# And finally, start up a worker, preconfigured to connect to the master container
-docker run --init --network=xy-net --name "worker01" --hostname "worker01" -e XYOPS_masters="xyops01" -e XYOPS_secret_key="MY_SECRET_KEY" -e TZ="America/Los_Angeles" ghcr.io/pixlcore/xysat:latest
-```
-
-A few things to note here:
-
-- This method of connecting a worker and master server uses a shared secret key.  The two keys **must match exactly**.
-- The worker container doesn't need the storage volume mounted, nor does it need any ports exposed.
-- You can spin up as many workers as you want -- just change the `--name` and `--hostname` of each one so they are unique.
 - In this case xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
 - Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
+- If you plan on using the container long term, please make sure to [rotate the secret key](#secret-key-rotation).
+- The `/var/run/docker.sock` bind allows xyOps to launch its own containers (i.e. for the [Plugin Marketplace](marketplace.md)).
 
 As an aside, when you add worker servers via the UI, secret keys are not used (nor are they *ever* sent over the wire).  Instead, a special cryptographic token is used to authenticate new worker servers.  You can also add batches of servers in bulk via API Keys.  See [Adding Servers](servers.md#adding-servers) for more details.
 
@@ -68,6 +65,7 @@ mkdir -p /opt/xyops && cd /opt/xyops
 curl -L https://github.com/pixlcore/xyops/archive/v1.0.0.tar.gz | tar zxvf - --strip-components 1
 npm install
 node bin/build.js dist
+bin/control.sh start
 ```
 
 Replace `v1.0.0` with the desired xyOps version from the [official release list](https://github.com/pixlcore/xyops/releases), or `main` for the head revision (unstable).
@@ -103,7 +101,6 @@ For overriding configuration properties by environment variable, you can specify
 | `XYOPS_color` | `true` | Echo the event log with color-coded columns, use in conjunction with `XYOPS_echo`. |
 | `XYOPS_base_app_url` | `http://xyops.yourcompany.com` | Override the [base_app_url](config.md#base_app_url) configuration property. |
 | `XYOPS_email_from` | `xyops@yourcompany.com` | Override the [email_from](config.md#email_from) configuration property. |
-| `XYOPS_secret_key` | `CorrectHorseBatteryStaple` | Override the [secret_key](config.md#secret_key) configuration property. |
 | `XYOPS_WebServer__port` | `80` | Override the `port` property *inside* the [WebServer](config.md#webserver) object. |
 | `XYOPS_WebServer__https_port` | `443` | Override the `https_port` property *inside* the [WebServer](config.md#webserver) object. |
 | `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Override the `base_dir` property *inside* the [Filesystem](config.md#storage-filesystem) object *inside* the [Storage](config.md#storage) object. |
@@ -208,6 +205,7 @@ docker run \
 	-e TZ="America/Los_Angeles" \
 	-v "$(pwd)/config.json:/opt/xyops/conf/config.json:ro" \
 	-v "$(pwd)/sso.json:/opt/xyops/conf/sso.json:ro" \
+	-v "/var/run/docker.sock:/var/run/docker.sock" \
 	-p 5522:5522 \
 	-p 5523:5523 \
 	ghcr.io/pixlcore/xyops:latest
@@ -227,6 +225,7 @@ services:
 	volumes:
 	  - "./config.json:/opt/xyops/conf/config.json:ro"
 	  - "./sso.json:/opt/xyops/conf/sso.json:ro"
+	  - "/var/run/docker.sock:/var/run/docker.sock"
 	ports:
 	  - "5522:5522"
 	  - "5523:5523"
@@ -240,13 +239,14 @@ A few things to note here:
 - All master server hostnames need to be listed in the `XYOPS_masters` environment variable, comma-separated.
 - All master servers need to be able to route to each other via their hostnames, so they can self-negotiate and hold elections.
 - The timezone (`TZ`) should be set to your company's main timezone, so things like midnight log rotation and daily stat resets work as expected.
+- The `/var/run/docker.sock` bind allows xyOps to launch its own containers (i.e. for the [Plugin Marketplace](marketplace.md)).
 - You will need to supply the configuration file: `config.json`.  See below.
 
 Grab our sample [config.json](https://github.com/pixlcore/xyops/blob/main/sample_conf/config.json) file to use as a starting point to create yours.  See the [xyOps Configuration Guide](config.md) for details on how to customize this file.
 
 # Satellite
 
-**xyOps Satellite (xySat)** is a companion to the xyOps system.  It is both a job runner, and a data collector for server monitoring and alerting.  xySat is designed to be installed on *all* of your servers, so it is lean, mean, and has zero dependencies.
+**xyOps Satellite ([xySat](https://github.com/pixlcore/xysat))** is a companion to the xyOps system.  It is both a job runner, and a data collector for server monitoring and alerting.  xySat is designed to be installed on *all* of your servers, so it is lean, mean, and has zero dependencies.
 
 For instructions on how to install xySat, see [Adding Servers](servers.md#adding-servers).
 
