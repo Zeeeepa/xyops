@@ -195,6 +195,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 			"format": "text",
 			"params": [],
 			"kill": "parent",
+			"runner": false,
 			"notes": ""
 		};
 		this.params = this.plugin.params;
@@ -565,6 +566,18 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 			caption: 'Select how you would like xySat to handle shutting down running jobs when they are aborted.'
 		});
 		
+		// runner
+		html += this.getFormRow({
+			id: 'd_ep_runner',
+			label: 'Remote Jobs:',
+			content: this.getFormCheckbox({
+				id: 'fe_ep_runner',
+				label: 'Remote Job Runner',
+				checked: !!plugin.runner
+			}),
+			caption: 'This indicates that jobs will run remotely (i.e. in a Docker container or over SSH) and that xySat should not monitor local resources.  In these cases an intermediate launcher script such as [xyRun](https://github.com/pixlcore/xyrun) should be used on the remote side.'
+		});
+		
 		// notes
 		html += this.getFormRow({
 			label: 'Notes:',
@@ -602,6 +615,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		
 		// only show kill checkbox for event type
 		$('#d_ep_kill').toggle( plugin_type == 'event' );
+		$('#d_ep_runner').toggle( plugin_type == 'event' );
 	}
 	
 	get_plugin_form_json() {
@@ -618,8 +632,14 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		plugin.gid = $('#fe_ep_gid').val();
 		plugin.notes = $('#fe_ep_notes').val();
 		
-		if (plugin.type == 'event') plugin.kill = $('#fe_ep_kill').val();
-		else delete plugin.kill;
+		if (plugin.type == 'event') {
+			plugin.kill = $('#fe_ep_kill').val();
+			plugin.runner = $('#fe_ep_runner').is(':checked');
+		}
+		else {
+			delete plugin.kill;
+			delete plugin.runner;
+		}
 		
 		if (!plugin.title.length) {
 			return app.badField('#fe_ep_title', "Please enter a title for the plugin.");
