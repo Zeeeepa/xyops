@@ -1143,6 +1143,6 @@
 		"standard": "curl -s \"[base_url]/api/app/satellite/install?t=[token]\" | sudo sh",
 		"macos": "curl -s \"[base_url]/api/app/satellite/install?t=[token]&os=macos\" | sudo sh",
 		"windows": "powershell -Command \"IEX (Invoke-WebRequest -UseBasicParsing -Uri '[base_url]/api/app/satellite/install?t=[token]&os=windows').Content\"",
-		"docker": "docker run --detach --init -v /var/run/docker.sock:/var/run/docker.sock -e XYOPS_setup=\"[base_url]/api/app/satellite/config?t=[token]\" [image]:[version]"
+		"docker": "docker run --detach --init -v /var/run/docker.sock:/var/run/docker.sock -e XYOPS_setup=\"[base_url]/api/app/satellite/config?t=[token]\" --name \"xyops-worker-[unique]\" --hostname \"docker-[unique]\" [image]:[version]"
 	}
 }
