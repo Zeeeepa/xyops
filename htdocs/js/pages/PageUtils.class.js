@@ -1766,11 +1766,22 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				spellcheck: 'false',
 				autocomplete: 'off',
 				maxlength: 8192,
-				placeholder: 'email@sample.com',
+				placeholder: 'email1@sample.com, email2@sample.com',
 				value: action.email || '',
 				'data-private': ''
 			}),
 			caption: 'Optionally enter one or more additional email addresses for the action.'
+		});
+		html += this.getFormRow({
+			id: 'd_eja_body',
+			label: 'Custom Email:',
+			content: this.getFormTextarea({
+				id: 'fe_eja_body',
+				rows: 1,
+				value: action.body || '',
+				style: 'display:none'
+			}) + `<div class="button small secondary" onClick="$P().edit_eja_body()"><i class="mdi mdi-text-box-edit-outline">&nbsp;</i>Edit Email Content...</div>`,
+			caption: 'Optionally provide a custom email subject and body, using Markdown source.  See [Custom Email](#Docs/actions/custom-email) for details.'
 		});
 		
 		// web hook
@@ -1944,6 +1955,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'email':
 					action.users = $('#fe_eja_users').val();
 					action.email = $('#fe_eja_email').val();
+					action.body = $('#fe_eja_body').val().trim();
 					// if (!action.email) return app.badField('#fe_eja_email', "Please enter one or more email addresses for the action.");
 					if (!action.users.length && !action.email) {
 						return app.doError("Please select one or more users, or enter one or more custom email addresses.");
@@ -2001,12 +2013,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // Dialog.confirm
 		
 		var change_action_type = function(new_type) {
-			$('#d_eja_email, #d_eja_users, #d_eja_web_hook, #d_eja_web_hook_text, #d_eja_run_job, #d_eja_channel, #d_eja_bucket, #d_eja_bucket_sync, #d_eja_bucket_glob, #d_nt_type, #d_nt_assignees, #d_nt_tags, #d_eja_plugin, #d_eja_plugin_params').hide();
+			$('#d_eja_email, #d_eja_users, #d_eja_body, #d_eja_web_hook, #d_eja_web_hook_text, #d_eja_run_job, #d_eja_channel, #d_eja_bucket, #d_eja_bucket_sync, #d_eja_bucket_glob, #d_nt_type, #d_nt_assignees, #d_nt_tags, #d_eja_plugin, #d_eja_plugin_params').hide();
 			
 			switch (new_type) {
 				case 'email':
 					$('#d_eja_email').show();
 					$('#d_eja_users').show();
+					$('#d_eja_body').show();
 				break;
 				
 				case 'web_hook':
@@ -2075,6 +2088,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		SingleSelect.init( $('#fe_eja_condition, #fe_eja_type, #fe_eja_event, #fe_eja_channel, #fe_eja_web_hook, #fe_eja_plugin, #fe_eja_bucket, #fe_eja_bucket_sync, #fe_nt_type') );
 		
 		Dialog.autoResize();
+	}
+	
+	edit_eja_body() {
+		// popup markdown editor for test dialog
+		this.editCodeAuto("Edit Email Content", $('#fe_eja_body').val(), function(new_value) {
+			$('#fe_eja_body').val( new_value );
+		});
 	}
 	
 	deleteJobAction(idx) {

@@ -90,6 +90,7 @@ Parameters:
 |------|------|----------|-------------|
 | `users` | Array<String> | Optional | Array of [User.username](data.md#user-username) values to email. |
 | `email` | String | Optional | One or more additional recipients, comma-separated. |
+| `body` | String | Optional | Optionally customize the email subject and body using Markdown (see [Custom Email](#custom-email) below). |
 
 Example (job error):
 
@@ -113,6 +114,68 @@ Example (alert fired):
     "users": ["oncall", "sre"],
     "email": "noc@example.com"
 }
+```
+
+#### Custom Email
+
+If the `body` property is provided, this is used instead of a standard template for composing the email.  It should be a [GitHub-Flavored Markdown](https://github.github.com/gfm/) formatted multi-line text string.  You can also use the [xyOps Expression Format](xyexp.md) to pull in values from the [JobHookData](data.md#jobhookdata) object.
+
+In addition, special metadata key/value pairs may be specified using [HTML Comments](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Comments) (which are ignored by the markdown parser) for things such as the email subject line.  The syntax is: `<!-- KEY: VALUE -->`.  Example use:
+
+```
+<!-- To: {{email_to}} -->
+<!-- Subject: ✅ {{config.client.name}} Job Completed Successfully: {{event.title}} -->
+<!-- Title: Job Successful -->
+<!-- Button: View Details | {{links.job_details}} -->
+```
+
+Here is the list of supported comment properties you can include:
+
+| Comment Key | Description |
+|-------------|-------------|
+| `To` | Becomes the email "To" header.  Use `{{email_to}}` for the combined list of recipients from the action. |
+| `From` | Becomes the email "From" header.  Defaults to the [email_from](config.md#email_from) global configuration property. |
+| `Subject` | Becomes the email "Subject" header. |
+| `Title` | Displayed in large bold text inside the HTML email header.  Usually less verbose than the subject. |
+| `Button` | Optionally include a large button in the header with a label and a link (separated by a pipe). |
+| `Logo_URL` | Optionally customize the URL to the logo image used in the HTML email header. |
+| `Version` | Optionally customize the version text shown in the HTML email footer. |
+| `Copyright` | Optionally customize the copyright text shown in the HTML email footer. |
+
+Here is the full template used when jobs complete successfully:
+
+```
+	<!-- To: {{email_to}} -->
+	<!-- Subject: ✅ {{config.client.name}} Job Completed Successfully: {{event.title}} -->
+	<!-- Title: Job Successful -->
+	<!-- Button: View Details | {{links.job_details}} -->
+
+	The following {{config.client.name}} job has completed successfully:
+
+	- **Job ID:** `{{job.id}}`
+	- **Event:** {{event.title}}
+	- **Category:** {{category.title}}
+	- **Plugin:** {{plugin.title}}
+	- **Server:** {{nice_server}}
+	- **PID:** {{job.pid}}
+	- **Completed:** {{display.date_time}}
+	- **Elapsed Time:** {{display.elapsed}}
+	- **Performance Metrics:** `{{display.perf}}`
+	- **Avg. Memory Usage:** {{display.mem}}
+	- **Avg. CPU Usage:** {{display.cpu}}
+
+	### Links:
+	- [Job Details]({{links.job_details}})
+	- [Download Log]({{links.job_log}}) ({{display.log_size}})
+
+	### Job Files:
+	{{links.job_files}}
+
+	### Job Output:
+	{{log_excerpt}}
+
+	### Event Notes:
+	{{job.notes}}
 ```
 
 ### Web Hook
