@@ -187,7 +187,9 @@ Page.Workflows = class Workflows extends Page.Events {
 		var idx = find_object_idx(app.events, { id: resp.event.id });
 		if (idx == -1) app.events.push(resp.event);
 		
-		Nav.go( 'Events?sub=view&id=' + resp.event.id );
+		// Nav.go( 'Events?sub=view&id=' + resp.event.id );
+		Nav.go( 'Workflows?sub=edit&id=' + resp.event.id + '&scroll=bottom' );
+		
 		app.showMessage('success', config.ui.messages.wf_new_save);
 	}
 	
@@ -623,7 +625,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		}
 		
 		if (num_sel == 1) {
-			$cont.find('#d_btn_wf_edit, #d_btn_wf_test').show();
+			$cont.find('#d_btn_wf_edit').show();
+			$cont.find('#d_btn_wf_test').toggle( !!this.event.id );
 		}
 		else {
 			$cont.find('#d_btn_wf_edit, #d_btn_wf_test').hide();
@@ -1112,6 +1115,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		app.clearError();
 		var event = this.get_event_form_json();
 		if (!event) return; // error
+		if (!event.id) return; // only works on saved workflows
 		
 		if (node.type == 'limit') return app.doError('wf_test_no_limit');
 		
