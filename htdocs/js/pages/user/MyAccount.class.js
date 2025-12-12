@@ -70,7 +70,7 @@ Page.MyAccount = class MyAccount extends Page.Base {
 					label: 'Sync Enabled',
 					checked: user.sync
 				}),
-				caption: 'Your user is managed by a 3rd party authentication system.  Check this box to automatically keep your name, email and avatar in sync on every login.  Uncheck it if you want to customimze them here.'
+				caption: 'Your user is managed by a 3rd party authentication system.  Check this box to automatically keep your name, email and avatar in sync on every login.  Uncheck it if you want to customize them here.'
 			});
 		}
 		
@@ -266,15 +266,17 @@ Page.MyAccount = class MyAccount extends Page.Base {
 			icon: $('#fe_ma_icon').val()
 		};
 		
-		var old_password = $('#fe_ma_old_password').val();
-		var new_password = $('#fe_ma_new_password').val();
-		
-		if (new_password.length && !old_password.length) {
-			return app.badField('#fe_ma_old_password', "Please enter your current account password.");
-		}
-		if (new_password.length) {
-			updates.old_password = old_password;
-			updates.new_password = new_password;
+		if (!app.user.remote) {
+			var old_password = $('#fe_ma_old_password').val();
+			var new_password = $('#fe_ma_new_password').val();
+			
+			if (new_password.length && !old_password.length) {
+				return app.badField('#fe_ma_old_password', "Please enter your current account password.");
+			}
+			if (new_password.length) {
+				updates.old_password = old_password;
+				updates.new_password = new_password;
+			}
 		}
 		if (app.user.remote) {
 			updates.sync = !!$('#fe_ma_sync').is(':checked');
@@ -282,13 +284,15 @@ Page.MyAccount = class MyAccount extends Page.Base {
 		
 		Dialog.showProgress( 1.0, "Saving account..." );
 		
-		app.api.post( new_password.length ? 'user/update' : 'app/user_settings', updates, function(resp) {
+		app.api.post( updates.new_password ? 'user/update' : 'app/user_settings', updates, function(resp) {
 			// save complete
 			Dialog.hideProgress();
 			app.showMessage('success', "Your account profile was updated successfully.");
 			
-			$('#fe_ma_old_password').val('');
-			$('#fe_ma_new_password').val('');
+			if (!app.user.remote) {
+				$('#fe_ma_old_password').val('');
+				$('#fe_ma_new_password').val('');
+			}
 			
 			app.user = resp.user;
 			
