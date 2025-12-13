@@ -46,7 +46,7 @@ Welcome to the xyOps documentation. xyOps is a job scheduler, workflow engine, a
 
 - **[REST API](api.md)**: REST API endpoints, API keys, authentication, and standard response format.
 - **[Data Structures](data.md)**: Complete schemas for all xyOps objects (jobs, events, users, servers, alerts, etc.).
-- **[Database Tables](db.md)**: A list of all the xyOps database tables and column indexes.
+- **[Database Tables](db.md)**: A list of all the internal xyOps database tables and column indexes.
 
 ## Access & Identity
 
@@ -57,7 +57,8 @@ Welcome to the xyOps documentation. xyOps is a job scheduler, workflow engine, a
 ## File Formats and Protocols
 
 - **[xyOps Expression Format](xyexp.md)**: JEXL-based expressions and helper functions used across the system.
-- **[xyOps Portable Data Format](xypdf.md)**: Export/import format (XYPDF) for moving objects between systems.
+- **[xyOps Portable Data Format](xypdf.md)**: Transfer format (XYPDF) for moving objects between systems.
+- **[xyOps Backup Format](xybk.md)**: NDJSON-based bulk export/import format used by the admin tools.
 - **[xyOps Wire Protocol](xywp.md)**: JSON over STDIO contract for plugins communicating with xyOps/xySat.
 
 ## Developer Guides
