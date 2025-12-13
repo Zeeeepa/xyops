@@ -4,7 +4,7 @@ This document describes the xyOps database schema. It lists every index (table),
 
 ## Overview
 
-xyOps uses [Unbase](https://github.com/jhuckaby/pixl-server-unbase) which sits on top of [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) and its [Indexer](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md) subsystem. Records are stored as JSON in a key/value backend (SQLite by default), and Unbase builds searchable indexes and sorters from configured field definitions. Queries support both simple “field:words” and a structured [PxQL](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#pxql-queries) syntax.
+xyOps uses [Unbase](https://github.com/jhuckaby/pixl-server-unbase) which sits on top of [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) and its [Indexer](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md) subsystem. Records are stored as JSON in a key/value backend (SQLite by default), and Unbase builds searchable indexes and sorters from configured field definitions. Queries support both simple "field:words" and a structured [PxQL](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#pxql-queries) syntax.
 
 Notes:
 
