@@ -56,6 +56,11 @@
 					"id": "completed",
 					"source": "/completed",
 					"type": "number"
+				},
+				{
+					"id": "elapsed",
+					"source": "/elapsed",
+					"type": "number"
 				}
 			]
 		},

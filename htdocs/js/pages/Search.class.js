@@ -231,8 +231,11 @@ Page.Search = class Search extends Page.PageUtils {
 				// sort
 				html += '<div class="form_cell">';
 					var sort_items = [
-						{ id: 'date_desc', title: 'Newest on Top', icon: 'sort-descending' },
-						{ id: 'date_asc', title: 'Oldest on Top', icon: 'sort-ascending' }
+						{ id: 'date_desc', title: 'Newest on Top', icon: 'sort-descending', group: 'Completion Date:' },
+						{ id: 'date_asc', title: 'Oldest on Top', icon: 'sort-ascending' },
+						
+						{ id: 'elapsed_desc', title: 'Longest on Top', icon: 'sort-descending', group: 'Elapsed Time:' },
+						{ id: 'elapsed_asc', title: 'Shortest on Top', icon: 'sort-ascending' }
 					];
 					html += this.getFormRow({
 						label: '<i class="icon mdi mdi-sort">&nbsp;</i>Sort Results:',
@@ -438,6 +441,16 @@ Page.Search = class Search extends Page.PageUtils {
 			
 			case 'date_desc':
 				sopts.sort_by = 'completed'; 
+				sopts.sort_dir = -1;
+			break;
+			
+			case 'elapsed_asc':
+				sopts.sort_by = 'elapsed'; 
+				sopts.sort_dir = 1;
+			break;
+			
+			case 'elapsed_desc':
+				sopts.sort_by = 'elapsed'; 
 				sopts.sort_dir = -1;
 			break;
 		} // sort
