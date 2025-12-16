@@ -4934,7 +4934,7 @@ Example response:
 POST /api/app/admin_import_data/v1
 ```
 
-Bulk import data from a local archive file. Send as `multipart/form-data` with a single file field. Admin only. The file may be plain text or gzip-compressed. The import runs as an internal job; the API responds early with the job ID.
+Bulk import data from a local archive file. Send as `multipart/form-data` with a single file field. Admin only. The file may be plain text or gzip-compressed. The import runs as an internal job in the background; the API responds early with the job ID.
 
 Parameters (multipart/form-data fields):
 
@@ -4954,6 +4954,8 @@ Example response:
 ```json
 { "code": 0, "id": "ijobabc123" }
 ```
+
+In addition to the [Standard Response Format](#standard-response-format), this includes an `id` property, which is an internal job ID (the bulk import happens asynchronously in the background).  To track the progress of the job, poll the [get_internal_jobs](#get_internal_jobs) API.
 
 Notes:
 
@@ -4989,6 +4991,7 @@ Notes:
 - Job logs/files are exported only if under 1 MB each.
 - Bucket files are exported as base64 with a manifest of file metadata.
 - Secret data is exported as encrypted values (as stored).
+- API keys are exported as salted hashes only (as stored).
 
 ### admin_delete_data
 
