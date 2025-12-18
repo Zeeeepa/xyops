@@ -40,27 +40,27 @@ module.exports = {
 		
 		// load suites
 		this.tests = this.tests.concat( 
-			require('./suites/test-user-initial.js').tests,
-			require('./suites/test-alerts-api.js').tests,
-			require('./suites/test-buckets-api.js').tests,
-			require('./suites/test-categories-api.js').tests,
-			require('./suites/test-channels-api.js').tests,
-			require('./suites/test-events-api.js').tests,
-			require('./suites/test-files-api.js').tests,
-			require('./suites/test-groups-api.js').tests,
-			require('./suites/test-monitors-api.js').tests,
-			require('./suites/test-plugins-api.js').tests,
-			require('./suites/test-secrets-api.js').tests,
-			require('./suites/test-roles-api.js').tests,
-			require('./suites/test-apikeys-api.js').tests,
-			require('./suites/test-tags-api.js').tests,
-			require('./suites/test-servers-api.js').tests,
-			require('./suites/test-webhooks-api.js').tests,
-			require('./suites/test-tickets-api.js').tests,
+			require('./suites/test-users-initial.js').tests,
+			require('./suites/test-alerts.js').tests,
+			require('./suites/test-buckets.js').tests,
+			require('./suites/test-categories.js').tests,
+			require('./suites/test-channels.js').tests,
+			require('./suites/test-events.js').tests,
+			require('./suites/test-files.js').tests,
+			require('./suites/test-groups.js').tests,
+			require('./suites/test-monitors.js').tests,
+			require('./suites/test-plugins.js').tests,
+			require('./suites/test-secrets.js').tests,
+			require('./suites/test-roles.js').tests,
+			require('./suites/test-apikeys.js').tests,
+			require('./suites/test-tags.js').tests,
+			require('./suites/test-servers.js').tests,
+			require('./suites/test-webhooks.js').tests,
+			require('./suites/test-tickets.js').tests,
 			require('./suites/test-jobs.js').tests,
 			require('./suites/test-workflows.js').tests,
-			require('./suites/test-user-api.js').tests,
-			require('./suites/test-admin-api.js').tests // do this one last!
+			require('./suites/test-users.js').tests,
+			require('./suites/test-admin.js').tests // do this one last!
 		);
 		
 		// start pixl-server
