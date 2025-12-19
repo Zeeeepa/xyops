@@ -41,7 +41,6 @@ module.exports = {
 		// load suites
 		this.tests = this.tests.concat( 
 			require('./suites/test-users-initial.js').tests,
-			require('./suites/test-alerts.js').tests,
 			require('./suites/test-buckets.js').tests,
 			require('./suites/test-categories.js').tests,
 			require('./suites/test-channels.js').tests,
@@ -59,6 +58,8 @@ module.exports = {
 			require('./suites/test-tickets.js').tests,
 			require('./suites/test-jobs.js').tests,
 			require('./suites/test-workflows.js').tests,
+			require('./suites/test-alerts.js').tests,
+			require('./suites/test-search.js').tests,
 			require('./suites/test-users.js').tests,
 			require('./suites/test-admin.js').tests // do this one last!
 		);
