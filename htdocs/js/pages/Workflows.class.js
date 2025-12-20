@@ -2688,6 +2688,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		}
 		this.cleanupBoxButtonFloater();
 		
+		if (this.wfSoldering) this.cancelSolder();
+		
 		delete this.event;
 		delete this.workflow;
 		delete this.wfScroll;
