@@ -316,10 +316,10 @@ Page.Job = class Job extends Page.PageUtils {
 		if (is_workflow) {
 			html += '<div class="box">';
 			html += '<div class="box_content">';
-			html += '<div class="wf_container preview" id="d_wf_container" style="height:40vh; min-height:400px;">';
+			html += '<div class="wf_container job_preview" id="d_wf_container" style="height:40vh; min-height:400px;">';
 			
 			html += `<div class="wf_grid_header">
-				<div class="wf_title left"><i class="mdi mdi-clipboard-play-outline">&nbsp;</i>Workflow Map</div>
+				<div class="wf_title left"><i class="mdi mdi-clipboard-play-outline">&nbsp;</i>Workflow Run</div>
 				<div class="button secondary right" onClick="$P().goEditWorkflow()"><i class="mdi mdi-clipboard-edit-outline">&nbsp;</i>Edit...</div>
 				<div class="clear"></div>
 			</div>`;
@@ -998,7 +998,7 @@ Page.Job = class Job extends Page.PageUtils {
 			var event = node.data.event ? find_object(app.events, { id: node.data.event }) : null;
 			
 			workflow.jobs[node_id].forEach( function(job) {
-				var stub = { ...job, state: 'complete', final: true, workflow: {} };
+				var stub = { ...job, state: 'complete', final: true, workflow: { node: node_id } };
 				if (event) {
 					stub.event = node.data.event;
 					stub.category = event.category;
@@ -1018,6 +1018,9 @@ Page.Job = class Job extends Page.PageUtils {
 		
 		// all together now
 		rows = rows.concat( completed_stubs );
+		
+		// save rows for flashing
+		this.wfJobRows = rows;
 		
 		var grid_args = {
 			rows: rows,
@@ -1189,6 +1192,58 @@ Page.Job = class Job extends Page.PageUtils {
 					if (dest.type != 'limit') return;
 					$cont.find(`#d_wfn_${dest.id}`).toggleClass('disabled', !num_jobs && !num_completed);
 				} );
+				
+				// handle clicks
+				$elem.attr({ role: 'group', tabindex: '0' }).on( 'pointerdown keypress', function(event) {
+					var native = event.originalEvent;
+					if ('button' in native) {
+						// pointer event
+						if (native.button !== 0) return; // only capture left-clicks
+					}
+					else {
+						// keypress event
+						if ((native.key !== 'Enter') && (native.key !== ' ')) return; // only capture enter/space
+					}
+					
+					event.stopPropagation();
+					event.preventDefault();
+					
+					var $grid_rows = self.div.find('#d_job_wf_jobs > .box_content .data_grid > ul.grid_row');
+					
+					if ($elem.hasClass('selected')) {
+						// de-highlight all rows
+						$grid_rows.removeClass('highlight');
+						$elem.removeClass('selected');
+					}
+					else {
+						// deselect all event elems
+						$cont.find('div.wf_node.wf_event.selected').removeClass('selected');
+						
+						// flash all related jobs in job table
+						var first_row = -1;
+						self.wfJobRows.forEach( function(row, idx) {
+							// if (!row.workflow || !row.workflow.node || (row.workflow.node != node.id)) return;
+							var is_ours = (row.workflow && row.workflow.node && (row.workflow.node == node.id));
+							if (is_ours) first_row = idx;
+							$grid_rows.eq(idx).toggleClass( 'highlight', is_ours );
+						} );
+						$elem.addClass('selected');
+						
+						// scroll first highlighted row into view
+						if (first_row > -1) try {
+							$grid_rows.eq(first_row).find('div')[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+						} catch(e) {;}
+					}
+				}); // pointerdown
+				
+				$elem.on( 'dblclick', function(event) {
+					// double-click event node == jump to first job
+					var job = self.wfJobRows.find( function(row) {
+						return row.workflow && row.workflow.node && (row.workflow.node == node.id);
+					} );
+					if (job) Nav.go( '#Job?id=' + job.id );
+				}); // dblclick (nodes)
+				
 			} // event or job
 		} ); // foreach node
 		
@@ -1198,6 +1253,13 @@ Page.Job = class Job extends Page.PageUtils {
 			var $elem = $cont.find(`#d_wft_${conn.id}`);
 			$elem.toggleClass('disabled', !state.completed);
 		} ); // foreach conn
+	}
+	
+	deselectAll() {
+		// deselect all wf event nodes, called on background click
+		var $cont = this.wfGetContainer();
+		$cont.find('div.wf_node.wf_event.selected').removeClass('selected');
+		this.div.find('#d_job_wf_jobs > .box_content .data_grid > ul.grid_row').removeClass('highlight');
 	}
 	
 	getWorkflowQueueSummary() {
@@ -3249,6 +3311,7 @@ Page.Job = class Job extends Page.PageUtils {
 		delete this.lastSuspendedCount;
 		delete this.limits;
 		delete this.snapshots;
+		delete this.wfJobRows;
 		
 		// destroy charts if applicable
 		if (this.charts) {
