@@ -8,27 +8,27 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
-	<link rel="shortcut icon" href="favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="256x256" href="images/logo-256.png">
-	<link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
-	<link rel="manifest" href="manifest.webmanifest">
+	<link rel="shortcut icon" href="/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="256x256" href="/images/logo-256.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
+	<link rel="manifest" href="/manifest.webmanifest">
 	<meta name="theme-color" content="#3791F5">
 	
 	<!-- BUILD: COMBINE_STYLE_START -->
-	<link rel="stylesheet" href="css/normalize.css">
-	<link rel="stylesheet" href="css/base.css">
-	<link rel="stylesheet" href="css/style.css">
-	<link rel="stylesheet" href="css/responsive.css">
-	<link rel="stylesheet" href="css/search.css">
-	<link rel="stylesheet" href="css/accessibility.css">
-	<link rel="stylesheet" href="css/workflow.css">
-	<link rel="stylesheet" href="css/tickets.css">
-	<link rel="stylesheet" href="css/materialdesignicons.min.css">
-	<link rel="stylesheet" href="codemirror/lib/codemirror.css">
-	<link rel="stylesheet" href="codemirror/addon/scroll/simplescrollbars.css">
-	<link rel="stylesheet" href="css/cm-one-light.css">
-	<link rel="stylesheet" href="css/cm-one-dark.css">
+	<link rel="stylesheet" href="/css/normalize.css">
+	<link rel="stylesheet" href="/css/base.css">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/responsive.css">
+	<link rel="stylesheet" href="/css/search.css">
+	<link rel="stylesheet" href="/css/accessibility.css">
+	<link rel="stylesheet" href="/css/workflow.css">
+	<link rel="stylesheet" href="/css/tickets.css">
+	<link rel="stylesheet" href="/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="/codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="/codemirror/addon/scroll/simplescrollbars.css">
+	<link rel="stylesheet" href="/css/cm-one-light.css">
+	<link rel="stylesheet" href="/css/cm-one-dark.css">
 	<!-- BUILD: COMBINE_STYLE_END -->
 </head>
 
@@ -112,6 +112,7 @@
 		<div id="tab_ServerHist" style="display:none"></div>
 		<div id="tab_GroupHist" style="display:none"></div>
 		<div id="tab_Login" style="display:none"></div>
+		<div id="tab_Magic" style="display:none"></div>
 		
 		<div class="sidebar_foot_pad"></div>
 	</div>
@@ -139,83 +140,84 @@
 		<div class="clear"></div>
 	</div>
 	
-	<script src="js/external/jquery.min.js"></script>
+	<script src="/js/external/jquery.min.js"></script>
 	
 	<!-- BUILD: COMBINE_SCRIPT_START -->
-	<script src="codemirror/lib/codemirror.js"></script>
-	<script src="codemirror/addon/mode/overlay.js"></script>
-	<script src="codemirror/addon/runmode/runmode.js"></script>
-	<script src="codemirror/addon/scroll/simplescrollbars.js"></script>
-	<script src="codemirror/mode/markdown/markdown.js"></script>
-	<script src="codemirror/mode/gfm/gfm.js"></script>
-	<script src="codemirror/mode/javascript/javascript.js"></script>
-	<script src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
-	<script src="codemirror/mode/clike/clike.js"></script>
-	<script src="codemirror/mode/meta.js"></script>
-	<script src="codemirror/mode/shell/shell.js"></script>
-	<script src="codemirror/mode/go/go.js"></script>
-	<script src="codemirror/mode/perl/perl.js"></script>
-	<script src="codemirror/mode/php/php.js"></script>
-	<script src="codemirror/mode/python/python.js"></script>
-	<script src="codemirror/mode/xml/xml.js"></script>
+	<script src="/codemirror/lib/codemirror.js"></script>
+	<script src="/codemirror/addon/mode/overlay.js"></script>
+	<script src="/codemirror/addon/runmode/runmode.js"></script>
+	<script src="/codemirror/addon/scroll/simplescrollbars.js"></script>
+	<script src="/codemirror/mode/markdown/markdown.js"></script>
+	<script src="/codemirror/mode/gfm/gfm.js"></script>
+	<script src="/codemirror/mode/javascript/javascript.js"></script>
+	<script src="/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+	<script src="/codemirror/mode/clike/clike.js"></script>
+	<script src="/codemirror/mode/meta.js"></script>
+	<script src="/codemirror/mode/shell/shell.js"></script>
+	<script src="/codemirror/mode/go/go.js"></script>
+	<script src="/codemirror/mode/perl/perl.js"></script>
+	<script src="/codemirror/mode/php/php.js"></script>
+	<script src="/codemirror/mode/python/python.js"></script>
+	<script src="/codemirror/mode/xml/xml.js"></script>
 	
-	<script src="js/external/highlight.min.js"></script>
-	<script src="js/external/http.min.js"></script>
+	<script src="/js/external/highlight.min.js"></script>
+	<script src="/js/external/http.min.js"></script>
 	
-	<script src="js/external/chart.min.js"></script>
-	<script src="js/external/zeroupload.min.js"></script>
-	<script src="js/external/marked.min.js"></script>
-	<script src="js/external/diff.js"></script>
-	<script src="js/external/ansi_up.js"></script>
-	<script src="js/external/confetti.browser.js"></script>
-	<script src="js/external/icon-font-names.js"></script>
-	<script src="js/common/unscroll.min.js"></script>
-	<script src="js/common/misc.js"></script>
-	<script src="js/common/tools.js"></script>
-	<script src="js/common/datetime.js"></script>
-	<script src="js/common/page.js"></script>
-	<script src="js/common/dialog.js"></script>
-	<script src="js/common/popover.js"></script>
-	<script src="js/common/select.js"></script>
-	<script src="js/common/base.js"></script>
-	<script src="js/app.js"></script>
-	<script src="js/comm.js"></script>
-	<script src="js/utils.js"></script>
-	<script src="js/pages/Base.class.js"></script>
-	<script src="js/pages/PageUtils.class.js"></script>
-	<script src="js/pages/Dashboard.class.js"></script>
-	<script src="js/pages/Docs.class.js"></script>
-	<script src="js/pages/Login.class.js"></script>
-	<script src="js/pages/Events.class.js"></script>
-	<script src="js/pages/Workflows.class.js"></script>
-	<script src="js/pages/Job.class.js"></script>
-	<script src="js/pages/Search.class.js"></script>
-	<script src="js/pages/ServerUtils.class.js"></script>
-	<script src="js/pages/ServerHist.class.js"></script>
-	<script src="js/pages/GroupHist.class.js"></script>
-	<script src="js/pages/Servers.class.js"></script>
-	<script src="js/pages/Snapshots.class.js"></script>
-	<script src="js/pages/Alerts.class.js"></script>
-	<script src="js/pages/Tickets.class.js"></script>
-	<script src="js/pages/user/MyAccount.class.js"></script>
-	<script src="js/pages/user/MySettings.class.js"></script>
-	<script src="js/pages/user/MySecurity.class.js"></script>
-	<script src="js/pages/admin/Users.class.js"></script>
-	<script src="js/pages/admin/Activity.class.js"></script>
-	<script src="js/pages/admin/APIKeys.class.js"></script>
-	<script src="js/pages/admin/Groups.class.js"></script>
-	<script src="js/pages/admin/Monitors.class.js"></script>
-	<script src="js/pages/admin/AlertSetup.class.js"></script>
-	<script src="js/pages/admin/Categories.class.js"></script>
-	<script src="js/pages/admin/Channels.class.js"></script>
-	<script src="js/pages/admin/WebHooks.class.js"></script>
-	<script src="js/pages/admin/Buckets.class.js"></script>
-	<script src="js/pages/admin/Secrets.class.js"></script>
-	<script src="js/pages/admin/Plugins.class.js"></script>
-	<script src="js/pages/admin/Tags.class.js"></script>
-	<script src="js/pages/admin/Conductors.class.js"></script>
-	<script src="js/pages/admin/System.class.js"></script>
-	<script src="js/pages/admin/Roles.class.js"></script>
+	<script src="/js/external/chart.min.js"></script>
+	<script src="/js/external/zeroupload.min.js"></script>
+	<script src="/js/external/marked.min.js"></script>
+	<script src="/js/external/diff.js"></script>
+	<script src="/js/external/ansi_up.js"></script>
+	<script src="/js/external/confetti.browser.js"></script>
+	<script src="/js/external/icon-font-names.js"></script>
+	<script src="/js/common/unscroll.min.js"></script>
+	<script src="/js/common/misc.js"></script>
+	<script src="/js/common/tools.js"></script>
+	<script src="/js/common/datetime.js"></script>
+	<script src="/js/common/page.js"></script>
+	<script src="/js/common/dialog.js"></script>
+	<script src="/js/common/popover.js"></script>
+	<script src="/js/common/select.js"></script>
+	<script src="/js/common/base.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/comm.js"></script>
+	<script src="/js/utils.js"></script>
+	<script src="/js/pages/Base.class.js"></script>
+	<script src="/js/pages/PageUtils.class.js"></script>
+	<script src="/js/pages/Dashboard.class.js"></script>
+	<script src="/js/pages/Docs.class.js"></script>
+	<script src="/js/pages/Login.class.js"></script>
+	<script src="/js/pages/Events.class.js"></script>
+	<script src="/js/pages/Workflows.class.js"></script>
+	<script src="/js/pages/Job.class.js"></script>
+	<script src="/js/pages/Search.class.js"></script>
+	<script src="/js/pages/ServerUtils.class.js"></script>
+	<script src="/js/pages/ServerHist.class.js"></script>
+	<script src="/js/pages/GroupHist.class.js"></script>
+	<script src="/js/pages/Servers.class.js"></script>
+	<script src="/js/pages/Snapshots.class.js"></script>
+	<script src="/js/pages/Alerts.class.js"></script>
+	<script src="/js/pages/Tickets.class.js"></script>
+	<script src="/js/pages/Magic.class.js"></script>
+	<script src="/js/pages/user/MyAccount.class.js"></script>
+	<script src="/js/pages/user/MySettings.class.js"></script>
+	<script src="/js/pages/user/MySecurity.class.js"></script>
+	<script src="/js/pages/admin/Users.class.js"></script>
+	<script src="/js/pages/admin/Activity.class.js"></script>
+	<script src="/js/pages/admin/APIKeys.class.js"></script>
+	<script src="/js/pages/admin/Groups.class.js"></script>
+	<script src="/js/pages/admin/Monitors.class.js"></script>
+	<script src="/js/pages/admin/AlertSetup.class.js"></script>
+	<script src="/js/pages/admin/Categories.class.js"></script>
+	<script src="/js/pages/admin/Channels.class.js"></script>
+	<script src="/js/pages/admin/WebHooks.class.js"></script>
+	<script src="/js/pages/admin/Buckets.class.js"></script>
+	<script src="/js/pages/admin/Secrets.class.js"></script>
+	<script src="/js/pages/admin/Plugins.class.js"></script>
+	<script src="/js/pages/admin/Tags.class.js"></script>
+	<script src="/js/pages/admin/Conductors.class.js"></script>
+	<script src="/js/pages/admin/System.class.js"></script>
+	<script src="/js/pages/admin/Roles.class.js"></script>
 	<!-- BUILD: COMBINE_SCRIPT_END -->
 	
 	<script src="/api/app/config"></script>
