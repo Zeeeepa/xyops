@@ -1262,7 +1262,43 @@ Example response:
 
 In addition to the [Standard Response Format](#standard-response-format), this will include an `id` property containing the newly created [Job.id](data.md#job-id).
 
+### magic
 
+```
+GET /api/app/magic/v1/TOKEN
+```
+
+Start a job using a "Magic Link".  This is a unique URL with an embedded cryptographic token, which is keyed to fire off a specific event via a special magic trigger.  This API does not require a user session or API key -- the authentication is built right into the URL.  Any parameters passed to the API, either via query string parameters or POST parameters, are passed directly into the job as event parameters.
+
+Any "administrator locked" event or plugin parameters cannot be overridden by this API.
+
+See [Magic Link Trigger](triggers.md#magic-link) for more details.
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "id": "jabc123def",
+	"stream": "38051e4e8b4edae6d705a4c8252569066f4f40d33c975bcf3c40205df87a22b9"
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include an `id` property containing the newly created [Job.id](data.md#job-id), and a special "stream token" in a property named `stream`.  This token can be provided to the [stream_job](#stream_job) API to stream job updates via [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
+
+### form
+
+```
+GET /api/app/form/v1/TOKEN
+```
+
+This API is part of the [Magic Link](triggers.md#magic-link) system, and designed to be used in a browser.  It renders a standalone page that presents the user with a form to fire off a job for the linked event.  If the event contains any parameters, those form fields are displayed as well.  If the event allows file uploads, the user can do that as well.  When the job is started, updates are streamed live to the page so the user can track their job progress.  When the job completes, the page renders the job results, output files and data if any, and user content if provided.
+
+See [Magic Link Trigger](triggers.md#magic-link) for more details.
+
+The response to this API is a full HTML presentation containing the event parameter form fields for the user to fill out, as well as a file upload field if supported by the event.  Submitting the from triggers a call to [magic](#magic), followed by a call to [stream_job](#stream_job) to stream real-time job updates to the landing page.
+
+**Note**: File uploads are supported by events by default, unless you add a [Max File Limit](limits.md#max-file-limit).  Setting the limit amount to `0` will disable file uploads entirely.
 
 ## Files
 
@@ -1279,7 +1315,9 @@ Upload one or more files for the authenticated user. This is a general-purpose u
 Notes:
 
 - Files are stored under a user-specific path and automatically expire per server configuration (see [file_expiration](config.md#file_expiration)).
-- Field names are arbitrary; all files in the request are processed.
+- All file paths will contain a unique cryptographic hash, rendering the URLs undiscoverable.
+- This API is used by the graphing library to provide links to chart snapshot images.
+- HTTP POST field names are arbitrary; all files in the request are processed.
 
 In addition to the [Standard Response Format](#standard-response-format), this will include a `urls` array of absolute URLs for the uploaded files.
 
@@ -1289,7 +1327,7 @@ Example response:
 {
     "code": 0,
     "urls": [
-        "https://example.xyops.io/files/admin/report.csv"
+        "https://example.xyops.io/files/admin/vphJjp2KSaqleXhZog1P2w57bl3DSjGW2kPeOS_7mpc/report.csv"
     ]
 }
 ```
@@ -1981,6 +2019,57 @@ Example response:
 ```
 
 In addition to the [Standard Response Format](#standard-response-format), this will include a `text` string containing the tail of the live log. If the job is not active, `text` will be empty.
+
+### stream_job
+
+```
+GET /api/app/stream_job/v1
+```
+
+Stream live job updates via [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The [Job.id](data.md#job-id). |
+| `token` | String | Optional | A special auth token used by the [magic](#magic) API to stream jobs for the magic landing pages. |
+
+The response will be streamed using [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).  The first update will include a JSON document containing the [Job.id](data.md#job.id), followed by multiple updates as the job runs, with a final update when the job completes.  Here is an example raw streaming response (many intermediate updates omitted for brevity):
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Date: Mon, 22 Dec 2025 04:53:01 GMT
+Connection: keep-alive
+Keep-Alive: timeout=30
+Transfer-Encoding: chunked
+
+event: start
+data: {}
+
+event: update
+data: {"xy":1,"id":"jmjgok2xeb5ufrcl","started":1766379181.011,"state":"ready","progress":0}
+
+event: update
+data: {"xy":1,"cpu":{"min":3.3,"max":50,"total":129.7,"count":12,"current":3.3},"mem":{"min":32239616,"max":59838464,"total":680706048,"count":12,"current":55287808},"updated":1766379192.219,"progress":0.33113333384195964}
+
+event: update
+data: {"xy":1,"cpu":{"min":1.8,"max":50,"total":152.85,"count":22,"current":1.8},"mem":{"min":32239616,"max":59838464,"total":1234894848,"count":22,"current":55418880},"updated":1766379202.164,"progress":0.6665666659673055}
+
+event: update
+data: {"xy":1,"id":"jmjgok2xeb5ufrcl","code":0,"description":"Success!","completed":1766379212.239,"elapsed":31.2260000705719,"data":{"text":"This is some sample data to pass to the next job!","hostname":"raspberrypi","pid":2954920,"random":0.54,"obj":{"foo":1,"bar":null,"bool":true},"custom":""},"files":[]}
+
+event: end
+data: {}
+```
+
+The stream will always start with a `start` event, and an empty data record.
+
+The intermediate updates include relevant job properties that frequently change or were updated (e.g. [Job.progress](data.md#job-progress), [Job.cpu](data.md#job-cpu), [Job.mem](data.md#job-mem), etc.).  The final update is sent once the job completes, and it includes properties such as [Job.code](data.md#job-code), [Job.description](data.md#job-description) and [Job.elapsed](data.md#job-elapsed).  It also includes the job's output [Job.data](data.md#job-data) and [Job.files](data.md#job-files) if applicable.
+
+After all updates are complete, a final `end` event is sent (with an empty data record).
 
 ### update_job
 
