@@ -2726,9 +2726,6 @@ Page.Workflows = class Workflows extends Page.Events {
 		html += '<div class="box_content">';
 		html += '<div class="wf_container" id="d_wf_container" style="height:calc(100vh - 188px);">';
 		
-		// 
-		// <div class="button right"><i class="mdi mdi-clipboard-edit-outline">&nbsp;</i>Edit Info...</div>
-		
 		html += `<div class="wf_grid_header">
 			<div class="wf_title left" style="display:none"><i class="mdi mdi-clipboard-flow-outline">&nbsp;</i>${config.ui.titles.workflow_editor}</div>
 			<div class="button secondary left mobile_collapse" id="d_btn_wf_edit" onClick="$P().doEditSelection()" style="display:none" title="${config.ui.tooltips.wf_edit_sel_node}"><i class="mdi mdi-note-edit-outline">&nbsp;</i><span>${config.ui.buttons.wf_edit_sel_node}</span></div>
@@ -2793,6 +2790,22 @@ Page.Workflows = class Workflows extends Page.Events {
 		if (this.wfZoom) {
 			this.renderWFConnections();
 			this.updateEffects();
+		}
+	}
+	
+	onScrollDelay() {
+		// called when user scrolls, with debounce
+		// blur active text field if wf editor is more than 50% visible
+		if (!this.wfZoom) return; // sanity
+		
+		var cont = this.wfGetContainer().get(0);
+		if (!cont) return; // sanity
+		
+		if (document.activeElement && (document.activeElement.tagName == 'INPUT')) {
+			var rect = cont.getBoundingClientRect();
+			if (rect.top < window.innerHeight / 2) {
+				try { document.activeElement.blur(); } catch (e) {;}
+			}
 		}
 	}
 	
