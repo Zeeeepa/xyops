@@ -23,6 +23,7 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 		app.setWindowTitle( "Conductor Servers" );
 		
 		this.render_masters();
+		this.addPageDescription();
 		
 		return true;
 	}
@@ -92,7 +93,6 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 		html += '</div>'; // box
 		
 		this.div.html( html );
-		this.addPageDescription();
 	}
 	
 	do_master_cmd(idx, cmds) {
