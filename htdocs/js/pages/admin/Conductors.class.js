@@ -74,10 +74,10 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 			var row = [
 				'<div class="td_big">' + self.getNiceMaster(item) + '</div>',
 				status,
-				'<div style="">v' + (item.version || '-') + '</div>',
-				'<div style="">' + (item.stats.load ? short_float(item.stats.load) : '-') + '</div>',
-				'<div style="">' + item.ping + ' ms</div>',
-				'<div style="">' + (item.date ? get_text_from_seconds( app.epoch - item.date, false, true ) : '-') + '</div>',
+				'<div style=""><i class="mdi mdi-tag-text-outline">&nbsp;</i>v' + (item.version || '-') + '</div>',
+				'<div style=""><i class="mdi mdi-chip">&nbsp;</i>' + (item.stats.load ? short_float(item.stats.load) : '-') + '</div>',
+				'<div style=""><i class="mdi mdi-timer-outline">&nbsp;</i>' + item.ping + ' ms</div>',
+				'<div style="">' + (item.date ? self.getNiceUptime( app.epoch - item.date ) : 'n/a') + '</div>',
 				item.online ? actions.join(' | ') : '-'
 			];
 			if (!item.online) row.className = 'disabled';
