@@ -46,7 +46,7 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 		// save local copy for actions
 		this.masters = rows;
 		
-		var cols = ['Host ID', 'Status', 'Version', 'Load Avg', 'Ping', 'Uptime', 'Actions'];
+		var cols = ['Host ID', 'Status', 'xyOps', 'Load Avg', 'Ping', 'Uptime', 'Actions'];
 		
 		html += '<div class="box">';
 		html += '<div class="box_title">';
