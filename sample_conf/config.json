@@ -1,7 +1,7 @@
 {
 	"base_app_url": "http://localhost:5522",
 	"email_from": "admin@localhost",
-	"secret_key": "CHANGE_ME",
+	"secret_key": "initial",
 	
 	"mail_settings": {
 		"host": "localhost",
