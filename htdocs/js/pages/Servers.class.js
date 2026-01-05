@@ -178,7 +178,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			var tds = [
 				'<span style="font-weight:bold">' + self.getNiceServer(item, true) + '</span>',
 				self.getNiceIP(item.ip),
-				self.getNiceGroupList(item.groups, true),
+				self.getNiceGroupList(item.groups),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
 				self.getNiceShortOS(item.info.os),
@@ -681,7 +681,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			return [
 				'<b>' + self.getNiceServer(item, true) + '</b>',
 				self.getNiceIP(item.ip),
-				self.getNiceGroupList(item.groups, true),
+				self.getNiceGroupList(item.groups),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
 				self.getNiceShortOS(item.info.os),
