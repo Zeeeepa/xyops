@@ -1,5 +1,20 @@
 # xyOps Changelog
 
+## Version v0.9.13
+
+> January 7, 2026
+
+- [df79e54](https://github.com/pixlcore/xyops/commit/df79e544e4e8c94dc7b567f5dc8ca8e743d351ec): Version 0.9.13
+- [54ed78e](https://github.com/pixlcore/xyops/commit/54ed78ec1e1b53f9b8bc31c99e9de575992623e5): Job Detail Page: Only show "Run Again" button if job has an event, and event still exists.
+- [b1238b4](https://github.com/pixlcore/xyops/commit/b1238b4a1ed01ef59a523460a5d15cc73fabc808): Fix: Crasher bug when "Delete Event" action is used.
+- [7054659](https://github.com/pixlcore/xyops/commit/7054659c5d0efead647b6320b75f893922f8b6d6): System: Tweak color of test email success dialog title.
+- [6b66b77](https://github.com/pixlcore/xyops/commit/6b66b77b489ef0610448a48df7cff80bda7956a8): Cosmetic: Fix plugin dependency markdown list when multiple types are present.
+- [2db9ccf](https://github.com/pixlcore/xyops/commit/2db9ccf2fae1d31cb568c2e04bbe7c4b9edd3969): Feature: Send test email from system page.
+- [f27382d](https://github.com/pixlcore/xyops/commit/f27382d3e65585c171de2e558242b5aefc7241b1): Self-Hosting Guide: Added a bind mount for the conf directory in the sample docker compose.
+- [b778075](https://github.com/pixlcore/xyops/commit/b7780755d8735c93c135259db4a78a193ef0383c): Tickets: Drop email send debug level to 5
+- [873f918](https://github.com/pixlcore/xyops/commit/873f9186969fdae83da1249b520bdf8ec3b28fa6): Fix: Descending date sort not working due a typo
+- [8c7092f](https://github.com/pixlcore/xyops/commit/8c7092f11d6da6cf91fea425447efd48232eb7ca): Config Doc: Add Fastmail SMTP setup example
+
 ## Version v0.9.12
 
 > January 7, 2026
