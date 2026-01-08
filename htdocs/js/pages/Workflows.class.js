@@ -1363,6 +1363,8 @@ Page.Workflows = class Workflows extends Page.Events {
 			var job = deep_copy_object(event);
 			job.enabled = true; // override event disabled, so test actually runs
 			job.test = true;
+			job.test_actions = true;
+			job.test_limits = true;
 			job.label = "Test";
 			job.icon = "test-tube";
 			job.workflow.start = node.id; // set starting node
@@ -1377,6 +1379,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			if (!$('#fe_ete_actions').is(':checked')) {
 				// disable both workflow actions and action nodes
 				job.actions = [];
+				job.test_actions = false;
 				if (scope != 'single') find_objects( job.workflow.nodes, { type: 'action' } ).forEach( function(action) {
 					action.enabled = false;
 				} );
@@ -1384,6 +1387,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			if (!$('#fe_ete_limits').is(':checked')) {
 				// disable both workflow limits and limit nodes
 				job.limits = [];
+				job.test_limits = false;
 				if (scope != 'single') find_objects( job.workflow.nodes, { type: 'limit' } ).forEach( function(limit) {
 					limit.enabled = false;
 				} );

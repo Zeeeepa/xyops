@@ -2292,14 +2292,18 @@ Page.Events = class Events extends Page.PageUtils {
 			var job = deep_copy_object(event);
 			job.enabled = true; // override event disabled, so test actually runs
 			job.test = true;
+			job.test_actions = true;
+			job.test_limits = true;
 			job.label = "Test";
 			job.icon = "test-tube";
 			
 			if (!$('#fe_ete_actions').is(':checked')) {
 				job.actions = [];
+				job.test_actions = false;
 			}
 			if (!$('#fe_ete_limits').is(':checked')) {
 				job.limits = [];
+				job.test_limits = false;
 			}
 			
 			// parse custom input json
