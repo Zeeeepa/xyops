@@ -1,5 +1,13 @@
 # xyOps Changelog
 
+## Version v0.9.16
+
+> January 8, 2026
+
+- [`742c66c`](https://github.com/pixlcore/xyops/commit/742c66c575671c8530b6ba2af5776761fc9077e1): Version 0.9.16
+- [`cd00341`](https://github.com/pixlcore/xyops/commit/cd00341174b7a5a48c79bddfd14bbbde0ff7c74d): Fix: Properly handle case when satellite reboots while jobs are running.
+- [`f3e72b2`](https://github.com/pixlcore/xyops/commit/f3e72b2a8209f48c80fcd8282eb834f65d751593): Fix: Socket ping death logic was not happening due to a typo
+
 ## Version v0.9.15
 
 > January 8, 2026
