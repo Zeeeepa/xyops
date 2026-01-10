@@ -1714,10 +1714,10 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		// summary
 		md += "### Summary\n\n";
-		md += '- **Description:** <i class="mdi mdi-' + item._type.icon + '">&nbsp;</i>' + item._desc + "\n";
-		md += '- **Date/Time:** ' + this.getRelativeDateTime(item.epoch) + "\n";
+		md += '- **Description:** <i class="mdi mdi-' + item._type.icon + '"></i>' + item._desc + "\n";
+		md += '- **Date/Time:** ' + this.getRelativeDateTime(item.epoch).replace(/\&nbsp\;/g, '') + "\n";
 		md += '- **User:** ' + this.getNiceUser(item.username, true) + "\n";
-		md += '- **Revision:** <i class="mdi mdi-file-compare">&nbsp;</i>' + (item.event.revision || 'n/a') + (is_cur_rev ? ' (Current)' : '') + "\n";
+		md += '- **Revision:** <i class="mdi mdi-file-compare"></i>' + (item.event.revision || 'n/a') + (is_cur_rev ? ' (Current)' : '') + "\n";
 		
 		// diff
 		if (this.revisions[idx + 1] && this.revisions[idx + 1].event) {
