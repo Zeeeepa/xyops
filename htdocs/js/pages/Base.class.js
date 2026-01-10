@@ -13,7 +13,9 @@ Page.Base = class Base extends Page {
 	
 	getNiceAPIKey(item, link) {
 		// overriding method in xyops-theme page.js
+		if (item && (typeof(item) == 'string')) item = find_object( app.api_keys, { id: item } );
 		if (!item) return 'n/a';
+		
 		var key = item.api_key || item.key;
 		var title = item.title;
 		
@@ -2604,21 +2606,16 @@ Page.Base = class Base extends Page {
 		var buttons_html = "";
 		if (btn) buttons_html += btn;
 		else buttons_html += '<div class="button" title="Copy to Clipboard" onClick="$P().copyCodeToClipboard()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i>Copy</div>';
-		buttons_html += '<div class="button primary" onClick="Dialog.confirm_click(true)"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Close</div>';
+		buttons_html += '<div class="button primary" onClick="CodeEditor.hide()"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Close</div>';
 		
-		Dialog.showSimpleDialog(title, html, buttons_html);
+		CodeEditor.showSimpleDialog(title, html, buttons_html);
 		
-		// special mode for key capture
-		Dialog.active = 'confirmation';
-		Dialog.confirm_callback = function(result) { 
-			if (result) Dialog.hide(); 
-		};
-		Dialog.onHide = function() {
+		CodeEditor.onHide = function() {
 			delete self._temp_code;
 		};
 		
-		this.highlightCodeBlocks('#dialog .markdown-body');
-		this.expandInlineImages('#dialog .markdown-body');
+		this.highlightCodeBlocks('#ceditor .markdown-body');
+		this.expandInlineImages('#ceditor .markdown-body');
 	}
 	
 	copyCodeToClipboard() {
