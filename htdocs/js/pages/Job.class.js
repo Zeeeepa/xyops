@@ -571,8 +571,9 @@ Page.Job = class Job extends Page.PageUtils {
 			this.renderWorkflowJobs();
 		}
 		
-		// jump straight into resume dialog if requested on URL
+		// jump straight into dialogs if requested on URL
 		if (this.args.resume) this.doResumeJob();
+		else if (job.final && this.args.action) this.viewJobActionDetails(0);
 	}
 	
 	updateSuspensionStatus() {
@@ -1791,6 +1792,8 @@ Page.Job = class Job extends Page.PageUtils {
 			html += job.html.content;
 			if (job.html.caption) html += '<div class="user_caption">' + encode_entities(job.html.caption) + '</div>';
 			$html.find('div.box_content').html( html );
+			
+			if (html.match(/\bmarkdown-body\b/)) this.highlightCodeBlocks( $html.find('div.box_content') );
 		} // html
 		
 		if (job.perf) this.updateUserPerf();
