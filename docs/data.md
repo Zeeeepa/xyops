@@ -28,7 +28,7 @@ An alert definition is a trigger that specifies conditions under which the alert
 
 ### Alert.id
 
-A unique alphanumeric ID for the alert.
+A unique lowercase alphanumeric ID for the alert.
 
 ### Alert.title
 
@@ -114,7 +114,7 @@ An API Key is a unique identifier used to authenticate requests.  Here is an API
 
 ### APIKey.id
 
-A unique alphanumeric ID for the API Key.
+A unique lowercase alphanumeric ID for the API Key.
 
 ### APIKey.key
 
@@ -182,7 +182,7 @@ Note that the bucket user data and files are stored separately, outside of the b
 
 ### Bucket.id
 
-A unique alphanumeric ID for the bucket.
+A unique lowercase alphanumeric ID for the bucket.
 
 ### Bucket.title
 
@@ -248,7 +248,7 @@ A category is a way to group related events together.  Each event can belong to 
 
 ### Category.id
 
-A unique alphanumeric ID for the category.
+A unique lowercase alphanumeric ID for the category.
 
 ### Category.enabled
 
@@ -326,7 +326,7 @@ A notification channel is a way to send notifications to a group of users, and t
 
 ### Channel.id
 
-A unique alphanumeric ID for the channel.
+A unique lowercase alphanumeric ID for the channel.
 
 ### Channel.title
 
@@ -434,7 +434,7 @@ Events have the following properties:
 
 ### Event.id
 
-A unique alphanumeric ID for the event.
+A unique lowercase alphanumeric ID for the event.
 
 ### Event.title
 
@@ -534,7 +534,7 @@ A server group is a collection of servers, usually auto-matched by hostname, but
 
 ### Group.id
 
-A unique alphanumeric ID for the group.
+A unique lowercase alphanumeric ID for the group.
 
 ### Group.title
 
@@ -582,7 +582,7 @@ And these additions:
 
 ### Job.id
 
-An auto-generated, unique, alphanumeric ID for the job, which will always start with a `j`.
+An auto-generated, unique, lowercase alphanumeric ID for the job, which will always start with a `j`.
 
 ### Job.type
 
@@ -893,7 +893,7 @@ A monitor keeps track on a specific numeric server metric.  These are graphed in
 
 ### Monitor.id
 
-A unique alphanumeric ID for the monitor.
+A unique lowercase alphanumeric ID for the monitor.
 
 ### Monitor.title
 
@@ -998,7 +998,7 @@ Plugins are used to extend xyOps in a variety of ways, including custom event ac
 
 ### Plugin.id
 
-A unique alphanumeric ID for the plugin.
+A unique lowercase alphanumeric ID for the plugin.
 
 ### Plugin.title
 
@@ -1030,7 +1030,7 @@ A set of custom parameters to pass to the plugin when it is executed (for non-mo
 
 | Property Name | Type | Description |
 |---------------|------|-------------|
-| `id` | String | A lower-case alphanumeric ID for the parameter (can also contain underscores). |
+| `id` | String | A lowercase alphanumeric ID for the parameter (can also contain underscores). |
 | `title` | String | A visual title for the parameter, displayed in the UI. |
 | `type` | String | The parameter type ID, which should be one of: `text`, `textarea`, `code`, `checkbox`, `select`, `hidden`, or `toolset`. |
 | `variant` | String | For `text` type controls, you can optionally set a UI input variant: `color`, `date`, `datetime-local`, `email`, `number`, `password`, `text`, `time`, `tel` or `url`. |
@@ -1106,7 +1106,7 @@ A user role is a set of privileges assigned to a user within the system.  A user
 
 ### Role.id
 
-A unique alphanumeric ID for the role.
+A unique lowercase alphanumeric ID for the role.
 
 ### Role.title
 
@@ -1185,7 +1185,7 @@ A secret is a collection of key/value pairs which are all stored using strong en
 
 ### Secret.id
 
-A unique alphanumeric ID for the secret.
+A unique lowercase alphanumeric ID for the secret.
 
 ### Secret.title
 
@@ -1560,7 +1560,7 @@ This array contains a list of all the changes made to the ticket, including thin
 
 | Property Name | Type | Description |
 |---------------|------|-------------|
-| `id` | String | A unique alphanumeric ID for the change. |
+| `id` | String | A unique lowercase alphanumeric ID for the change. |
 | `type` | String | The change type, which should be one of: `change` or `comment`. |
 | `username` | String | The username of the user who made the change. |
 | `date` | Number | The Unix timestamp of the change. |
@@ -1893,7 +1893,7 @@ Each activity type (denoted by the `action` property) may have different custom 
 
 ### Activity.id
 
-A unique alphanumeric ID which is automatically assigned when the activity is logged.
+A unique lowercase alphanumeric ID which is automatically assigned when the activity is logged.
 
 ### Activity.action
 
@@ -2550,7 +2550,7 @@ A snapshot is a record of everything happening on a server for a specific instan
 
 ### Snapshot.id
 
-A unique alphanumeric ID automatically generated for the snapshot.
+A unique lowercase alphanumeric ID automatically generated for the snapshot.
 
 ### Snapshot.type
 
@@ -2610,7 +2610,7 @@ Snapshots may be taken of entire server groups, which uses the following structu
 
 ### GroupSnapshot.id
 
-A unique alphanumeric ID automatically generated for the snapshot.
+A unique lowercase alphanumeric ID automatically generated for the snapshot.
 
 ### GroupSnapshot.type
 
@@ -3092,7 +3092,7 @@ A workflow node is an object which represents an event, an ad-hoc job, a trigger
 
 #### WorkflowNode.id
 
-A unique alphanumeric ID for the node, which is automatically assigned when created.  Workflow Node IDs will always start with `n`.
+A unique lowercase alphanumeric ID for the node, which is automatically assigned when created.  Workflow Node IDs will always start with `n`.
 
 #### WorkflowNode.type
 
@@ -3145,7 +3145,7 @@ A workflow connection object represents a connection between two nodes (rendered
 
 #### WorkflowConnection.id
 
-A unique alphanumeric ID for the connection, which is automatically assigned when created.  Workflow Connection IDs will always start with `c`.
+A unique lowercase alphanumeric ID for the connection, which is automatically assigned when created.  Workflow Connection IDs will always start with `c`.
 
 #### WorkflowConnection.source
 
