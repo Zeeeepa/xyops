@@ -5167,7 +5167,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		if (!app.user.page_info) return;
 		if (this.div.find('#d_page_desc').length) return; // sanity
 		
-		app.api.get( 'app/get_doc', { doc: 'pages' }, function(resp) {
+		var finish = function(resp) {
 			var text = resp.text;
 			if (!text.match( new RegExp("\\n##\\s+(" + page_id + ")\\s+([\\S\\s]+?)(\\n#|$)") )) return;
 			var desc = RegExp.$2;
@@ -5198,6 +5198,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					$this.prepend(`<i style="padding-right:2px" class="mdi mdi-file-document-outline"></i>`);
 				}
 			});
+		}; // finish
+		
+		if (app._page_desc_cache) return finish(app._page_desc_cache);
+		
+		app.api.get( 'app/get_doc', { doc: 'pages' }, function(resp) {
+			app._page_desc_cache = resp;
+			finish(resp);
 		} );
 	}
 	
