@@ -304,7 +304,7 @@ Page.Marketplace = class Marketplace extends Page.PageUtils {
 		
 		var grid_args = {
 			resp: resp,
-			cols: ['Title / Description', 'Author', 'License', 'Type', 'Modified', 'Version'],
+			cols: ['Title / Description', 'Author', 'License', 'Type', 'Modified', 'Status'],
 			data_type: 'product',
 			offset: this.args.offset || 0,
 			limit: this.args.limit,
@@ -329,13 +329,17 @@ Page.Marketplace = class Marketplace extends Page.PageUtils {
 				combo += `<div class="product_desc ellip">${product.description}</div>`;
 			combo += `</div>`;
 			
+			var installed = self.findInstalledProduct(product);
+			var nice_status = self.getNiceInstalledStatus(product, installed);
+			
 			return [
 				combo,
 				self.getNiceProductAuthor( product.author ),
 				self.getNiceProductLicense( product.license ),
 				self.getNiceProductType( product ),
 				self.getNiceProductDate( product.created ),
-				self.getNiceProductVersion( product.versions[0] )
+				nice_status
+				// self.getNiceProductVersion( product.versions[0] )
 			];
 		} );
 		
@@ -458,7 +462,7 @@ Page.Marketplace = class Marketplace extends Page.PageUtils {
 					// status (installed / not)
 					html += '<div>';
 						html += '<div class="info_label">Status</div>';
-						html += '<div class="info_value">' + this.getNiceInstalledStatus() + '</div>';
+						html += '<div class="info_value">' + this.getNiceInstalledStatus(product, installed) + '</div>';
 					html += '</div>';
 					
 					// installed version
@@ -554,17 +558,14 @@ Page.Marketplace = class Marketplace extends Page.PageUtils {
 		} );
 	}
 	
-	getNiceInstalledStatus() {
-		// (installed ? '<i class="mdi mdi-check-circle-outline">&nbsp;</i>Installed' : '<i class="mdi mdi-cancel">&nbsp;</i>Not Installed')
-		var product = this.product;
-		var installed = this.installed;
-		
+	getNiceInstalledStatus(product, installed) {
+		// up to date, outdated, not installed
 		if (installed) {
 			// check version
-			if (installed.marketplace.version == product.versions[0]) return '<span style="color:var(--green)"><i class="mdi mdi-check-circle-outline">&nbsp;</i>Up to Date</span>'
-			else return '<span style="color:var(--red)"><i class="mdi mdi-alert-rhombus">&nbsp;</i>Outdated</span>';
+			if (installed.marketplace.version == product.versions[0]) return '<span style="color:var(--green); font-weight:bold;"><i class="mdi mdi-check-circle-outline">&nbsp;</i>Up to Date</span>'
+			else return '<span style="color:var(--red); font-weight:bold;"><i class="mdi mdi-alert-rhombus">&nbsp;</i>Outdated</span>';
 		}
-		else return '<i class="mdi mdi-cancel">&nbsp;</i>Not Installed';
+		else return '<span style="color:var(--gray)"><i class="mdi mdi-cancel">&nbsp;</i>Not Installed</span>';
 	}
 	
 	do_edit() {
