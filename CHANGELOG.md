@@ -1,5 +1,16 @@
 # xyOps Changelog
 
+## Version v0.9.22
+
+> January 12, 2026
+
+- [`832f698`](https://github.com/pixlcore/xyops/commit/832f698ac58ef3aef73258311a33c7328847d85c): Version 0.9.22
+- [`ffeffa9`](https://github.com/pixlcore/xyops/commit/ffeffa99cea41cc18700220b8d41a9dd2d253877): Self-Upgrade System: Change log filename to "background.log" for background upgrade commands (WIP).
+- [`66044bf`](https://github.com/pixlcore/xyops/commit/66044bfcbe7c8f29402da8a72110a67da0ba053f): UI: Page Descriptions: Prevent flickering on some pages when server sends data updates.
+- [`f0d4ee0`](https://github.com/pixlcore/xyops/commit/f0d4ee04960f067cbbe19c78f270699297ed9ae0): Satellite Upgrade: Tweak debug log levels slightly, for more info on standard level 5.
+- [`a031137`](https://github.com/pixlcore/xyops/commit/a0311375b36c482ffbf26e3a121ad89a7f4918c1): Self Upgrades: Add retries with exponential backoff for upstream GitHub requests, as they randomly fail sometimes.
+- [`862c674`](https://github.com/pixlcore/xyops/commit/862c67418bf0afb5c0114f0a56b338dd516bff1d): System Upgrade Dialogs: Save release and stagger selections in user prefs.
+
 ## Version v0.9.21
 
 > January 12, 2026
