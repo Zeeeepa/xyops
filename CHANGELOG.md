@@ -1,5 +1,27 @@
 # xyOps Changelog
 
+## Version v0.9.23
+
+> January 14, 2026
+
+- [`23eebde`](https://github.com/pixlcore/xyops/commit/23eebde535e93b3a070052a402d996e5bfa1e2c9): Scaling Doc: Add sections for handling critical errors, and monitoring alerts.
+- [`1196139`](https://github.com/pixlcore/xyops/commit/1196139ea5cd1e993034843bb757a8dad19e534a): System Hooks Doc: Change word.
+- [`f20a75b`](https://github.com/pixlcore/xyops/commit/f20a75b74ac5bc7d0b9603d9b89b3cee7a352d76): System Hooks Doc: Add note about creating overdue tickets.
+- [`ac3e093`](https://github.com/pixlcore/xyops/commit/ac3e093baf367b36d9a1316efdd806a57ce3eac5): Added note regarding passing query string or POST parameters to the magic API
+- [`7f035a6`](https://github.com/pixlcore/xyops/commit/7f035a66dfbce36ea42da82ea8484d65954c2019): Version 0.9.23
+- [`99cf11d`](https://github.com/pixlcore/xyops/commit/99cf11d24223372fb8083e495d188e5d8abb449c): Install Script: Disable current version check, in case user wants to reinstall the same version.
+- [`684254e`](https://github.com/pixlcore/xyops/commit/684254efea870978b2ac3b1710537edccd81586b): API Doc: Added note in run_event about overriding event properties, and specifying tags.
+- [`028604c`](https://github.com/pixlcore/xyops/commit/028604c103c22aff49627547b5dbccc947cb136a): Wrote: System Hooks doc.
+- [`5d0504f`](https://github.com/pixlcore/xyops/commit/5d0504f1e3f903864bfa2642b83b7c7a84b0b595): System Web Hooks: Remove legacy configuration properties.
+- [`0e5efaa`](https://github.com/pixlcore/xyops/commit/0e5efaaf0c6553626db1b20b40616783e0291d73): Multi-Server System: Improvements to background upgrades and remote command notifications.
+- [`d0af5b9`](https://github.com/pixlcore/xyops/commit/d0af5b96f92c37e5b2bfa772b432a57baa6827e8): Mailer: New "activity.txt" email template for system hook activity email reports.
+- [`b58f2e2`](https://github.com/pixlcore/xyops/commit/b58f2e20b2ca1ecaf972e5ae955912116727cdda): Mailer: Look in both conf/emails/ and sample_conf/emails/ for templates, as new ones may be introduced.
+- [`67e1c14`](https://github.com/pixlcore/xyops/commit/67e1c1445eb7b6c9774354371a75aa804798ec1c): WebSocket Comm: Add support for notice, error, warning and critical activity log entries from remote servers.
+- [`6e94809`](https://github.com/pixlcore/xyops/commit/6e948095eaed334927c25fb75b73a07fe86ec326): System Hook: Major improvements to shell exec, add "email" and "ticket" system hook actions.
+- [`9ee9be2`](https://github.com/pixlcore/xyops/commit/9ee9be202e1e20f3766d6f0d82ea506603552e39): UI Config: Add "critical" activity type, and fix icon for warnings.
+- [`c2a1cdb`](https://github.com/pixlcore/xyops/commit/c2a1cdbefcfe29d997be724f81f4e8f52071bd40): Activity UI: Add display and filtering support for general notices, warnings, errors, and criticals.
+- [`3a1035f`](https://github.com/pixlcore/xyops/commit/3a1035f8c235ba625ad4281b167eef7bb7025d0a): Dynamic copyright string with configurable company name.
+
 ## Version v0.9.22
 
 > January 12, 2026
