@@ -17,6 +17,14 @@ if [ ! -f "$INSTALL_DIR/package.json" ]; then
     exit 1
 fi
 
+# Make sure we're logging everything
+LOG_DIR="$INSTALL_DIR/logs"
+LOG_FILE="$LOG_DIR/background.log"
+mkdir -p $LOG_DIR
+exec >>"$LOG_FILE" 2>&1
+
+echo "Detecting OS and architecture..."
+
 # Detect OS and architecture
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -52,6 +60,7 @@ fi
 
 # See if we can even reach the master server
 TEST_URL="${BASE_URL}/api/app/ping"
+echo "Pinging server: $TEST_URL ..."
 RC=0
 TEST_OUT=$($CURL "$TEST_URL" 2>&1) || RC=$?
 if [ $RC != 0 ]; then
@@ -61,6 +70,7 @@ if [ $RC != 0 ]; then
 	echo $TEST_OUT
 	exit 1;
 fi
+echo "Ping successful."
 
 echo "Upgrading xyOps Satellite for ${OS}/${ARCH}..."
 
@@ -68,10 +78,14 @@ echo "Upgrading xyOps Satellite for ${OS}/${ARCH}..."
 cd $INSTALL_DIR
 
 # Download satellite package
+echo "Fetching package from $BASE_URL..."
 $CURL "${BASE_URL}/api/app/satellite/core?s=${SERVER_ID}&t=${AUTH_TOKEN}&os=${OS}&arch=${ARCH}" | tar zxf -
 
 # Set some permissions
 chmod 775 *.sh bin/*
+
+echo "Upgrade complete."
+echo "Restarting service."
 
 # Stop running service
 ./bin/node main.js stop
@@ -80,6 +94,3 @@ chmod 775 *.sh bin/*
 if [ -z "${SATELLITE_foreground+x}" ]; then
 	./bin/node main.js start
 fi
-
-# And we're done
-echo "Upgrade complete."
