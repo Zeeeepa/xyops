@@ -152,12 +152,12 @@ cp.exec('curl -s ' + gh_releases_url, function (err, stdout, stderr) {
 		}
 	}
 	
-	// sanity check
-	if (is_preinstalled && (cur_version == new_version)) {
-		if (process.argv[2]) print( "\nVersion " + cur_version + " is already installed.\n\n" );
-		else print( "\nVersion " + cur_version + " is already installed, and is the latest.\n\n" );
-		process.exit(0);
-	}
+	// // sanity check
+	// if (is_preinstalled && (cur_version == new_version)) {
+	// 	if (process.argv[2]) print( "\nVersion " + cur_version + " is already installed.\n\n" );
+	// 	else print( "\nVersion " + cur_version + " is already installed, and is the latest.\n\n" );
+	// 	process.exit(0);
+	// }
 	
 	// proceed with installation
 	if (is_preinstalled) print("Upgrading xyOps from v"+cur_version+" to v"+new_version+"...\n");
