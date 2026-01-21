@@ -1,5 +1,14 @@
 # xyOps Changelog
 
+## Version v0.9.34
+
+> January 20, 2026
+
+- [`2605334`](https://github.com/pixlcore/xyops/commit/260533479e9179091175c962cd115991a631f8de): Version 0.9.34
+- [`628bd9b`](https://github.com/pixlcore/xyops/commit/628bd9b83a27a059dd79951fa8251a85c9a63b89): Feature: "Bucket Menu" allows you to define a plugin or event param with dynamic items that load from a storage bucket.
+- [`5490b8e`](https://github.com/pixlcore/xyops/commit/5490b8e16afd70e2fb64b7b6ab95273f0162b253): Bump pixl-xyapp to v2.0.19 for more robust menu data handling.
+- [`5de61eb`](https://github.com/pixlcore/xyops/commit/5de61eb5964bda9585285cd23bfe34b656848d90): Feature: Show "Tags" column on Event List page.
+
 ## Version v0.9.33
 
 > January 19, 2026
