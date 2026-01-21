@@ -2520,8 +2520,16 @@ Page.Base = class Base extends Page {
 				break;
 				
 				case 'select':
-					html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
+					html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(this)" title="Copy to Clipboard">&nbsp;</i>';
 					html += '<span class="data_value">' + encode_entities( elem_value.toString().replace(/\,.*$/, '') ) + '</span>';
+				break;
+				
+				case 'bucket':
+					if (elem_value.toString().length) {
+						html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(this)" title="Copy to Clipboard">&nbsp;</i>';
+						html += '<span class="data_value">' + encode_entities( elem_value.toString().replace(/\,.*$/, '') ) + '</span>';
+					}
+					else html += self.getNiceBucket(param.bucket_id);
 				break;
 				
 				case 'toolset':

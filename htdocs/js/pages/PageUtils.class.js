@@ -2460,6 +2460,18 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					html += self.getFormMenu({ id: elem_id, value: elem_value, options: param.value.split(/\,\s*/), disabled: elem_dis });
 				break;
 				
+				case 'bucket':
+					var bucket = find_object( app.buckets, { id: param.bucket_id } );
+					if (bucket) {
+						elem_value = (param.id in params) ? params[param.id] : '';
+						var menu_opts = self.getBucketMenuItems(bucket.id, param.bucket_path, elem_id, elem_value);
+						html += self.getFormMenu({ id: elem_id, value: elem_value, options: menu_opts, disabled: elem_dis });
+					}
+					else {
+						html += self.getFormMenu({ id: elem_id, value: '', options: [ { id: '', title: "(Bucket Not Found)" } ], disabled: elem_dis });
+					}
+				break;
+				
 				case 'toolset':
 					var data = param.data || { tools: [] };
 					if (!data.tools) data.tools = [];
@@ -2495,6 +2507,35 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // foreach param
 		
 		return html;
+	}
+	
+	getBucketMenuItems(bucket_id, data_path, dom_id, elem_value) {
+		// pull bucket menu items from cache, or schedule an async load here and now
+		var self = this;
+		if (!app.bucketMenuItemCache) app.bucketMenuItemCache = {};
+		if (app.bucketMenuItemCache[bucket_id]) {
+			var items = data_path ? get_path(app.bucketMenuItemCache[bucket_id], data_path) : app.bucketMenuItemCache[bucket_id];
+			if (items && (typeof(items) == 'string')) items = items.split(/\,\s*/);
+			if (!items || !Array.isArray(items)) items = [ { id: '', title: "Menu Data Not Found" } ];
+			return items;
+		}
+		
+		// fetch items in background, and populate DOM element and cache
+		app.api.get( 'app/get_bucket', { id: bucket_id }, function(resp) {
+			app.bucketMenuItemCache[bucket_id] = resp.data;
+			if (!self.active) return; // sanity
+			
+			var items = data_path ? get_path(resp.data, data_path) : resp.data;
+			if (items && (typeof(items) == 'string')) items = items.split(/\,\s*/);
+			if (!items || !Array.isArray(items)) items = [ { id: '', title: "Menu Data Not Found" } ];
+			
+			var $menu = $('#' + dom_id);
+			if (!$menu.length) return; // sanity
+			
+			$menu.html( render_menu_options( items, elem_value, false ) );
+		}); // api.get
+		
+		return [ { id: '', title: "..." } ];
 	}
 	
 	changePluginParamTool(plugin_id, param_id, explore = false) {
@@ -3438,6 +3479,14 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					html += strip_html( elem_value.toString().replace(/\,.*$/, '') );
 				break;
 				
+				case 'bucket':
+					if (elem_value.toString().length) {
+						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
+						html += strip_html( elem_value.toString().replace(/\,.*$/, '') );
+					}
+					else html += self.getNiceBucket( param.bucket_id );
+				break;
+				
 				case 'toolset':
 					html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
 					var tool = find_object( param.data.tools, { id: elem_value } );
@@ -4143,6 +4192,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					pairs.push([ 'Items', '(' + strip_html(param.value) + ')' ]);
 				break;
 				
+				case 'bucket':
+					pairs.push([ self.getNiceBucket(param.bucket_id) ]);
+				break;
+				
 				case 'toolset':
 					if (param.data && param.data.tools && param.data.tools.length) pairs.push([ commify(param.data.tools.length) + " tools in set" ]);
 					else pairs.push([ "(No tools in set)" ]);
@@ -4196,7 +4249,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var old_param = param;
 		
 		// prepare control type menu
-		var ctypes = (this.controlTypes || ['checkbox', 'code', 'json', 'hidden', 'select', 'text', 'textarea']).map (function(key) { 
+		var ctypes = (this.controlTypes || ['checkbox', 'code', 'json', 'hidden', 'select', 'bucket', 'text', 'textarea']).map (function(key) { 
 			return { 
 				id: key, 
 				title: config.ui.control_type_labels[key],
@@ -4344,6 +4397,31 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			caption: 'Enter JSON data describing the toolset.  [Learn More](#Docs/plugins/toolset)'
 		});
 		
+		html += this.getFormRow({
+			id: 'd_epa_bucket_id',
+			label: 'Storage Bucket:',
+			content: this.getFormMenuSingle({
+				id: 'fe_epa_bucket_id',
+				title: 'Select Storage Bucket',
+				options: app.buckets,
+				value: param.bucket_id || '',
+				default_icon: 'pail-outline'
+			}),
+			caption: 'Select a Storage Bucket that contains the menu items as a JSON array.  [Learn More](#Docs/plugins/bucket-menu)'
+		});
+		html += this.getFormRow({
+			id: 'd_epa_bucket_path',
+			label: 'Data Path:',
+			content: this.getFormText({
+				id: 'fe_epa_bucket_path',
+				spellcheck: 'false',
+				autocomplete: 'off',
+				class: 'monospace',
+				value: param.bucket_path || ''
+			}),
+			caption: 'Optionally enter a `dot.delimited.path` to the array within the bucket data record.  If omitted, the array should be at the top-level of the bucket data.'
+		});
+		
 		// caption
 		html += this.getFormRow({
 			label: 'Caption:',
@@ -4443,6 +4521,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					delete param.required;
 				break;
 				
+				case 'bucket':
+					param.bucket_id = $('#fe_epa_bucket_id').val();
+					if (!param.bucket_id) return app.badField('#fe_epa_bucket_id', "Please select a storage bucket containing the menu items.");
+					param.bucket_path = $('#fe_epa_bucket_path').val();
+					delete param.required;
+				break;
+				
 				case 'hidden':
 					param.value = $('#fe_epa_value_hidden').val();
 					delete param.required;
@@ -4478,11 +4563,12 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // Dialog.confirm
 		
 		var change_param_type = function(new_type) {
-			$('#d_epa_value_text, #d_epa_value_textarea, #d_epa_value_code, #d_epa_value_json, #d_epa_value_checkbox, #d_epa_value_select, #d_epa_value_hidden, #d_epa_value_toolset').hide();
+			$('#d_epa_value_text, #d_epa_value_textarea, #d_epa_value_code, #d_epa_value_json, #d_epa_value_checkbox, #d_epa_value_select, #d_epa_value_hidden, #d_epa_value_toolset, #d_epa_bucket_id, #d_epa_bucket_path').hide();
 			$('#d_epa_value_' + new_type).show();
 			$('#d_epa_required').toggle( !!new_type.match(/^(text|textarea|code)$/) );
 			$('#d_epa_text_variant').toggle( !!new_type.match(/^(text)$/) );
 			$('#d_epa_locked').toggle( !new_type.match(/^(toolset)$/) );
+			$('#d_epa_bucket_id, #d_epa_bucket_path').toggle( !!new_type.match(/^(bucket)$/) );
 			Dialog.autoResize();
 		}; // change_action_type
 		
@@ -4494,7 +4580,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		
 		if (idx == -1) $('#fe_epa_id').focus();
 		
-		SingleSelect.init( $('#fe_epa_type, #fe_epa_text_variant') );
+		SingleSelect.init( $('#fe_epa_type, #fe_epa_text_variant, #fe_epa_bucket_id') );
 		Dialog.autoResize();
 	}
 	
@@ -4726,6 +4812,19 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					elem_value = (param.id in params) ? params[param.id] : param.value.replace(/\,.*$/, '');
 					html += self.getFormMenu({ id: elem_id, value: elem_value, options: param.value.split(/\,\s*/), disabled: elem_dis });
 				break;
+				
+				case 'bucket':
+					var bucket = find_object( app.buckets, { id: param.bucket_id } );
+					if (bucket) {
+						elem_value = (param.id in params) ? params[param.id] : '';
+						var menu_opts = self.getBucketMenuItems(bucket.id, param.bucket_path, elem_id, elem_value);
+						html += self.getFormMenu({ id: elem_id, value: elem_value, options: menu_opts, disabled: elem_dis });
+					}
+					else {
+						html += self.getFormMenu({ id: elem_id, value: '', options: [ { id: '', title: "(Bucket Not Found)" } ], disabled: elem_dis });
+					}
+				break;
+				
 			} // switch type
 			
 			if (param.caption) html += '<div class="info_caption">' + inline_marked( strip_html(param.caption) ) + '</div>';

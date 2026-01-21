@@ -824,6 +824,109 @@ To include an empty item at the top of the menu (allowing the user to select "no
 , Alpha, Beta, Gamma
 ```
 
+### Bucket Menu
+
+A "bucket menu" is a dynamically populated menu, which automatically loads its items from a global [Storage Bucket](buckets.md) that you configure.  Using this feature you can have menus across multiple Plugins or events that all share the same item pool.
+
+To define the set of items, simply create a Storage Bucket, and edit the JSON data within.  Place your JSON array anywhere in the bucket data.  Example:
+
+```json
+{
+	"countries": [
+		"United States",
+		"Canada",
+		"Mexico",
+		"Brazil",
+		"United Kingdom",
+		"France",
+		"Germany",
+		"Japan",
+		"Australia",
+		"South Africa"
+	]
+}
+```
+
+Make sure to save the bucket changes after editing the JSON.
+
+Then, when you add your parameter and select the "Bucket Menu" field type, you will need to select the target bucket, and optionally enter a "Data Path".  The path is how to specify *where* inside the storage bucket your item array lives.  In the above example it's in a top-level property named `countries`, so that's exactly what you'd enter for the Data Path.
+
+This allows you to store multiple different item lists in the same storage bucket.
+
+Alternatively, if your item array lives at the very top level of the bucket JSON data, i.e. like this:
+
+```json
+[
+	"United States",
+	"Canada",
+	"Mexico",
+	"Brazil",
+	"United Kingdom",
+	"France",
+	"Germany",
+	"Japan",
+	"Australia",
+	"South Africa"
+]
+```
+
+Then you should leave the "Data Path" field empty (as in this case the *entire* bucket data is the array).
+
+This feature also allows you to customize the menu item "values" (i.e. what goes into the [Job.params](data.md#job-params)) and menu item "labels" (i.e. what is displayed in the menu) separately.  To do this, define your JSON array as an array of objects, with each object containing an `id` and a `title` property.  Example:
+
+```json
+{
+	"countries": [
+		{ "id": "US", "title": "United States" },
+		{ "id": "CA", "title": "Canada" },
+		{ "id": "MX", "title": "Mexico" },
+		{ "id": "BR", "title": "Brazil" },
+		{ "id": "GB", "title": "United Kingdom" },
+		{ "id": "FR", "title": "France" },
+		{ "id": "DE", "title": "Germany" },
+		{ "id": "JP", "title": "Japan" },
+		{ "id": "AU", "title": "Australia" },
+		{ "id": "ZA", "title": "South Africa" }
+	]
+}
+```
+
+So in this case if the user selected "Germany" from the menu, the actual job param value would be the string `DE`.
+
+Finally, you can define groups of items in the menu by including an object with a `label` and an `items` sub-array.  These show up as delimited labeled sections within the menu (a.k.a. an [optgroup](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/optgroup)).  Example of this:
+
+```json
+{
+	"countries": [
+		{
+			"label": "Americas",
+			"items": [
+				{ "id": "US", "title": "United States" },
+				{ "id": "CA", "title": "Canada" },
+				{ "id": "MX", "title": "Mexico" },
+				{ "id": "BR", "title": "Brazil" }
+			]
+		},
+		{
+			"label": "Europe",
+			"items": [
+				{ "id": "GB", "title": "United Kingdom" },
+				{ "id": "FR", "title": "France" },
+				{ "id": "DE", "title": "Germany" }
+			]
+		},
+		{
+			"label": "Asia / Other",
+			"items": [
+				{ "id": "JP", "title": "Japan" },
+				{ "id": "AU", "title": "Australia" },
+				{ "id": "ZA", "title": "South Africa" }
+			]
+		}
+	]
+}
+```
+
 ### Checkbox
 
 A checkbox is displayed with a label, and the "checked" state is stored as a Boolean parameter value (`true` or `false`).
