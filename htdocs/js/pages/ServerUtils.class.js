@@ -2182,6 +2182,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				
 				case 'z_retried': args.query += ' tags:_retried'; break;
 				case 'z_last': args.query += ' tags:_last'; break;
+				case 'z_files': args.query += ' tags:_files'; break;
 				case 'z_test': args.query += ' tags:_test'; break;
 				
 				default:
