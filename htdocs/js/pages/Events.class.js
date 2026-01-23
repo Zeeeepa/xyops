@@ -979,7 +979,7 @@ Page.Events = class Events extends Page.PageUtils {
 			rows: rows,
 			cols: cols,
 			data_type: 'item',
-			class: 'data_grid',
+			class: 'data_grid scroll scroll_shadows',
 			empty_msg: "(Disabled)",
 			grid_template_columns: 'auto auto'
 		};
@@ -1012,7 +1012,7 @@ Page.Events = class Events extends Page.PageUtils {
 			rows: rows,
 			cols: cols,
 			data_type: 'action',
-			class: 'data_grid',
+			class: 'data_grid scroll scroll_shadows',
 			grid_template_columns: 'auto auto auto'
 		};
 		
@@ -1063,7 +1063,7 @@ Page.Events = class Events extends Page.PageUtils {
 			rows: rows,
 			cols: cols,
 			data_type: 'limit',
-			class: 'data_grid',
+			class: 'data_grid scroll scroll_shadows',
 			grid_template_columns: 'auto auto'
 		};
 		

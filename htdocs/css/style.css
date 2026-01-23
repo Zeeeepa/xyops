@@ -1027,6 +1027,12 @@ div.header_title.error {
 	color: var(--red);
 }
 
+.data_grid.scroll {
+	max-height: 30vh;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
 .data_grid div.td_drag_handle > div.checkbox_container {
 	top: 4px;
 }
