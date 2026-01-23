@@ -39,6 +39,14 @@ function get_pretty_int_list(arr, ranges) {
 	return arr.slice(0, arr.length - 1).join(', ') + ' and ' + arr[ arr.length - 1 ];
 }
 
+function get_pretty_str_list(arr) {
+	// compose string array to string using commas + spaces, and
+	// the english "and" to group the final two elements
+	if (!arr || !arr.length) return '';
+	if (arr.length == 1) return arr[0].toString();
+	return arr.slice(0, arr.length - 1).join(', ') + ' and ' + arr[ arr.length - 1 ];
+}
+
 function summarize_event_timings(event) {
 	// summarize all event triggers from event into human-readable string
 	// separate schedule items and options
@@ -87,15 +95,84 @@ function summarize_event_timing(trigger, idx) {
 	
 	// years
 	var year_str = '';
+	var date_opts = app.getDateOptions({ timeZone: 'UTC' });
+	var locale = date_opts.locale;
+	var lang = (locale || '').split(/\-/)[0];
+	var is_english = (lang == 'en');
+	var numbering = date_opts.numberingSystem;
+	
+	function build_formatter(extra) {
+		var opts = Object.assign({}, date_opts, extra);
+		var loc = opts.locale;
+		delete opts.locale;
+		return new Intl.DateTimeFormat(loc, opts);
+	}
+	var month_fmt = build_formatter({ month: 'long' });
+	var wday_fmt = build_formatter({ weekday: 'long' });
+	var hour_fmt = build_formatter({ hour: 'numeric' });
+	var hm_fmt = build_formatter({ hour: 'numeric', minute: '2-digit' });
+	var num_fmt = new Intl.NumberFormat(locale, { useGrouping: false, numberingSystem: numbering });
+	var num2_fmt = new Intl.NumberFormat(locale, { useGrouping: false, numberingSystem: numbering, minimumIntegerDigits: 2 });
+	
+	function format_number(num, min_digits) {
+		return (min_digits ? num2_fmt : num_fmt).format(num);
+	}
+	function format_ordinal(num) {
+		// keep English ordinal suffixes, but localize digits
+		var suffix = 'th';
+		if ((num % 100 < 11) || (num % 100 > 13)) {
+			switch (num % 10) {
+				case 1: suffix = 'st'; break;
+				case 2: suffix = 'nd'; break;
+				case 3: suffix = 'rd'; break;
+			}
+		}
+		return format_number(num) + suffix;
+	}
+	function format_month_name(num) {
+		return month_fmt.format( new Date(Date.UTC(2020, num - 1, 1)) );
+	}
+	function format_weekday_name(num) {
+		return wday_fmt.format( new Date(Date.UTC(2020, 7, 2 + num)) );
+	}
+	function normalize_time_label(text) {
+		if (!is_english) return text;
+		return text.replace(/\s+/g, '').replace(/am|pm/i, function(m_all) { return m_all.toLowerCase(); });
+	}
+	function format_hour_name(num) {
+		return normalize_time_label( hour_fmt.format( new Date(Date.UTC(2020, 0, 1, num, 0)) ) );
+	}
+	function format_time_name(hour, minute) {
+		return normalize_time_label( hm_fmt.format( new Date(Date.UTC(2020, 0, 1, hour, minute)) ) );
+	}
+	function format_weekday_label(num) {
+		var name = format_weekday_name(num);
+		return is_english ? (name + 's') : name;
+	}
+	function format_month_day(num) {
+		if (num < 0) {
+			if (num == -1) return 'last day';
+			return format_ordinal(Math.abs(num)) + ' last day';
+		}
+		return format_ordinal(num);
+	}
+	function format_minute_label(num) {
+		if (num == 0) return 'hour';
+		if (num == 30) return 'half-hour';
+		return ':' + format_number(num, 2);
+	}
+	
 	if (trigger.years && trigger.years.length) {
-		year_str = get_pretty_int_list(trigger.years, true);
+		year_str = get_pretty_int_list(trigger.years, true).replace(/(\d+)/g, function(m_all, m_g1) {
+			return format_number( parseInt(m_g1) );
+		});
 	}
 	
 	// months
 	var mon_str = '';
 	if (trigger.months && trigger.months.length) {
 		mon_str = get_pretty_int_list(trigger.months, true).replace(/(\d+)/g, function(m_all, m_g1) {
-			return _months[ parseInt(m_g1) - 1 ][1];
+			return format_month_name( parseInt(m_g1) );
 		});
 	}
 	
@@ -103,47 +180,37 @@ function summarize_event_timing(trigger, idx) {
 	var mday_str = '';
 	if (trigger.days && trigger.days.length) {
 		mday_str = get_pretty_int_list(trigger.days, true).replace(/(\-?\d+)/g, function(m_all, m_g1) {
-			var result = '';
-			switch (m_g1) {
-				case '-1': result = 'last day'; break;
-				case '-2': result = '2nd last day'; break;
-				case '-3': result = '3rd last day'; break;
-				case '-4': result = '4th last day'; break;
-				case '-5': result = '5th last day'; break;
-				case '-6': result = '6th last day'; break;
-				case '-7': result = '7th last day'; break;
-				default: 
-					if (m_g1.match(/^1[1-9]$/)) result = m_g1 + 'th'; // teens break the rule (11th, 12th, 13th, etc.)
-					else result = m_g1 + _number_suffixes[ parseInt( m_g1.substring(m_g1.length - 1) ) ]; 
-				break;
-			}
-			return result;
+			return format_month_day( parseInt(m_g1) );
 		});
 	}
 	
 	// weekdays	
 	var wday_str = '';
 	if (trigger.weekdays && trigger.weekdays.length) {
-		wday_str = get_pretty_int_list(trigger.weekdays, true).replace(/(\d+)/g, function(m_all, m_g1) {
-			return _day_names[ parseInt(m_g1) ] + 's';
-		});
-		wday_str = wday_str.replace(/Mondays\s+\-\s+Fridays/, 'weekdays');
+		var wdays = deep_copy_object(trigger.weekdays).sort( function(a, b) { return a - b; } );
+		if ((wdays.length == 5) && (wdays[0] == 1) && (wdays[4] == 5)) {
+			wday_str = 'weekdays';
+		}
+		else {
+			wday_str = get_pretty_int_list(wdays, true).replace(/(\d+)/g, function(m_all, m_g1) {
+				return format_weekday_label( parseInt(m_g1) );
+			});
+		}
 	}
 	
 	// hours
 	var hour_str = '';
 	if (trigger.hours && trigger.hours.length) {
 		hour_str = get_pretty_int_list(trigger.hours, true).replace(/(\d+)/g, function(m_all, m_g1) {
-			return _hour_names[ parseInt(m_g1) ];
+			return format_hour_name( parseInt(m_g1) );
 		});
 	}
 	
 	// minutes
 	var min_str = '';
 	if (trigger.minutes && trigger.minutes.length) {
-		min_str = get_pretty_int_list(trigger.minutes, false).replace(/(\d+)/g, function(m_all, m_g1) {
-			return ':' + ((m_g1.length == 1) ? ('0'+m_g1) : m_g1);
-		});
+		var mins = deep_copy_object(trigger.minutes).sort( function(a, b) { return a - b; } );
+		min_str = get_pretty_str_list( mins.map( function(min) { return format_minute_label(min); } ) );
 	}
 	
 	// construct final string
@@ -173,10 +240,7 @@ function summarize_event_timing(trigger, idx) {
 	
 	// compress single hour + single minute
 	if (trigger.hours && trigger.hours.length == 1 && trigger.minutes && trigger.minutes.length == 1) {
-		hour_str.match(/^(\d+)(\w+)$/);
-		var hr = RegExp.$1;
-		var ampm = RegExp.$2;
-		var new_str = hr + min_str + ampm;
+		var new_str = format_time_name(trigger.hours[0], trigger.minutes[0]);
 		
 		if (mday_str || wday_str) groups.push( 'at ' + new_str );
 		else groups.push( 'daily at ' + new_str );
@@ -194,8 +258,7 @@ function summarize_event_timing(trigger, idx) {
 				if (interval) {
 					var new_str = 'every ' + interval + ' minutes';
 					if (trigger.minutes[0] > 0) {
-						var m_g1 = trigger.minutes[0].toString();
-						new_str += ' starting on the :' + ((m_g1.length == 1) ? ('0'+m_g1) : m_g1);
+						new_str += ' starting on the :' + format_number(trigger.minutes[0], 2);
 					}
 					groups.push( new_str );
 					min_added = true;
@@ -208,7 +271,7 @@ function summarize_event_timing(trigger, idx) {
 		}
 		
 		if (!min_added) {
-			if (min_str) groups.push( 'on the ' + min_str.replace(/\:00/, 'hour').replace(/\:30/, 'half-hour') );
+			if (min_str) groups.push( 'on the ' + min_str );
 			else groups.push( 'every minute' );
 		}
 	}
@@ -216,7 +279,9 @@ function summarize_event_timing(trigger, idx) {
 	var text = (typeof(idx) != 'undefined') ? groups.join(' ') : groups.join(', ');
 	var output = text;
 	if (!idx) output = text.substring(0, 1).toUpperCase() + text.substring(1, text.length);
-	if (trigger.timezone) output += ' (' + trigger.timezone + ')';
+	var timing_tz = trigger.timezone || app.config.tz;
+	var user_tz = (app.user && app.user.timezone) ? app.user.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone;
+	if (timing_tz && user_tz && (timing_tz != user_tz)) output += ' (' + timing_tz + ')';
 	
 	return output;
 };
