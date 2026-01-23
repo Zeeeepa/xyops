@@ -356,6 +356,72 @@ A few things to note here:
 	- xyOps will automatically populate this directory on first container launch.
 	- See the [xyOps Configuration Guide](config.md) for details on how to customize the `config.json` file in this directory.
 
+## External Storage
+
+For using an external storage system, you have [several to choose from](https://github.com/jhuckaby/pixl-server-storage#engines).  However, we recommending using **MinIO**, because it has an open source community edition, it is S3 compatible, and it handles both data and files in the same engine (i.e. you don't need to use the [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid) engine).
+
+Here is a quick-start guide to getting MinIO up and running.  First, it should be noted that as of October 2025, MinIO stopped publishing Docker containers for the community edition.  No worries, however, because there are many trusted 3rd party MinIO Docker images that are actively maintained and work perfectly.  We recommend the [Chainguard](https://www.chainguard.dev/unchained/secure-and-free-minio-chainguard-containers) images.
+
+First, export all your data from your current xyOps storage system.  You can perform a bulk data export from the "System" tab.
+
+Then, create a Docker volume to store your MinIO data:
+
+```sh
+docker volume create minio-data
+```
+
+Next, download and run the Chainguard MinIO container, binding to our new data volume:
+
+```sh
+docker run --detach --name minio -p 9000:9000 -p 9001:9001 -v minio-data:/data cgr.dev/chainguard/minio:latest server /data --console-address ":9001"
+```
+
+Note that if you are also running xyOps in a Docker container on the same machine, you will need to [create a docker network](https://docs.docker.com/engine/network/) and add both containers to the same network, so they can communicate with each other.
+
+Pull up the MinIO web interface in your browser by navigating to `http://MINIO_HOSTNAME:9001`.  Login using the default MinIO admin username and password (definitely change these later):
+
+- **Username**: `minioadmin`
+- **Password**: `minioadmin`
+
+Create a new bucket, e.g. `xydata`.
+
+Then, shut down xyOps completely, and reconfigure your [Storage.AWS](config.md#storage-aws) and [Storage.S3](config.md#storage-s3) objects thusly:
+
+```json
+"AWS": {
+	"endpoint": "http://MINIO_HOSTNAME:9000",
+	"endpointPrefix": false,
+	"forcePathStyle": true,
+	"hostPrefixEnabled": false,
+	"region": "us-west-1",
+	"credentials": {
+		"accessKeyId": "YOUR_MINIO_USERNAME", 
+		"secretAccessKey": "YOUR_MINIO_PASSWORD"
+	}
+},
+"S3": {
+	"connectTimeout": 5000,
+	"socketTimeout": 5000,
+	"maxAttempts": 50,
+	"keyPrefix": "",
+	"fileExtensions": true,
+	"params": {
+		"Bucket": "YOUR_MINIO_BUCKET_ID"
+	},
+	"cache": {
+		"enabled": true,
+		"maxItems": 100000,
+		"maxBytes": 104857600
+	}
+}
+```
+
+Just for testing purposes you can set the `accessKeyId` and `secretAccessKey` properties to the MinIO defaults, i.e. `minioadmin`.
+
+Finally, set the [Storage.engine](config.md#storage-engine) property to `S3` to use the new MinIO engine.
+
+Start xyOps back up, and it should be using the new MinIO engine!  It will create a new set of default records on launch (and you'll have to re-login as `admin` / `admin`), but you can then re-import your data on the "System" tab, which should restore everything.
+
 ## Satellite
 
 **xyOps Satellite ([xySat](https://github.com/pixlcore/xysat))** is a companion to the xyOps system.  It is both a job runner, and a data collector for server monitoring and alerting.  xySat is designed to be installed on *all* of your servers, so it is lean, mean, and has zero dependencies.
