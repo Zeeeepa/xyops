@@ -2991,7 +2991,8 @@ Page.Job = class Job extends Page.PageUtils {
 				
 				if (!self.active) return; // sanity
 				
-				if (job.workflow && job.workflow.job) Nav.go('#Job&id=' + job.workflow.job);
+				if (Nav.old_loc && (Nav.old_loc != 'refresh')) Nav.go( Nav.old_loc );
+				else if (job.workflow && job.workflow.job) Nav.go('#Job&id=' + job.workflow.job);
 				else Nav.go('#Events?sub=view&id=' + job.event);
 			} ); // api.post
 		} ); // confirm
