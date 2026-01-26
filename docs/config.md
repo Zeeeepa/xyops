@@ -521,25 +521,80 @@ Provides sensible defaults for new events (triggers, limits, actions). Used to p
 
 ### client.chart_defaults
 
-Default chart rendering options (line width, smoothing, ticks). Applied to monitor charts in the UI.
+Default chart rendering options (line width, smoothing, ticks). Applied to monitor charts in the UI.  The defaults are:
+
+```json
+"chart_defaults": {
+	"lineWidth": 2,
+	"lineJoin": "round",
+	"lineCap": "butt",
+	"stroke": true,
+	"fill": 0.5,
+	"horizTicks": 6,
+	"vertTicks": 6,
+	"smoothingMaxSamples": 100,
+	"smoothingMaxTotalSamples": 1000,
+	"hoverSort": -1
+}
+```
 
 See [pixl-chart](https://github.com/jhuckaby/pixl-chart) for more details.
 
 ### client.editor_defaults
 
-Default code editor preferences (tabs, indent, line wrapping) for [CodeMirror](https://codemirror.net/5/) fields in the UI.
+Default code editor preferences (tabs, indent, line wrapping) for [CodeMirror](https://codemirror.net/5/) fields in the UI.  The defaults are:
+
+```json
+"editor_defaults": {
+	"lineNumbers": false,
+	"matchBrackets": false,
+	"indentWithTabs": true,
+	"tabSize": 4,
+	"indentUnit": 4,
+	"lineWrapping": true,
+	"dragDrop": false
+}
+```
+
+See [CodeMirror](https://codemirror.net/5/) for more details.
 
 ### client.bucket_upload_settings
 
-Client-side limits for bucket uploads (max files/size/types). Enforced in the UI before upload, and enforced server-side.
+Client-side limits for bucket uploads (max files/size/types). Enforced in the UI before upload, and enforced server-side.  The defaults are:
+
+```json
+"bucket_upload_settings": {
+	"max_files_per_bucket": 100,
+	"max_file_size": 1073741824,
+	"accepted_file_types": ""
+}		
+```
 
 ### client.ticket_upload_settings
 
-Client-side limits for ticket attachments (max files/size/types). Enforced in the UI before upload, and enforced server-side.
+Client-side limits for ticket attachments (max files/size/types). Enforced in the UI before upload, and enforced server-side.  The defaults are:
+
+```json
+"ticket_upload_settings": {
+	"max_files_per_ticket": 100,
+	"max_file_size": 1073741824,
+	"accepted_file_types": ""
+}
+```
 
 ### client.job_upload_settings
 
-Client-side limits for job file uploads (max files/size/types) and default expiration for user/plugin files.
+Client-side limits for job file uploads (max files/size/types) and default expiration for user/plugin files.  The defaults are:
+
+```json
+"job_upload_settings": {
+	"max_files_per_job": 100,
+	"max_file_size": 1073741824,
+	"accepted_file_types": "",
+	"user_file_expiration": "30 days",
+	"plugin_file_expiration": "30 days"
+}
+```
 
 
 ## Storage
