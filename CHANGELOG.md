@@ -1,5 +1,17 @@
 # xyOps Changelog
 
+## Version v0.9.41
+
+> January 26, 2026
+
+- [`8d69754`](https://github.com/pixlcore/xyops/commit/8d69754363e6cb687ac5f24bf0ed8f65e424fbaf): Version 0.9.41
+- [`7428172`](https://github.com/pixlcore/xyops/commit/74281729e5cc809ddbbacd343c89efdf3aefd016): API Doc: Clarified _tags system tag behavior in search_jobs API.
+- [`dc98381`](https://github.com/pixlcore/xyops/commit/dc98381085a33631e890b34f5b92393c27a50cc9): Job Tag Behavior: Apply "Has Files" tag if job has input OR output files.  See #68.
+- [`99dfe56`](https://github.com/pixlcore/xyops/commit/99dfe56029e47a884e72b58da29f6cf97f3c7a62): UI FIx: Show tooltips on all entity names (was not working in Chrome / Firefox).  Fixes #85.
+- [`27ab6f4`](https://github.com/pixlcore/xyops/commit/27ab6f4cecb3431dce2260fd4ec799e745f536fc): Install Script: chmod log dir to 775, not 777
+- [`cdb3195`](https://github.com/pixlcore/xyops/commit/cdb3195f1e33005abbb5d6d95a5240f562b85a3f): Config Doc: Remove excess space.
+- [`68ecea9`](https://github.com/pixlcore/xyops/commit/68ecea9d8602d5fe57b8599888fcc3f44cc08e6b): Config Doc: Add more details in client.chart_defaults, client.editor_defaults, client.bucket_upload_settings, client.ticket_upload_settings, and client.job_upload_settings.
+
 ## Version v0.9.40
 
 > January 25, 2026
